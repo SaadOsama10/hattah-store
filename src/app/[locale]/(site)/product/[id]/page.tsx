@@ -65,17 +65,6 @@ export default async function ProductDetailPage({
 
             <div className="my-8 h-px w-full max-w-xs bg-gradient-to-r from-olive/50 to-transparent" />
 
-            {localized.description && (
-              <div className="mb-8">
-                <h2 className="mb-2 font-inter text-xs uppercase tracking-widest text-cream-secondary/50">
-                  {t("description")}
-                </h2>
-                <p className="whitespace-pre-line font-inter leading-loose text-cream-secondary/90">
-                  {localized.description}
-                </p>
-              </div>
-            )}
-
             <ProductPurchaseActions
               product={{
                 id: localized.id,
@@ -86,6 +75,17 @@ export default async function ProductDetailPage({
               sizes={localized.sizes}
               colors={localized.colors}
             />
+
+            {localized.description && (
+              <div className="mt-8">
+                <h2 className="mb-2 font-inter text-xs uppercase tracking-widest text-cream-secondary/50">
+                  {t("description")}
+                </h2>
+                <p className="whitespace-pre-line font-inter leading-loose text-cream-secondary/90">
+                  {localized.description}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

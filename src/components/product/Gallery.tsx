@@ -8,6 +8,11 @@ import { cn } from "@/lib/cn";
 
 export function Gallery({ images, alt }: { images: string[]; alt: string }) {
   const [index, setIndex] = useState(0);
+  // Adapts the frame to each image's real proportions instead of forcing a
+  // fixed square — starts at 1 (square) until the current image's actual
+  // dimensions are known, then keeps the previous ratio during a switch
+  // rather than flashing back to square while the next one loads.
+  const [ratio, setRatio] = useState(1);
   const hasImages = images.length > 0;
 
   function go(delta: number) {
@@ -24,7 +29,10 @@ export function Gallery({ images, alt }: { images: string[]; alt: string }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="relative aspect-square overflow-hidden rounded-2xl bg-bg-secondary">
+      <div
+        className="relative w-full max-h-[75vh] overflow-hidden rounded-2xl bg-bg-secondary transition-[aspect-ratio] duration-300"
+        style={{ aspectRatio: ratio }}
+      >
         {hasImages ? (
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
@@ -44,8 +52,14 @@ export function Gallery({ images, alt }: { images: string[]; alt: string }) {
                 alt={alt}
                 fill
                 sizes="(min-width: 1024px) 50vw, 100vw"
-                className="pointer-events-none select-none object-cover"
+                className="pointer-events-none select-none object-contain"
                 priority
+                onLoad={(e) => {
+                  const img = e.currentTarget;
+                  if (img.naturalWidth && img.naturalHeight) {
+                    setRatio(img.naturalWidth / img.naturalHeight);
+                  }
+                }}
               />
             </motion.div>
           </AnimatePresence>
