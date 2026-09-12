@@ -1,0 +1,246 @@
+{
+  "meta": {
+    "title": "HATTAH | Otantik Filistin Mirası",
+    "description": "HATTAH — Filistin mirasının otantik parçaları: nakış, takı, dekor ve bir toprağın hikayesini taşıyan hediyeler. Sevgiyle üretildi, Türkiye'den gönderildi."
+  },
+  "nav": {
+    "home": "Ana Sayfa",
+    "shop": "Mağaza",
+    "clothing": "Giyim",
+    "accessories": "Aksesuar",
+    "decor": "Dekor",
+    "games": "Oyun & Hediye",
+    "about": "Hikayemiz",
+    "admin": "Yönetim"
+  },
+  "common": {
+    "viewAll": "Tümünü Gör",
+    "loading": "Yükleniyor...",
+    "search": "Ara",
+    "searchPlaceholder": "Bir parça ara...",
+    "noResults": "Sonuç bulunamadı",
+    "loadMore": "Daha Fazla Yükle",
+    "currency": "₺",
+    "priceLabel": "Fiyat",
+    "backToShop": "Mağazaya Dön",
+    "close": "Kapat",
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "add": "Ekle",
+    "confirm": "Onayla",
+    "required": "Zorunlu alan",
+    "success": "Başarılı",
+    "error": "Bir şeyler ters gitti",
+    "all": "Tümü",
+    "logout": "Çıkış Yap"
+  },
+  "hero": {
+    "badge": "Yaşayan Miras",
+    "brandName": "HATTAH",
+    "brandNameLatin": "HATTAH",
+    "taglines": [
+      "Filistin'den hikayeler, her detayda",
+      "İplik ve hafızayla dokunan bir miras",
+      "Her dikiş bir hikaye, her parça bir vatan"
+    ],
+    "cta": "Koleksiyonu Keşfet",
+    "scroll": "Aşağı kaydır"
+  },
+  "categories": {
+    "eyebrow": "Mağaza Kategorileri",
+    "title": "Kategoriye Göre Alışveriş",
+    "subtitle": "Her parça, köklü bir hikayenin bir bölümünü taşır",
+    "clothing": {
+      "label": "Giyim",
+      "description": "Otantik Filistin nakışı, modern dokunuş"
+    },
+    "accessories": {
+      "label": "Aksesuar",
+      "description": "Kimlik taşıyan takı ve aksesuarlar"
+    },
+    "decor": {
+      "label": "Dekor",
+      "description": "Eviniz için miras dokunuşları"
+    },
+    "games": {
+      "label": "Oyun & Hediye",
+      "description": "Filistin'in hikayesini anlatan hediyeler"
+    },
+    "premium-embroidery": {
+      "description": "Elde, tek tek işlenen eşsiz parçalar"
+    }
+  },
+  "featured": {
+    "eyebrow": "Yeni Gelenler",
+    "title": "Öne Çıkan Parçalar",
+    "subtitle": "Koleksiyonumuzdan en yeni ve en özel seçkiler",
+    "cta": "Tüm Koleksiyonu Keşfet",
+    "empty": "En güzel parçalarımız yakında burada olacak."
+  },
+  "story": {
+    "eyebrow": "Hikayemiz",
+    "title": "Filistin'in Kalbinden, Her Eve",
+    "body": "HATTAH, unutulmaz bir toprağa duyulan özlemden ve Filistin mirasının detaylarını her evde, her kalpte yaşatma isteğinden doğdu. Size ulaştırdığımız her nakış, her iplik, her sembol; sabrın, güzelliğin ve hiçbir zaman değişmeyen bir kimliğin hikayesini anlatır. Türkiye'den, yetenekli Filistinli ellerle çalışarak, nerede olursanız olun toprağın ruhunu taşıyan otantik parçalar sunuyoruz.",
+    "cta": "Devamını Oku"
+  },
+  "footer": {
+    "tagline": "Filistin mirası, zarif modern bir dokunuşla",
+    "quickLinks": "Hızlı Bağlantılar",
+    "followUs": "Bizi Takip Edin",
+    "contactUs": "Bize Ulaşın",
+    "whatsapp": "WhatsApp",
+    "rights": "Tüm hakları saklıdır",
+    "madeWith": "Türkiye'den sevgiyle yapıldı"
+  },
+  "shop": {
+    "title": "Mağaza",
+    "subtitle": "Otantik miras parçalarımızın tüm koleksiyonunu keşfedin",
+    "filterAll": "Tüm Kategoriler",
+    "searchPlaceholder": "Ürün adına göre ara...",
+    "noProducts": "Aramanızla eşleşen ürün yok",
+    "loadMore": "Daha Fazla Yükle",
+    "resultsCount": "ürün",
+    "allSubcategories": "Tümünü Gör"
+  },
+  "product": {
+    "orderWhatsapp": "WhatsApp ile Sipariş Ver",
+    "whatsappMessage": "Merhaba, sipariş vermek istiyorum: {productName}",
+    "description": "Açıklama",
+    "relatedTitle": "Bunlar da İlginizi Çekebilir",
+    "priceLabel": "Fiyat",
+    "category": "Kategori",
+    "notFound": "Ürün Bulunamadı",
+    "notFoundBody": "Üzgünüz, bu ürün mevcut değil veya kaldırılmış.",
+    "gallery": "Görsel Galerisi",
+    "thumbnail": "Küçük Resim",
+    "addToCart": "Sepete Ekle",
+    "selectSize": "Beden Seçin",
+    "selectColor": "Renk Seçin",
+    "sizeLabel": "Beden",
+    "colorLabel": "Renk",
+    "selectSizeFirst": "Lütfen önce bir beden seçin",
+    "selectColorFirst": "Lütfen önce bir renk seçin"
+  },
+  "admin": {
+    "nav": {
+      "dashboard": "Kontrol Paneli",
+      "categories": "Kategoriler"
+    },
+    "login": {
+      "title": "Yönetici Girişi",
+      "subtitle": "Panele erişmek için şifreyi girin",
+      "password": "Şifre",
+      "submit": "Giriş Yap",
+      "error": "Şifre yanlış"
+    },
+    "dashboard": {
+      "title": "Kontrol Paneli",
+      "subtitle": "Mağaza ürünlerini yönet",
+      "addProduct": "Yeni Ürün Ekle",
+      "columns": {
+        "image": "Görsel",
+        "name": "İsim",
+        "category": "Kategori",
+        "price": "Fiyat",
+        "actions": "İşlemler"
+      },
+      "empty": "Henüz ürün yok. İlk ürününüzü ekleyerek başlayın.",
+      "productsCount": "ürün",
+      "featuredBadge": "Ana sayfada öne çıkan",
+      "searchPlaceholder": "Ürün adına göre ara...",
+      "filterAllCategories": "Tüm Kategoriler",
+      "filterFeaturedOnly": "Sadece öne çıkanlar",
+      "noResults": "Eşleşen ürün yok",
+      "loadMore": "Daha Fazla Yükle",
+      "hasSizesIndicator": "Bedenli",
+      "hasColorsIndicator": "Renkli"
+    },
+    "form": {
+      "addTitle": "Yeni Ürün Ekle",
+      "editTitle": "Ürünü Düzenle",
+      "images": "Ürün Görselleri",
+      "imagesHint": "Görselleri buraya sürükleyip bırakın veya seçmek için tıklayın (birden çok seçilebilir)",
+      "nameAr": "İsim (Arapça)",
+      "nameEn": "İsim (İngilizce)",
+      "nameTr": "İsim (Türkçe)",
+      "descAr": "Açıklama (Arapça)",
+      "descEn": "Açıklama (İngilizce)",
+      "descTr": "Açıklama (Türkçe)",
+      "price": "Fiyat (₺)",
+      "category": "Kategori",
+      "selectCategory": "Kategori seçin",
+      "isFeatured": "Ana sayfada Öne Çıkan Parçalar'da göster",
+      "isFeaturedHint": "Burada etkinleştirilen ürünler ana sayfadaki \"Öne Çıkan Parçalar\" bölümünde görünür",
+      "submit": "Ürünü Kaydet",
+      "submitEdit": "Değişiklikleri Kaydet",
+      "uploading": "Görseller yükleniyor...",
+      "saving": "Kaydediliyor...",
+      "compressingImages": "Görseller sıkıştırılıyor...",
+      "imageTooLarge": "\"{name}\" görseli çok büyük (maksimum 20MB). Lütfen daha küçük bir görsel seçin.",
+      "hasSizes": "Bu ürünün bedenleri var",
+      "hasSizesHint": "Alıcının siparişten önce seçebileceği bir beden listesi eklemek için etkinleştirin",
+      "hasColors": "Bu ürünün renkleri var",
+      "hasColorsHint": "Alıcının siparişten önce seçebileceği bir renk listesi eklemek için etkinleştirin",
+      "addSizePlaceholder": "örn. M veya serbest beden",
+      "addColorPlaceholderAr": "مثال: أسود",
+      "addColorPlaceholderEn": "e.g. Black",
+      "addColorPlaceholderTr": "örn. Siyah"
+    },
+    "deleteModal": {
+      "title": "Ürünü Sil",
+      "body": "\"{productName}\" ürününü silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+      "confirm": "Evet, Sil",
+      "cancel": "İptal"
+    },
+    "categories": {
+      "title": "Kategoriler",
+      "subtitle": "Mağazada kullanılan ürün kategorilerini yönetin",
+      "addNew": "Yeni Kategori Ekle",
+      "labelAr": "İsim (Arapça)",
+      "labelEn": "İsim (İngilizce)",
+      "labelTr": "İsim (Türkçe)",
+      "linkedProducts": "Bağlı Ürünler",
+      "linkedProductsCount": "{count, plural, =0 {Bağlı ürün yok} other {# bağlı ürün}}",
+      "actions": "İşlemler",
+      "save": "Ekle",
+      "empty": "Henüz kategori yok.",
+      "genericError": "Bir şeyler ters gitti, tekrar deneyin.",
+      "deleteTitle": "Kategoriyi Sil",
+      "deleteBody": "\"{name}\" kategorisini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+      "deleteConfirm": "Evet, Sil",
+      "deleteCancel": "İptal",
+      "deleteBlockedTitle": "Bu Kategori Silinemez",
+      "deleteBlockedBody": "\"{name}\" kategorisi şu anda {count, plural, other {# ürüne}} bağlı. Önce bu ürünleri başka bir kategoriye taşıyın veya silin, sonra tekrar deneyin.",
+      "deleteBlockedDismiss": "Anladım",
+      "categoryType": "Kategori Türü",
+      "topLevelOption": "Ana kategori",
+      "subcategoryOption": "Alt kategori",
+      "parentCategoryLabel": "Üst Kategori",
+      "selectParentPlaceholder": "Üst kategori seçin",
+      "noParentAvailable": "Henüz ana kategori yok — alt kategori eklemeden önce bir ana kategori oluşturun.",
+      "linkedSubcategoriesCount": "{count, plural, =0 {Bağlı alt kategori yok} other {# bağlı alt kategori}}",
+      "deleteBlockedIntro": "\"{name}\" kategorisi şu nedenlerle silinemez:",
+      "collapse": "Daralt",
+      "expand": "Genişlet"
+    }
+  },
+  "cart": {
+    "title": "Alışveriş Sepeti",
+    "addToCart": "Sepete Ekle",
+    "added": "Eklendi",
+    "empty": "Sepetiniz boş",
+    "emptyHint": "Mağazamızdan güzel parçalar ekleyin",
+    "continueShopping": "Alışverişe Devam Et",
+    "subtotal": "Ara Toplam",
+    "quantity": "Adet",
+    "remove": "Sepetten çıkar",
+    "decreaseQuantity": "Adedi azalt",
+    "increaseQuantity": "Adedi artır",
+    "checkoutWhatsapp": "WhatsApp ile Sipariş Tamamla",
+    "checkoutMessageIntro": "Merhaba! Aşağıdaki ürünleri sipariş etmek istiyorum:",
+    "checkoutMessageTotal": "Toplam: {total}",
+    "itemsCount": "{count, plural, =0 {Sepet boş} other {# ürün}}"
+  }
+}

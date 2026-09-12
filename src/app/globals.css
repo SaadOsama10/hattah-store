@@ -1,26 +1,244 @@
 @import "tailwindcss";
 
+/* ─────────────────────────────────────────────────────────────
+   Theme tokens — the fresh, vivid light look is the brand default;
+   [data-theme="dark"] overrides the same variables so every existing
+   bg-, text-, and border- utility class in the app becomes
+   theme-aware for free. Brand accents (forest / olive / terracotta)
+   stay constant across both themes, just a little more vivid than
+   the old muted earth tones.
+   ───────────────────────────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Warm greige secondary — a neutral, unisex break from flat white
+     (not the earlier blush pink, which read as too soft/feminine). */
+  --t-bg-primary: #fdfbf7;
+  --t-bg-secondary: #f0ece4;
+  --t-text-primary: #201a12;
+  --t-text-secondary: #59503f;
+  --t-glow-a: rgba(23, 143, 94, 0.14);
+  --t-glow-b: rgba(210, 87, 46, 0.12);
+  --t-glow-c: rgba(91, 127, 63, 0.12);
+  --t-shadow-ambient: rgba(120, 100, 70, 0.16);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+[data-theme="dark"] {
+  /* A warm, neutral charcoal sitting between "not dark enough" and
+     "pitch black" — dark and luxurious without the harshness of true
+     black. Only the faintest green whisper in the undertone; the
+     brand green mainly shows up through the glows/accents. */
+  --t-bg-primary: #10120e;
+  --t-bg-secondary: #181b15;
+  --t-text-primary: #f3ead8;
+  --t-text-secondary: #ede3d0;
+  --t-glow-a: rgba(23, 143, 94, 0.2);
+  --t-glow-b: rgba(210, 87, 46, 0.16);
+  --t-glow-c: rgba(91, 127, 63, 0.17);
+  --t-shadow-ambient: rgba(0, 0, 0, 0.55);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@theme {
+  --color-bg-primary: var(--t-bg-primary);
+  --color-bg-secondary: var(--t-bg-secondary);
+  --color-cream: var(--t-text-primary);
+  --color-cream-secondary: var(--t-text-secondary);
+  --color-forest: #178f5e;
+  --color-olive: #5b7f3f;
+  --color-terracotta: #d2572e;
+  --color-terracotta-deep: #d6293a;
+
+  --shadow-soft: 0 24px 60px -24px var(--t-shadow-ambient);
+  --shadow-glow-terracotta: 0 10px 36px -10px rgba(210, 87, 46, 0.45);
+  --shadow-glow-forest: 0 10px 36px -10px rgba(23, 143, 94, 0.45);
+
+  --animate-fade-up: fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-fade-in: fade-in 1s ease forwards;
+  --animate-marquee: marquee 32s linear infinite;
+  --animate-drift: drift 14s ease-in-out infinite;
+  --animate-drift-slow: drift 22s ease-in-out infinite reverse;
+  --animate-float: float 9s ease-in-out infinite;
+  --animate-float-slow: float 13s ease-in-out infinite reverse;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(28px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes loading-sweep {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(300%);
+    }
+  }
+  @keyframes drift {
+    0%,
+    100% {
+      transform: translate(0, 0) rotate(0deg);
+    }
+    50% {
+      transform: translate(-3%, 4%) rotate(3deg);
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0) scale(1);
+    }
+    50% {
+      transform: translateY(-16px) scale(1.03);
+    }
   }
 }
 
+/* Smooth cross-fade between page navigations where supported
+   (Chrome/Edge). Purely progressive enhancement — no-op elsewhere. */
+@view-transition {
+  navigation: auto;
+}
+
+/* Locale-aware font utilities. Written as plain CSS (rather than
+   inside @theme) because Tailwind v4 won't generate a utility class
+   for a --font-* theme value that itself contains a var() reference —
+   these keep the original class names (font-playfair, font-inter) so
+   no component needed renaming; --font-display-current /
+   --font-body-current are set per-locale on <body> in the root layout. */
+.font-playfair {
+  font-family: var(--font-display-current), sans-serif;
+}
+.font-inter {
+  font-family: var(--font-body-current), sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg-primary);
+  color: var(--color-cream);
+  transition:
+    background-color 0.4s ease,
+    color 0.4s ease;
+}
+
+/* Subtle film-grain texture — replaces the old repeating keffiyeh
+   pattern as the ambient background texture. It's noise, not a
+   discernible repeating motif, so it reads as depth/atmosphere rather
+   than a "pattern", and needs no light/dark variant since it's neutral. */
+.bg-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 180px 180px;
+}
+
+/* Thin decorative divider */
+.divider-ornate {
+  position: relative;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--color-olive) 50%,
+    transparent
+  );
+}
+
+/* Thin gradient (olive → terracotta) border for premium accents.
+   Usage: wrap an element with position:relative and class
+   "border-gradient" — the ring fades in on hover by default via
+   the .group-hover variant below, or stays visible with
+   "border-gradient-visible". */
+.border-gradient {
+  position: relative;
+}
+.border-gradient::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    var(--color-olive),
+    var(--color-terracotta) 50%,
+    var(--color-olive)
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.35;
+  transition: opacity 0.5s ease;
+}
+.group:hover .border-gradient::before,
+.border-gradient:hover::before {
+  opacity: 1;
+}
+.border-gradient-visible::before {
+  opacity: 0.7;
+}
+
+::selection {
+  background: var(--color-terracotta);
+  color: #fdfbf7;
+}
+
+/* Custom scrollbar for a refined feel */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-olive);
+  border-radius: 999px;
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

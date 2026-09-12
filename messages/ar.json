@@ -1,0 +1,246 @@
+{
+  "meta": {
+    "title": "حَطّة | تراث فلسطين الأصيل",
+    "description": "حَطّة — قطع أصيلة من التراث الفلسطيني: تطريز، مجوهرات، ديكور وهدايا تحمل حكاية أرض. مصنوعة بحب، موزّعة من تركيا."
+  },
+  "nav": {
+    "home": "الرئيسية",
+    "shop": "المتجر",
+    "clothing": "الملابس",
+    "accessories": "الإكسسوارات",
+    "decor": "الديكور",
+    "games": "ألعاب وهدايا",
+    "about": "قصتنا",
+    "admin": "الإدارة"
+  },
+  "common": {
+    "viewAll": "عرض الكل",
+    "loading": "جاري التحميل...",
+    "search": "بحث",
+    "searchPlaceholder": "ابحث عن قطعة...",
+    "noResults": "لم يتم العثور على نتائج",
+    "loadMore": "عرض المزيد",
+    "currency": "₺",
+    "priceLabel": "السعر",
+    "backToShop": "العودة إلى المتجر",
+    "close": "إغلاق",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "add": "إضافة",
+    "confirm": "تأكيد",
+    "required": "حقل مطلوب",
+    "success": "تم بنجاح",
+    "error": "حدث خطأ ما",
+    "all": "الكل",
+    "logout": "تسجيل الخروج"
+  },
+  "hero": {
+    "badge": "تراث حي",
+    "brandName": "حَطّة",
+    "brandNameLatin": "HATTAH",
+    "taglines": [
+      "حكايات من فلسطين، في كل تفصيلة",
+      "تراث يُحاك بالإبرة والذاكرة",
+      "كل غرزة حكاية، كل قطعة أرض"
+    ],
+    "cta": "اكتشف المجموعة",
+    "scroll": "انزل للأسفل"
+  },
+  "categories": {
+    "eyebrow": "تصنيفات المتجر",
+    "title": "تسوّق حسب الفئة",
+    "subtitle": "كل قطعة تحمل جزءاً من حكاية أرضٍ عريقة",
+    "clothing": {
+      "label": "الملابس",
+      "description": "تطريز فلسطيني أصيل بلمسة عصرية"
+    },
+    "accessories": {
+      "label": "الإكسسوارات",
+      "description": "مجوهرات وإكسسوارات تحمل هوية"
+    },
+    "decor": {
+      "label": "الديكور",
+      "description": "لمسات تراثية لبيتك"
+    },
+    "games": {
+      "label": "ألعاب وهدايا",
+      "description": "هدايا تروي حكاية فلسطين"
+    },
+    "premium-embroidery": {
+      "description": "قطع تطريز نادرة تُصنع بأنامل فلسطينية بحب"
+    }
+  },
+  "featured": {
+    "eyebrow": "وصل حديثًا",
+    "title": "مختارات مميزة",
+    "subtitle": "أحدث القطع وأكثرها تميزاً من مجموعتنا",
+    "cta": "تسوّق المجموعة كاملة",
+    "empty": "سنعرض هنا قريباً أجمل قطعنا."
+  },
+  "story": {
+    "eyebrow": "قصتنا",
+    "title": "من قلب فلسطين، إلى كل بيت",
+    "body": "حَطّة وُلدت من حنين لأرضٍ لا تُنسى، ومن رغبة صادقة في أن تبقى تفاصيل التراث الفلسطيني حيّة في كل بيت وكل قلب. كل قطعة تطريز، كل خيط، وكل رمز نحمله إليكم يحكي حكاية صبر وجمال وهوية لم تتغيّر رغم كل شيء. نعمل من تركيا مع أيادٍ فلسطينية ماهرة، لنقدّم لكم قطعاً أصيلة تحمل روح الأرض أينما كنتم.",
+    "cta": "اقرأ المزيد"
+  },
+  "footer": {
+    "tagline": "تراث فلسطين، بلمسة عصرية أنيقة",
+    "quickLinks": "روابط سريعة",
+    "followUs": "تابعنا",
+    "contactUs": "تواصل معنا",
+    "whatsapp": "واتساب",
+    "rights": "جميع الحقوق محفوظة",
+    "madeWith": "صُنع بحب من تركيا"
+  },
+  "shop": {
+    "title": "المتجر",
+    "subtitle": "استكشف مجموعتنا الكاملة من القطع التراثية الأصيلة",
+    "filterAll": "جميع الفئات",
+    "searchPlaceholder": "ابحث باسم المنتج...",
+    "noProducts": "لا توجد منتجات مطابقة لبحثك",
+    "loadMore": "تحميل المزيد",
+    "resultsCount": "منتج",
+    "allSubcategories": "تسوّق الكل"
+  },
+  "product": {
+    "orderWhatsapp": "اطلب عبر واتساب",
+    "whatsappMessage": "مرحباً، أرغب في طلب: {productName}",
+    "description": "الوصف",
+    "relatedTitle": "قد يعجبك أيضاً",
+    "priceLabel": "السعر",
+    "category": "الفئة",
+    "notFound": "المنتج غير موجود",
+    "notFoundBody": "عذراً، هذا المنتج غير متوفر أو تم حذفه.",
+    "gallery": "معرض الصور",
+    "thumbnail": "صورة مصغرة",
+    "addToCart": "أضف للسلة",
+    "selectSize": "اختر المقاس",
+    "selectColor": "اختر اللون",
+    "sizeLabel": "المقاس",
+    "colorLabel": "اللون",
+    "selectSizeFirst": "الرجاء اختيار المقاس أولاً",
+    "selectColorFirst": "الرجاء اختيار اللون أولاً"
+  },
+  "admin": {
+    "nav": {
+      "dashboard": "لوحة التحكم",
+      "categories": "الفئات"
+    },
+    "login": {
+      "title": "دخول الإدارة",
+      "subtitle": "أدخل كلمة المرور للوصول إلى لوحة التحكم",
+      "password": "كلمة المرور",
+      "submit": "دخول",
+      "error": "كلمة المرور غير صحيحة"
+    },
+    "dashboard": {
+      "title": "لوحة التحكم",
+      "subtitle": "إدارة منتجات المتجر",
+      "addProduct": "إضافة منتج جديد",
+      "columns": {
+        "image": "الصورة",
+        "name": "الاسم",
+        "category": "الفئة",
+        "price": "السعر",
+        "actions": "إجراءات"
+      },
+      "empty": "لا توجد منتجات بعد. ابدأ بإضافة منتجك الأول.",
+      "productsCount": "منتج",
+      "featuredBadge": "مميز بالصفحة الرئيسية",
+      "searchPlaceholder": "ابحث باسم المنتج...",
+      "filterAllCategories": "كل الفئات",
+      "filterFeaturedOnly": "المميز فقط",
+      "noResults": "لا توجد منتجات مطابقة",
+      "loadMore": "تحميل المزيد",
+      "hasSizesIndicator": "له مقاسات",
+      "hasColorsIndicator": "له ألوان"
+    },
+    "form": {
+      "addTitle": "إضافة منتج جديد",
+      "editTitle": "تعديل المنتج",
+      "images": "صور المنتج",
+      "imagesHint": "اسحب وأفلت الصور هنا، أو انقر للاختيار (يمكن اختيار عدة صور)",
+      "nameAr": "الاسم بالعربية",
+      "nameEn": "الاسم بالإنجليزية",
+      "nameTr": "الاسم بالتركية",
+      "descAr": "الوصف بالعربية",
+      "descEn": "الوصف بالإنجليزية",
+      "descTr": "الوصف بالتركية",
+      "price": "السعر (₺)",
+      "category": "الفئة",
+      "selectCategory": "اختر الفئة",
+      "isFeatured": "إظهار في المختارات المميزة بالصفحة الرئيسية",
+      "isFeaturedHint": "المنتجات المفعّلة هون بتظهر بقسم \"مختارات مميزة\" بالصفحة الرئيسية",
+      "submit": "حفظ المنتج",
+      "submitEdit": "حفظ التعديلات",
+      "uploading": "جاري رفع الصور...",
+      "saving": "جاري الحفظ...",
+      "compressingImages": "جارِ ضغط الصور...",
+      "imageTooLarge": "الصورة \"{name}\" كبيرة جدًا (الحد الأقصى 20 ميجابايت). الرجاء اختيار صورة أصغر.",
+      "hasSizes": "هذا المنتج له مقاسات",
+      "hasSizesHint": "فعّلها لإضافة قائمة مقاسات يختار المشتري من بينها قبل الطلب",
+      "hasColors": "هذا المنتج له ألوان",
+      "hasColorsHint": "فعّلها لإضافة قائمة ألوان يختار المشتري من بينها قبل الطلب",
+      "addSizePlaceholder": "مثال: M أو مقاس حر",
+      "addColorPlaceholderAr": "مثال: أسود",
+      "addColorPlaceholderEn": "e.g. Black",
+      "addColorPlaceholderTr": "örn. Siyah"
+    },
+    "deleteModal": {
+      "title": "حذف المنتج",
+      "body": "هل أنت متأكد من حذف \"{productName}\"؟ لا يمكن التراجع عن هذا الإجراء.",
+      "confirm": "نعم، احذف",
+      "cancel": "إلغاء"
+    },
+    "categories": {
+      "title": "الفئات",
+      "subtitle": "إدارة فئات المنتجات المستخدمة بالمتجر",
+      "addNew": "إضافة فئة جديدة",
+      "labelAr": "الاسم بالعربية",
+      "labelEn": "الاسم بالإنجليزية",
+      "labelTr": "الاسم بالتركية",
+      "linkedProducts": "المنتجات المرتبطة",
+      "linkedProductsCount": "{count, plural, =0 {لا توجد منتجات مرتبطة} one {منتج واحد مرتبط} two {منتجان مرتبطان} few {# منتجات مرتبطة} many {# منتجًا مرتبطًا} other {# منتج مرتبط}}",
+      "actions": "إجراءات",
+      "save": "إضافة",
+      "empty": "لا توجد فئات بعد.",
+      "genericError": "حدث خطأ ما، حاول مرة أخرى.",
+      "deleteTitle": "حذف الفئة",
+      "deleteBody": "هل أنت متأكد من حذف فئة \"{name}\"؟ لا يمكن التراجع عن هذا الإجراء.",
+      "deleteConfirm": "نعم، احذف",
+      "deleteCancel": "إلغاء",
+      "deleteBlockedTitle": "لا يمكن حذف هذه الفئة",
+      "deleteBlockedBody": "فئة \"{name}\" مرتبطة حاليًا بـ {count, plural, one {منتج واحد} two {منتجين} other {# منتج}}. انقل هذه المنتجات إلى فئة أخرى أو احذفها أولًا، ثم أعد المحاولة.",
+      "deleteBlockedDismiss": "فهمت",
+      "categoryType": "نوع الفئة",
+      "topLevelOption": "فئة رئيسية",
+      "subcategoryOption": "فئة فرعية",
+      "parentCategoryLabel": "الفئة الرئيسية",
+      "selectParentPlaceholder": "اختر الفئة الرئيسية",
+      "noParentAvailable": "لا توجد فئة رئيسية بعد — أنشئ فئة رئيسية أولًا لتتمكن من إضافة فئات فرعية.",
+      "linkedSubcategoriesCount": "{count, plural, =0 {لا توجد فئات فرعية} one {فئة فرعية واحدة مرتبطة} two {فئتان فرعيتان مرتبطتان} few {# فئات فرعية مرتبطة} many {# فئة فرعية مرتبطة} other {# فئة فرعية مرتبطة}}",
+      "deleteBlockedIntro": "فئة \"{name}\" لا يمكن حذفها للأسباب التالية:",
+      "collapse": "طي",
+      "expand": "توسيع"
+    }
+  },
+  "cart": {
+    "title": "سلة التسوق",
+    "addToCart": "أضف للسلة",
+    "added": "أُضيف",
+    "empty": "سلتك فارغة",
+    "emptyHint": "أضف بعض القطع الجميلة من متجرنا",
+    "continueShopping": "تابع التسوق",
+    "subtotal": "الإجمالي",
+    "quantity": "الكمية",
+    "remove": "إزالة من السلة",
+    "decreaseQuantity": "إنقاص الكمية",
+    "increaseQuantity": "زيادة الكمية",
+    "checkoutWhatsapp": "إتمام الطلب عبر واتساب",
+    "checkoutMessageIntro": "مرحباً! أرغب في طلب المنتجات التالية:",
+    "checkoutMessageTotal": "الإجمالي: {total}",
+    "itemsCount": "{count, plural, =0 {السلة فارغة} one {منتج واحد} two {منتجان} few {# منتجات} many {# منتجًا} other {# منتج}}"
+  }
+}

@@ -1,0 +1,246 @@
+{
+  "meta": {
+    "title": "HATTAH | Authentic Palestinian Heritage",
+    "description": "HATTAH — authentic pieces of Palestinian heritage: embroidery, jewelry, decor and gifts that carry the story of a land. Made with love, shipped from Turkey."
+  },
+  "nav": {
+    "home": "Home",
+    "shop": "Shop",
+    "clothing": "Clothing",
+    "accessories": "Accessories",
+    "decor": "Decor",
+    "games": "Games & Gifts",
+    "about": "Our Story",
+    "admin": "Admin"
+  },
+  "common": {
+    "viewAll": "View All",
+    "loading": "Loading...",
+    "search": "Search",
+    "searchPlaceholder": "Search for a piece...",
+    "noResults": "No results found",
+    "loadMore": "Load More",
+    "currency": "₺",
+    "priceLabel": "Price",
+    "backToShop": "Back to Shop",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "confirm": "Confirm",
+    "required": "Required field",
+    "success": "Success",
+    "error": "Something went wrong",
+    "all": "All",
+    "logout": "Log Out"
+  },
+  "hero": {
+    "badge": "Living Heritage",
+    "brandName": "HATTAH",
+    "brandNameLatin": "HATTAH",
+    "taglines": [
+      "Stories from Palestine, in every detail",
+      "Heritage woven with thread and memory",
+      "Every stitch a story, every piece a homeland"
+    ],
+    "cta": "Discover the Collection",
+    "scroll": "Scroll down"
+  },
+  "categories": {
+    "eyebrow": "Store Categories",
+    "title": "Shop by Category",
+    "subtitle": "Every piece carries a part of an ancient story",
+    "clothing": {
+      "label": "Clothing",
+      "description": "Authentic Palestinian embroidery, modern touch"
+    },
+    "accessories": {
+      "label": "Accessories",
+      "description": "Jewelry and accessories that carry identity"
+    },
+    "decor": {
+      "label": "Decor",
+      "description": "Heritage touches for your home"
+    },
+    "games": {
+      "label": "Games & Gifts",
+      "description": "Gifts that tell Palestine's story"
+    },
+    "premium-embroidery": {
+      "description": "Rare pieces, embroidered by hand one stitch at a time"
+    }
+  },
+  "featured": {
+    "eyebrow": "Just Arrived",
+    "title": "Featured Pieces",
+    "subtitle": "The newest and most cherished from our collection",
+    "cta": "Shop the Full Collection",
+    "empty": "Our finest pieces will appear here soon."
+  },
+  "story": {
+    "eyebrow": "Our Story",
+    "title": "From the Heart of Palestine, to Every Home",
+    "body": "HATTAH was born from a longing for an unforgettable land, and a sincere wish to keep the details of Palestinian heritage alive in every home and every heart. Every embroidered stitch, every thread, every symbol we bring to you tells a story of patience, beauty, and an identity that has never changed. We work from Turkey with skilled Palestinian hands, to bring you authentic pieces that carry the spirit of the land wherever you are.",
+    "cta": "Read More"
+  },
+  "footer": {
+    "tagline": "Palestinian heritage, with an elegant modern touch",
+    "quickLinks": "Quick Links",
+    "followUs": "Follow Us",
+    "contactUs": "Contact Us",
+    "whatsapp": "WhatsApp",
+    "rights": "All rights reserved",
+    "madeWith": "Made with love from Turkey"
+  },
+  "shop": {
+    "title": "Shop",
+    "subtitle": "Explore our full collection of authentic heritage pieces",
+    "filterAll": "All Categories",
+    "searchPlaceholder": "Search by product name...",
+    "noProducts": "No products match your search",
+    "loadMore": "Load More",
+    "resultsCount": "products",
+    "allSubcategories": "Shop All"
+  },
+  "product": {
+    "orderWhatsapp": "Order via WhatsApp",
+    "whatsappMessage": "Hi, I'd like to order: {productName}",
+    "description": "Description",
+    "relatedTitle": "You May Also Like",
+    "priceLabel": "Price",
+    "category": "Category",
+    "notFound": "Product Not Found",
+    "notFoundBody": "Sorry, this product is unavailable or has been removed.",
+    "gallery": "Image Gallery",
+    "thumbnail": "Thumbnail",
+    "addToCart": "Add to Cart",
+    "selectSize": "Select Size",
+    "selectColor": "Select Color",
+    "sizeLabel": "Size",
+    "colorLabel": "Color",
+    "selectSizeFirst": "Please select a size first",
+    "selectColorFirst": "Please select a color first"
+  },
+  "admin": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "categories": "Categories"
+    },
+    "login": {
+      "title": "Admin Login",
+      "subtitle": "Enter the password to access the dashboard",
+      "password": "Password",
+      "submit": "Log In",
+      "error": "Incorrect password"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "Manage store products",
+      "addProduct": "Add New Product",
+      "columns": {
+        "image": "Image",
+        "name": "Name",
+        "category": "Category",
+        "price": "Price",
+        "actions": "Actions"
+      },
+      "empty": "No products yet. Start by adding your first one.",
+      "productsCount": "products",
+      "featuredBadge": "Featured on homepage",
+      "searchPlaceholder": "Search by product name...",
+      "filterAllCategories": "All Categories",
+      "filterFeaturedOnly": "Featured only",
+      "noResults": "No matching products",
+      "loadMore": "Load More",
+      "hasSizesIndicator": "Has sizes",
+      "hasColorsIndicator": "Has colors"
+    },
+    "form": {
+      "addTitle": "Add New Product",
+      "editTitle": "Edit Product",
+      "images": "Product Images",
+      "imagesHint": "Drag and drop images here, or click to select (multiple allowed)",
+      "nameAr": "Name (Arabic)",
+      "nameEn": "Name (English)",
+      "nameTr": "Name (Turkish)",
+      "descAr": "Description (Arabic)",
+      "descEn": "Description (English)",
+      "descTr": "Description (Turkish)",
+      "price": "Price (₺)",
+      "category": "Category",
+      "selectCategory": "Select category",
+      "isFeatured": "Show in Featured Pieces on the homepage",
+      "isFeaturedHint": "Products enabled here appear in the \"Featured Pieces\" section on the homepage",
+      "submit": "Save Product",
+      "submitEdit": "Save Changes",
+      "uploading": "Uploading images...",
+      "saving": "Saving...",
+      "compressingImages": "Compressing images...",
+      "imageTooLarge": "The image \"{name}\" is too large (max 20MB). Please choose a smaller image.",
+      "hasSizes": "This product has sizes",
+      "hasSizesHint": "Enable to add a list of sizes for the buyer to choose from before ordering",
+      "hasColors": "This product has colors",
+      "hasColorsHint": "Enable to add a list of colors for the buyer to choose from before ordering",
+      "addSizePlaceholder": "e.g. M or a free-form size",
+      "addColorPlaceholderAr": "مثال: أسود",
+      "addColorPlaceholderEn": "e.g. Black",
+      "addColorPlaceholderTr": "örn. Siyah"
+    },
+    "deleteModal": {
+      "title": "Delete Product",
+      "body": "Are you sure you want to delete \"{productName}\"? This action cannot be undone.",
+      "confirm": "Yes, Delete",
+      "cancel": "Cancel"
+    },
+    "categories": {
+      "title": "Categories",
+      "subtitle": "Manage the product categories used across the store",
+      "addNew": "Add New Category",
+      "labelAr": "Name (Arabic)",
+      "labelEn": "Name (English)",
+      "labelTr": "Name (Turkish)",
+      "linkedProducts": "Linked Products",
+      "linkedProductsCount": "{count, plural, =0 {No linked products} one {# linked product} other {# linked products}}",
+      "actions": "Actions",
+      "save": "Add",
+      "empty": "No categories yet.",
+      "genericError": "Something went wrong, please try again.",
+      "deleteTitle": "Delete Category",
+      "deleteBody": "Are you sure you want to delete the \"{name}\" category? This action cannot be undone.",
+      "deleteConfirm": "Yes, Delete",
+      "deleteCancel": "Cancel",
+      "deleteBlockedTitle": "This Category Can't Be Deleted",
+      "deleteBlockedBody": "The \"{name}\" category is currently linked to {count, plural, one {# product} other {# products}}. Move or delete those products first, then try again.",
+      "deleteBlockedDismiss": "Got it",
+      "categoryType": "Category Type",
+      "topLevelOption": "Top-level category",
+      "subcategoryOption": "Subcategory",
+      "parentCategoryLabel": "Parent Category",
+      "selectParentPlaceholder": "Select parent category",
+      "noParentAvailable": "No top-level category yet — create one first before adding subcategories.",
+      "linkedSubcategoriesCount": "{count, plural, =0 {No linked subcategories} one {# linked subcategory} other {# linked subcategories}}",
+      "deleteBlockedIntro": "The \"{name}\" category can't be deleted for the following reasons:",
+      "collapse": "Collapse",
+      "expand": "Expand"
+    }
+  },
+  "cart": {
+    "title": "Shopping Cart",
+    "addToCart": "Add to Cart",
+    "added": "Added",
+    "empty": "Your cart is empty",
+    "emptyHint": "Add some beautiful pieces from our shop",
+    "continueShopping": "Continue Shopping",
+    "subtotal": "Subtotal",
+    "quantity": "Quantity",
+    "remove": "Remove from cart",
+    "decreaseQuantity": "Decrease quantity",
+    "increaseQuantity": "Increase quantity",
+    "checkoutWhatsapp": "Checkout via WhatsApp",
+    "checkoutMessageIntro": "Hi! I'd like to order the following items:",
+    "checkoutMessageTotal": "Total: {total}",
+    "itemsCount": "{count, plural, =0 {Cart is empty} one {# item} other {# items}}"
+  }
+}
