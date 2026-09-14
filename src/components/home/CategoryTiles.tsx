@@ -82,8 +82,10 @@ export function CategoryTiles({
                 href={`/shop?category=${cat.key}`}
                 onClick={() => playClick()}
                 style={{ "--tile-accent": accent.hex } as React.CSSProperties}
-                className={`border-gradient group relative flex aspect-[3/4] flex-col justify-between overflow-hidden rounded-2xl border border-cream/10 p-6 transition-all duration-500 hover:-translate-y-1 hover:shadow-glow-terracotta ${
-                  coverImage ? "bg-bg-secondary" : `bg-gradient-to-br ${accent.gradient}`
+                className={`border-gradient group relative flex aspect-[3/4] flex-col justify-between overflow-hidden rounded-2xl border p-6 transition-all duration-500 hover:-translate-y-1 hover:shadow-glow-terracotta ${
+                  coverImage
+                    ? "border-[var(--tile-accent)]/25 bg-bg-secondary"
+                    : `border-cream/10 bg-gradient-to-br ${accent.gradient}`
                 }`}
               >
                 {coverImage && (
@@ -93,40 +95,29 @@ export function CategoryTiles({
                       alt=""
                       fill
                       sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-                      className="object-cover grayscale brightness-[var(--tile-brightness)] contrast-[var(--tile-contrast)] transition-transform duration-700 ease-out group-hover:scale-110"
+                      className="object-cover saturate-[0.35] sepia-[0.06] contrast-[1.05] brightness-[0.8] transition-transform duration-700 ease-out group-hover:scale-110"
                     />
-                    {/* Duotone tint: blends the brand accent color into the
-                        desaturated photo so it reads as "category mood"
-                        rather than a clear product shot. Stays constant
-                        across themes — the mood/intensity shift below is
-                        what actually differs between light and dark. */}
+                    {/* A single warm-neutral wash (no hue shift toward
+                        the category color) — just enough to guarantee
+                        the text stays legible, darkest at the bottom
+                        where it sits. Identical in both themes. */}
                     <div
                       aria-hidden
-                      className="absolute inset-0 mix-blend-color"
-                      style={{ backgroundColor: accent.hex }}
-                    />
-                    {/* Theme-aware wash: a brighter colored wash in light
-                        mode, a near-black dramatic one in dark mode — see
-                        --tile-wash-* in globals.css. */}
-                    <div
-                      aria-hidden
-                      className="absolute inset-0 bg-gradient-to-t from-[var(--tile-wash-bottom)] via-[var(--tile-wash-mid)] to-[var(--tile-wash-top)]"
+                      className="absolute inset-0 bg-gradient-to-t from-[var(--tile-overlay)]/85 via-[var(--tile-overlay)]/35 to-[var(--tile-overlay)]/10"
                     />
                   </>
                 )}
 
-                <GrainOverlay opacity="opacity-[0.05]" />
+                <GrainOverlay opacity="opacity-[0.08]" />
                 <TatreezCorner className="absolute end-3 top-3 opacity-80" />
 
                 <div className="relative flex items-start justify-between">
-                  <span
-                    className="inline-flex rounded-full shadow-[var(--tile-icon-glow)]"
-                  >
+                  <span className="inline-flex items-center justify-center rounded-full bg-[var(--tile-accent)]/15 p-2.5">
                     <Icon
-                      size={34}
+                      size={22}
                       strokeWidth={1.25}
                       className={`transition-transform duration-500 group-hover:scale-110 group-hover:text-terracotta ${
-                        coverImage ? "text-cream-fixed drop-shadow-[0_2px_8px_rgba(0,0,0,0.55)]" : "text-cream"
+                        coverImage ? "text-cream-fixed" : "text-cream"
                       }`}
                     />
                   </span>

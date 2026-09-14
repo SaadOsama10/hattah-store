@@ -20,16 +20,13 @@
   --t-glow-c: rgba(91, 127, 63, 0.12);
   --t-shadow-ambient: rgba(120, 100, 70, 0.16);
 
-  /* Category tile ambient-photo treatment (CategoryTiles.tsx) —
-     deliberately identical in both themes (not theme-aware): each card
-     also sets its own --tile-accent inline, which the color-mix()
-     washes below pick up. */
-  --tile-brightness: 0.62;
-  --tile-contrast: 1.05;
-  --tile-wash-top: color-mix(in srgb, var(--tile-accent, #178f5e) 32%, transparent);
-  --tile-wash-mid: color-mix(in srgb, var(--tile-accent, #178f5e) 18%, black 30%);
-  --tile-wash-bottom: rgba(20, 15, 10, 0.62);
-  --tile-icon-glow: none;
+  /* Category tile ambient-photo treatment (CategoryTiles.tsx) — a
+     single warm-neutral overlay color (the light theme's own text
+     color, used here as a fixed constant regardless of site theme).
+     The category accent (--tile-accent, set inline per card) only ever
+     shows as a thin border and the icon's backdrop circle — never a
+     tint over the photo itself. */
+  --tile-overlay: #201a12;
 }
 
 [data-theme="dark"] {
