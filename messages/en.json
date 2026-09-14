@@ -34,7 +34,10 @@
     "success": "Success",
     "error": "Something went wrong",
     "all": "All",
-    "logout": "Log Out"
+    "logout": "Log Out",
+    "errorTitle": "Something went wrong",
+    "errorBody": "There was a temporary problem loading this page. Please try again.",
+    "retry": "Try Again"
   },
   "hero": {
     "badge": "Living Heritage",

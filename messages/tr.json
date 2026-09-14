@@ -34,7 +34,10 @@
     "success": "Başarılı",
     "error": "Bir şeyler ters gitti",
     "all": "Tümü",
-    "logout": "Çıkış Yap"
+    "logout": "Çıkış Yap",
+    "errorTitle": "Bir şeyler ters gitti",
+    "errorBody": "Sayfa yüklenirken geçici bir sorun oluştu. Lütfen tekrar deneyin.",
+    "retry": "Tekrar Dene"
   },
   "hero": {
     "badge": "Yaşayan Miras",

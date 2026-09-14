@@ -70,17 +70,25 @@ export async function getCategories(): Promise<CategoryRow[]> {
   return (data ?? []) as CategoryRow[];
 }
 
+/** Purely decorative supporting data for the homepage tiles (product
+ * counts) — never worth crashing the whole page over, so a transient
+ * Supabase error here is swallowed and the tiles just render without
+ * counts rather than taking the homepage down with them. */
 export async function getProductCountsByCategory(): Promise<Record<string, number>> {
-  const supabase = getPublicSupabaseClient();
-  const { data, error } = await supabase.from("products").select("category");
+  try {
+    const supabase = getPublicSupabaseClient();
+    const { data, error } = await supabase.from("products").select("category");
+    if (error) throw new Error(error.message);
 
-  if (error) throw new Error(error.message);
-
-  const counts: Record<string, number> = {};
-  for (const row of data ?? []) {
-    counts[row.category] = (counts[row.category] ?? 0) + 1;
+    const counts: Record<string, number> = {};
+    for (const row of data ?? []) {
+      counts[row.category] = (counts[row.category] ?? 0) + 1;
+    }
+    return counts;
+  } catch (err) {
+    console.error("getProductCountsByCategory failed, continuing without counts:", err);
+    return {};
   }
-  return counts;
 }
 
 /** Picks one random "cover" image per top-level category, drawn from the
@@ -88,37 +96,46 @@ export async function getProductCountsByCategory(): Promise<Record<string, numbe
  * subcategories) — no manual per-category image is ever stored, so the
  * homepage tile automatically reflects whatever products actually exist
  * and picks a different one on every page load. Categories with no
- * product photos yet are simply absent from the result. */
+ * product photos yet are simply absent from the result.
+ *
+ * Purely decorative: a category tile without a cover image just falls
+ * back to its plain icon/gradient design (already a supported state), so
+ * a transient Supabase error here is swallowed rather than crashing the
+ * whole homepage over a background photo. */
 export async function getCategoryCoverImages(
   categories: CategoryRow[]
 ): Promise<Record<CategoryKey, string>> {
-  const supabase = getPublicSupabaseClient();
-  const { data, error } = await supabase
-    .from("products")
-    .select("category, product_images(image_url, sort_order)");
+  try {
+    const supabase = getPublicSupabaseClient();
+    const { data, error } = await supabase
+      .from("products")
+      .select("category, product_images(image_url, sort_order)");
+    if (error) throw new Error(error.message);
 
-  if (error) throw new Error(error.message);
-
-  const imagesByCategory: Record<string, string[]> = {};
-  for (const row of (data ?? []) as {
-    category: string;
-    product_images: { image_url: string; sort_order: number }[];
-  }[]) {
-    const cover = [...(row.product_images ?? [])].sort(
-      (a, b) => a.sort_order - b.sort_order
-    )[0]?.image_url;
-    if (!cover) continue;
-    (imagesByCategory[row.category] ??= []).push(cover);
-  }
-
-  const result: Record<CategoryKey, string> = {};
-  for (const top of buildCategoryTree(categories)) {
-    const pool = getDescendantKeys(categories, top.key).flatMap(
-      (key) => imagesByCategory[key] ?? []
-    );
-    if (pool.length > 0) {
-      result[top.key] = pool[Math.floor(Math.random() * pool.length)];
+    const imagesByCategory: Record<string, string[]> = {};
+    for (const row of (data ?? []) as {
+      category: string;
+      product_images: { image_url: string; sort_order: number }[];
+    }[]) {
+      const cover = [...(row.product_images ?? [])].sort(
+        (a, b) => a.sort_order - b.sort_order
+      )[0]?.image_url;
+      if (!cover) continue;
+      (imagesByCategory[row.category] ??= []).push(cover);
     }
+
+    const result: Record<CategoryKey, string> = {};
+    for (const top of buildCategoryTree(categories)) {
+      const pool = getDescendantKeys(categories, top.key).flatMap(
+        (key) => imagesByCategory[key] ?? []
+      );
+      if (pool.length > 0) {
+        result[top.key] = pool[Math.floor(Math.random() * pool.length)];
+      }
+    }
+    return result;
+  } catch (err) {
+    console.error("getCategoryCoverImages failed, continuing without cover photos:", err);
+    return {};
   }
-  return result;
 }

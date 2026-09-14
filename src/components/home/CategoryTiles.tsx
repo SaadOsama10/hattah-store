@@ -82,7 +82,7 @@ export function CategoryTiles({
                 href={`/shop?category=${cat.key}`}
                 onClick={() => playClick()}
                 style={{ "--tile-accent": accent.hex } as React.CSSProperties}
-                className={`border-gradient group relative flex aspect-[3/4] flex-col justify-between overflow-hidden rounded-2xl border p-6 transition-all duration-500 hover:-translate-y-1 hover:shadow-glow-terracotta ${
+                className={`border-gradient group relative flex aspect-[3/4] flex-col justify-between overflow-hidden rounded-2xl border p-6 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_24px_60px_-16px_color-mix(in_srgb,var(--tile-accent)_45%,transparent)] ${
                   coverImage
                     ? "border-[var(--tile-accent)]/25 bg-bg-secondary"
                     : `border-cream/10 bg-gradient-to-br ${accent.gradient}`
@@ -90,13 +90,19 @@ export function CategoryTiles({
               >
                 {coverImage && (
                   <>
-                    <Image
-                      src={coverImage}
-                      alt=""
-                      fill
-                      sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-                      className="object-cover saturate-[0.35] sepia-[0.06] contrast-[1.05] brightness-[0.8] transition-transform duration-700 ease-out group-hover:scale-110"
-                    />
+                    {/* Outer layer: a very slow, continuous "Ken Burns"
+                        breathing zoom — gives the card a hint of life
+                        even with no interaction. The Image's own hover
+                        scale (below) stacks on top of it. */}
+                    <div className="absolute inset-0 animate-kenburns">
+                      <Image
+                        src={coverImage}
+                        alt=""
+                        fill
+                        sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                        className="object-cover saturate-[0.35] sepia-[0.06] contrast-[1.05] brightness-[0.8] transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+                      />
+                    </div>
                     {/* A single warm-neutral wash (no hue shift toward
                         the category color) — just enough to guarantee
                         the text stays legible, darkest at the bottom
@@ -109,21 +115,21 @@ export function CategoryTiles({
                 )}
 
                 <GrainOverlay opacity="opacity-[0.08]" />
-                <TatreezCorner className="absolute end-3 top-3 opacity-80" />
+                <TatreezCorner className="animate-drift absolute end-3 top-3 opacity-80" />
 
                 <div className="relative flex items-start justify-between">
-                  <span className="inline-flex items-center justify-center rounded-full bg-[var(--tile-accent)]/15 p-2.5">
+                  <span className="inline-flex items-center justify-center rounded-full bg-[var(--tile-accent)]/15 p-2.5 transition-transform duration-500 group-hover:scale-110">
                     <Icon
                       size={22}
                       strokeWidth={1.25}
-                      className={`transition-transform duration-500 group-hover:scale-110 group-hover:text-terracotta ${
+                      className={`transition-transform duration-500 group-hover:rotate-6 group-hover:text-terracotta ${
                         coverImage ? "text-cream-fixed" : "text-cream"
                       }`}
                     />
                   </span>
                   <ArrowUpRight
                     size={20}
-                    className={`opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:translate-x-1 group-hover:-translate-y-1 rtl:group-hover:-translate-x-1 ${
+                    className={`translate-x-4 opacity-0 transition-all duration-500 ease-out group-hover:-translate-y-1 group-hover:translate-x-0 group-hover:opacity-100 rtl:-translate-x-4 rtl:group-hover:translate-x-0 ${
                       coverImage ? "text-cream-fixed/70" : "text-cream/40"
                     }`}
                   />
@@ -131,11 +137,15 @@ export function CategoryTiles({
 
                 <div className="relative">
                   <h3
-                    className={`font-playfair text-2xl font-bold ${
+                    className={`relative inline-block font-playfair text-2xl font-bold ${
                       coverImage ? "text-cream-fixed drop-shadow-[0_1px_5px_rgba(0,0,0,0.5)]" : "text-cream"
                     }`}
                   >
                     {label}
+                    <span
+                      aria-hidden
+                      className="absolute -bottom-1 start-0 h-[1.5px] w-0 bg-[var(--tile-accent)] transition-all duration-500 ease-out group-hover:w-full"
+                    />
                   </h3>
                   <p
                     className={`mt-1.5 line-clamp-1 font-inter text-sm ${
