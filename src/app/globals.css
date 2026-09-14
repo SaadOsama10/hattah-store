@@ -19,6 +19,17 @@
   --t-glow-b: rgba(210, 87, 46, 0.12);
   --t-glow-c: rgba(91, 127, 63, 0.12);
   --t-shadow-ambient: rgba(120, 100, 70, 0.16);
+
+  /* Category tile ambient-photo treatment (CategoryTiles.tsx) —
+     deliberately identical in both themes (not theme-aware): each card
+     also sets its own --tile-accent inline, which the color-mix()
+     washes below pick up. */
+  --tile-brightness: 0.62;
+  --tile-contrast: 1.05;
+  --tile-wash-top: color-mix(in srgb, var(--tile-accent, #178f5e) 32%, transparent);
+  --tile-wash-mid: color-mix(in srgb, var(--tile-accent, #178f5e) 18%, black 30%);
+  --tile-wash-bottom: rgba(20, 15, 10, 0.62);
+  --tile-icon-glow: none;
 }
 
 [data-theme="dark"] {
@@ -41,6 +52,11 @@
   --color-bg-secondary: var(--t-bg-secondary);
   --color-cream: var(--t-text-primary);
   --color-cream-secondary: var(--t-text-secondary);
+  /* Unlike --color-cream (which flips to near-black in light mode), this
+     stays a fixed light tone — for text placed directly over a
+     deliberately-darkened photo (e.g. category tile backgrounds), which
+     is dark regardless of site theme and needs light text either way. */
+  --color-cream-fixed: #f3ead8;
   --color-forest: #178f5e;
   --color-olive: #5b7f3f;
   --color-terracotta: #d2572e;

@@ -6,8 +6,10 @@ import { Plus, Pencil, Trash2, X, Check, ChevronDown, CornerDownRight } from "lu
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/Button";
 import { CategoryDeleteModal } from "@/components/admin/CategoryDeleteModal";
+import { IconPicker } from "@/components/admin/IconPicker";
 import { createCategory, updateCategory, deleteCategory } from "@/actions/categories";
 import { buildCategoryTree } from "@/lib/categories";
+import { getCategoryIcon } from "@/lib/categoryIcons";
 import { cn } from "@/lib/cn";
 import type { CategoryRow } from "@/lib/supabase/types";
 
@@ -16,9 +18,22 @@ interface FieldsState {
   label_en: string;
   label_tr: string;
   parent_key: string;
+  description_ar: string;
+  description_en: string;
+  description_tr: string;
+  icon_key: string;
 }
 
-const EMPTY_FIELDS: FieldsState = { label_ar: "", label_en: "", label_tr: "", parent_key: "" };
+const EMPTY_FIELDS: FieldsState = {
+  label_ar: "",
+  label_en: "",
+  label_tr: "",
+  parent_key: "",
+  description_ar: "",
+  description_en: "",
+  description_tr: "",
+  icon_key: "gift",
+};
 
 function toFormData(fields: FieldsState) {
   const fd = new FormData();
@@ -26,6 +41,10 @@ function toFormData(fields: FieldsState) {
   fd.set("label_en", fields.label_en);
   fd.set("label_tr", fields.label_tr);
   fd.set("parent_key", fields.parent_key);
+  fd.set("description_ar", fields.description_ar);
+  fd.set("description_en", fields.description_en);
+  fd.set("description_tr", fields.description_tr);
+  fd.set("icon_key", fields.icon_key);
   return fd;
 }
 
@@ -69,6 +88,10 @@ export function CategoryManager({
       label_en: cat.label_en,
       label_tr: cat.label_tr,
       parent_key: cat.parent_key ?? "",
+      description_ar: cat.description_ar ?? "",
+      description_en: cat.description_en ?? "",
+      description_tr: cat.description_tr ?? "",
+      icon_key: cat.icon_key,
     });
     setIsAdding(false);
   }
@@ -187,6 +210,26 @@ export function CategoryManager({
                 onChange={(v) => setNewFields((f) => ({ ...f, label_tr: v }))}
               />
             </div>
+            {!newFields.parent_key && (
+              <>
+                <div className="mt-4">
+                  <CategoryDescriptionFields
+                    t={t}
+                    values={newFields}
+                    onChange={(field, v) => setNewFields((f) => ({ ...f, [field]: v }))}
+                  />
+                </div>
+                <div className="mt-4">
+                  <label className="mb-1.5 block font-inter text-xs uppercase tracking-widest text-cream-secondary/50">
+                    {t("iconLabel")}
+                  </label>
+                  <IconPicker
+                    value={newFields.icon_key}
+                    onChange={(v) => setNewFields((f) => ({ ...f, icon_key: v }))}
+                  />
+                </div>
+              </>
+            )}
             <div className="mt-5 flex gap-3">
               <Button type="submit" size="md" disabled={isPending}>
                 {t("save")}
@@ -259,49 +302,71 @@ export function CategoryManager({
                               value={editFields.parent_key}
                               onChange={(v) => setEditFields((f) => ({ ...f, parent_key: v }))}
                             />
-                            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
-                              <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-3">
-                                <CategoryInput
-                                  label={t("labelAr")}
-                                  dir="rtl"
-                                  value={editFields.label_ar}
-                                  onChange={(v) =>
-                                    setEditFields((f) => ({ ...f, label_ar: v }))
-                                  }
-                                />
-                                <CategoryInput
-                                  label={t("labelEn")}
-                                  value={editFields.label_en}
-                                  onChange={(v) =>
-                                    setEditFields((f) => ({ ...f, label_en: v }))
-                                  }
-                                />
-                                <CategoryInput
-                                  label={t("labelTr")}
-                                  value={editFields.label_tr}
-                                  onChange={(v) =>
-                                    setEditFields((f) => ({ ...f, label_tr: v }))
-                                  }
-                                />
-                              </div>
-                              <div className="flex gap-2">
-                                <button
-                                  type="submit"
-                                  disabled={isPending}
-                                  aria-label="Save"
-                                  className="flex h-9 w-9 items-center justify-center rounded-full border border-forest/40 text-forest transition-colors hover:bg-forest/10"
-                                >
-                                  <Check size={16} />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setEditingKey(null)}
-                                  aria-label="Cancel"
-                                  className="flex h-9 w-9 items-center justify-center rounded-full border border-cream/15 text-cream-secondary transition-colors hover:bg-cream/5"
-                                >
-                                  <X size={16} />
-                                </button>
-                              </div>
+                            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                              <CategoryInput
+                                label={t("labelAr")}
+                                dir="rtl"
+                                value={editFields.label_ar}
+                                onChange={(v) =>
+                                  setEditFields((f) => ({ ...f, label_ar: v }))
+                                }
+                              />
+                              <CategoryInput
+                                label={t("labelEn")}
+                                value={editFields.label_en}
+                                onChange={(v) =>
+                                  setEditFields((f) => ({ ...f, label_en: v }))
+                                }
+                              />
+                              <CategoryInput
+                                label={t("labelTr")}
+                                value={editFields.label_tr}
+                                onChange={(v) =>
+                                  setEditFields((f) => ({ ...f, label_tr: v }))
+                                }
+                              />
+                            </div>
+                            {!editFields.parent_key && (
+                              <>
+                                <div className="mt-4">
+                                  <CategoryDescriptionFields
+                                    t={t}
+                                    values={editFields}
+                                    onChange={(field, v) =>
+                                      setEditFields((f) => ({ ...f, [field]: v }))
+                                    }
+                                  />
+                                </div>
+                                <div className="mt-4">
+                                  <label className="mb-1.5 block font-inter text-xs uppercase tracking-widest text-cream-secondary/50">
+                                    {t("iconLabel")}
+                                  </label>
+                                  <IconPicker
+                                    value={editFields.icon_key}
+                                    onChange={(v) =>
+                                      setEditFields((f) => ({ ...f, icon_key: v }))
+                                    }
+                                  />
+                                </div>
+                              </>
+                            )}
+                            <div className="mt-4 flex gap-2">
+                              <button
+                                type="submit"
+                                disabled={isPending}
+                                aria-label="Save"
+                                className="flex h-9 w-9 items-center justify-center rounded-full border border-forest/40 text-forest transition-colors hover:bg-forest/10"
+                              >
+                                <Check size={16} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setEditingKey(null)}
+                                aria-label="Cancel"
+                                className="flex h-9 w-9 items-center justify-center rounded-full border border-cream/15 text-cream-secondary transition-colors hover:bg-cream/5"
+                              >
+                                <X size={16} />
+                              </button>
                             </div>
                           </form>
                         </td>
@@ -332,6 +397,11 @@ export function CategoryManager({
                               />
                             </button>
                           )}
+                          {depth === 0 &&
+                            (() => {
+                              const RowIcon = getCategoryIcon(cat.icon_key);
+                              return <RowIcon size={14} className="shrink-0 text-cream-secondary/50" />;
+                            })()}
                           {cat.label_ar}
                         </span>
                       </td>
@@ -458,11 +528,15 @@ function CategoryInput({
   value,
   onChange,
   dir,
+  required = true,
+  maxLength,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   dir?: "rtl" | "ltr";
+  required?: boolean;
+  maxLength?: number;
 }) {
   return (
     <div>
@@ -471,12 +545,61 @@ function CategoryInput({
       </label>
       <input
         type="text"
-        required
+        required={required}
+        maxLength={maxLength}
         dir={dir}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="w-full rounded-2xl border border-cream/20 bg-bg-primary px-3 py-2 font-inter text-sm text-cream focus:border-terracotta focus:outline-none"
       />
+    </div>
+  );
+}
+
+const DESCRIPTION_FIELD_MAX_LENGTH = 60;
+
+function CategoryDescriptionFields({
+  t,
+  values,
+  onChange,
+}: {
+  t: ReturnType<typeof useTranslations<"admin.categories">>;
+  values: { description_ar: string; description_en: string; description_tr: string };
+  onChange: (
+    field: "description_ar" | "description_en" | "description_tr",
+    value: string
+  ) => void;
+}) {
+  return (
+    <div>
+      <label className="mb-1 block font-inter text-xs uppercase tracking-widest text-cream-secondary/50">
+        {t("descriptionLabel")}
+      </label>
+      <p className="mb-2 font-inter text-xs text-cream-secondary/50">{t("descriptionHint")}</p>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <CategoryInput
+          label={t("descriptionAr")}
+          dir="rtl"
+          required={false}
+          maxLength={DESCRIPTION_FIELD_MAX_LENGTH}
+          value={values.description_ar}
+          onChange={(v) => onChange("description_ar", v)}
+        />
+        <CategoryInput
+          label={t("descriptionEn")}
+          required={false}
+          maxLength={DESCRIPTION_FIELD_MAX_LENGTH}
+          value={values.description_en}
+          onChange={(v) => onChange("description_en", v)}
+        />
+        <CategoryInput
+          label={t("descriptionTr")}
+          required={false}
+          maxLength={DESCRIPTION_FIELD_MAX_LENGTH}
+          value={values.description_tr}
+          onChange={(v) => onChange("description_tr", v)}
+        />
+      </div>
     </div>
   );
 }

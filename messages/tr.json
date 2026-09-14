@@ -52,25 +52,8 @@
     "eyebrow": "Mağaza Kategorileri",
     "title": "Kategoriye Göre Alışveriş",
     "subtitle": "Her parça, köklü bir hikayenin bir bölümünü taşır",
-    "clothing": {
-      "label": "Giyim",
-      "description": "Otantik Filistin nakışı, modern dokunuş"
-    },
-    "accessories": {
-      "label": "Aksesuar",
-      "description": "Kimlik taşıyan takı ve aksesuarlar"
-    },
-    "decor": {
-      "label": "Dekor",
-      "description": "Eviniz için miras dokunuşları"
-    },
-    "games": {
-      "label": "Oyun & Hediye",
-      "description": "Filistin'in hikayesini anlatan hediyeler"
-    },
-    "premium-embroidery": {
-      "description": "Elde, tek tek işlenen eşsiz parçalar"
-    }
+    "productCount": "ürün",
+    "defaultDescription": "Bu kategoriden özenle seçilmiş parçaları keşfedin"
   },
   "featured": {
     "eyebrow": "Yeni Gelenler",
@@ -234,7 +217,33 @@
       "linkedSubcategoriesCount": "{count, plural, =0 {Bağlı alt kategori yok} other {# bağlı alt kategori}}",
       "deleteBlockedIntro": "\"{name}\" kategorisi şu nedenlerle silinemez:",
       "collapse": "Daralt",
-      "expand": "Genişlet"
+      "expand": "Genişlet",
+      "descriptionLabel": "Kısa açıklama",
+      "descriptionHint": "Ana sayfada kategori adının altında görünen kısa açıklama (en fazla 60 karakter). Boş bırakılırsa genel bir varsayılan gösterilir.",
+      "descriptionAr": "Açıklama (Arapça, isteğe bağlı)",
+      "descriptionEn": "Açıklama (İngilizce, isteğe bağlı)",
+      "descriptionTr": "Açıklama (Türkçe, isteğe bağlı)",
+      "iconLabel": "Simge",
+      "icons": {
+        "shirt": "Tişört",
+        "gem": "Mücevher",
+        "home": "Ev",
+        "gamepad": "Oyun",
+        "utensils": "Yemek",
+        "gift": "Hediye",
+        "bag": "Çanta",
+        "footprints": "Ayakkabı",
+        "glasses": "Gözlük",
+        "watch": "Saat",
+        "flower": "Çiçek",
+        "book": "Kitap",
+        "coffee": "Kahve",
+        "key": "Anahtar",
+        "diamond": "Elmas",
+        "lamp": "Lamba",
+        "sparkles": "Parıltı",
+        "star": "Yıldız"
+      }
     }
   },
   "cart": {

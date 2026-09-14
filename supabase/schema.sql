@@ -19,7 +19,16 @@ create table if not exists categories (
   -- its parent. Only two levels are supported (a subcategory can never be a
   -- parent itself) — that constraint is enforced in application code, not
   -- here, since a simple FK can't express "depth <= 2".
-  parent_key text references categories(key)
+  parent_key text references categories(key),
+  -- Short (<=60 char) homepage tile description, admin-editable, one per
+  -- language. NULL until an admin sets it — the storefront falls back to a
+  -- generic translated line rather than rendering blank.
+  description_ar text,
+  description_en text,
+  description_tr text,
+  -- Key into the fixed lucide-react icon set used for the homepage tile
+  -- (see src/lib/categoryIcons.ts) — never a free-form icon/image upload.
+  icon_key text not null default 'gift'
 );
 
 create index if not exists categories_parent_key_idx on categories (parent_key);
@@ -58,6 +67,14 @@ insert into categories (key, label_ar, label_en, label_tr, sort_order, parent_ke
   -- Games subcategory
   ('brain-games', 'ألعاب ذكاء', 'Intelligence Games', 'Zeka Oyunları', 21, 'games')
 on conflict (key) do nothing;
+
+-- Default descriptions/icons for the storefront's top-level category tiles
+-- (a fresh install has no admin-entered values yet, so seed sensible ones).
+update categories set description_ar = 'تطريز فلسطيني أصيل بلمسة عصرية', description_en = 'Authentic Palestinian embroidery, modern touch', description_tr = 'Otantik Filistin nakışı, modern dokunuş', icon_key = 'shirt' where key = 'clothing';
+update categories set description_ar = 'مجوهرات وإكسسوارات تحمل هوية', description_en = 'Jewelry and accessories that carry identity', description_tr = 'Kimlik taşıyan takı ve aksesuarlar', icon_key = 'gem' where key = 'accessories';
+update categories set description_ar = 'لمسات تراثية لبيتك', description_en = 'Heritage touches for your home', description_tr = 'Eviniz için miras dokunuşları', icon_key = 'lamp' where key = 'decor';
+update categories set description_ar = 'هدايا تروي حكاية فلسطين', description_en = 'Gifts that tell Palestine''s story', description_tr = 'Filistin''in hikayesini anlatan hediyeler', icon_key = 'gift' where key = 'games';
+update categories set description_ar = 'نكهات فلسطين الأصيلة بين يديك', description_en = 'Authentic Palestinian flavors, delivered', description_tr = 'Otantik Filistin lezzetleri elinizin altında', icon_key = 'utensils' where key = 'palestinian-food';
 
 -- ─────────────────────────────────────────────────────────────
 -- Products

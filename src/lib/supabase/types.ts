@@ -13,6 +13,12 @@ export interface CategoryRow {
   // NULL for a top-level category, otherwise the key of its parent.
   // Subcategories are never themselves parents (two levels only).
   parent_key: CategoryKey | null;
+  // Admin-editable homepage tile copy — NULL until set, per language.
+  description_ar: string | null;
+  description_en: string | null;
+  description_tr: string | null;
+  // Key into the fixed icon set in src/lib/categoryIcons.ts.
+  icon_key: string;
 }
 
 export interface ProductImageRow {
@@ -141,4 +147,17 @@ export function localizeProduct(
 
 export function localizeCategory(row: CategoryRow, locale: Locale): string {
   return locale === "ar" ? row.label_ar : locale === "tr" ? row.label_tr : row.label_en;
+}
+
+/** The admin-entered short description for a category, in the given
+ * language — null when nothing has been entered yet (blank/whitespace
+ * counts as not entered), so callers can fall back to generic copy. */
+export function localizeCategoryDescription(
+  row: CategoryRow,
+  locale: Locale
+): string | null {
+  const value =
+    locale === "ar" ? row.description_ar : locale === "tr" ? row.description_tr : row.description_en;
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
 }

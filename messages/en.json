@@ -52,25 +52,8 @@
     "eyebrow": "Store Categories",
     "title": "Shop by Category",
     "subtitle": "Every piece carries a part of an ancient story",
-    "clothing": {
-      "label": "Clothing",
-      "description": "Authentic Palestinian embroidery, modern touch"
-    },
-    "accessories": {
-      "label": "Accessories",
-      "description": "Jewelry and accessories that carry identity"
-    },
-    "decor": {
-      "label": "Decor",
-      "description": "Heritage touches for your home"
-    },
-    "games": {
-      "label": "Games & Gifts",
-      "description": "Gifts that tell Palestine's story"
-    },
-    "premium-embroidery": {
-      "description": "Rare pieces, embroidered by hand one stitch at a time"
-    }
+    "productCount": "products",
+    "defaultDescription": "Discover carefully selected pieces from this category"
   },
   "featured": {
     "eyebrow": "Just Arrived",
@@ -234,7 +217,33 @@
       "linkedSubcategoriesCount": "{count, plural, =0 {No linked subcategories} one {# linked subcategory} other {# linked subcategories}}",
       "deleteBlockedIntro": "The \"{name}\" category can't be deleted for the following reasons:",
       "collapse": "Collapse",
-      "expand": "Expand"
+      "expand": "Expand",
+      "descriptionLabel": "Short description",
+      "descriptionHint": "The short line shown under the category name on the homepage (max 60 characters). Leave blank to show a generic default.",
+      "descriptionAr": "Description (Arabic, optional)",
+      "descriptionEn": "Description (English, optional)",
+      "descriptionTr": "Description (Turkish, optional)",
+      "iconLabel": "Icon",
+      "icons": {
+        "shirt": "Shirt",
+        "gem": "Gem",
+        "home": "Home",
+        "gamepad": "Game",
+        "utensils": "Dish",
+        "gift": "Gift",
+        "bag": "Bag",
+        "footprints": "Shoes",
+        "glasses": "Glasses",
+        "watch": "Watch",
+        "flower": "Flower",
+        "book": "Book",
+        "coffee": "Coffee",
+        "key": "Key",
+        "diamond": "Diamond",
+        "lamp": "Lamp",
+        "sparkles": "Sparkle",
+        "star": "Star"
+      }
     }
   },
   "cart": {

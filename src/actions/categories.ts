@@ -18,13 +18,31 @@ interface CategoryFields {
   label_ar: string;
   label_en: string;
   label_tr: string;
+  description_ar: string | null;
+  description_en: string | null;
+  description_tr: string | null;
+  icon_key: string;
 }
 
-function readFields(formData: FormData): CategoryFields {
+const DESCRIPTION_MAX_LENGTH = 60;
+
+function readDescription(formData: FormData, field: string): string | null {
+  const raw = String(formData.get(field) ?? "").trim().slice(0, DESCRIPTION_MAX_LENGTH);
+  return raw || null;
+}
+
+/** Subcategories never render a homepage tile, so they never get a
+ * description or icon — regardless of what the form submits, those
+ * columns are always forced to their "unset" value for them. */
+function readFields(formData: FormData, isSubcategory: boolean): CategoryFields {
   return {
     label_ar: String(formData.get("label_ar") ?? "").trim(),
     label_en: String(formData.get("label_en") ?? "").trim(),
     label_tr: String(formData.get("label_tr") ?? "").trim(),
+    description_ar: isSubcategory ? null : readDescription(formData, "description_ar"),
+    description_en: isSubcategory ? null : readDescription(formData, "description_en"),
+    description_tr: isSubcategory ? null : readDescription(formData, "description_tr"),
+    icon_key: isSubcategory ? "gift" : String(formData.get("icon_key") ?? "").trim() || "gift",
   };
 }
 
@@ -55,12 +73,12 @@ async function assertValidParent(
 export async function createCategory(formData: FormData) {
   await assertAdminSession();
 
-  const fields = readFields(formData);
+  const parentKey = readParentKey(formData);
+  const fields = readFields(formData, parentKey !== null);
   if (!fields.label_ar || !fields.label_en || !fields.label_tr) {
     throw new Error("Missing required fields");
   }
 
-  const parentKey = readParentKey(formData);
   const supabase = getServiceSupabaseClient();
 
   if (parentKey) {
@@ -102,14 +120,14 @@ export async function createCategory(formData: FormData) {
 export async function updateCategory(key: string, formData: FormData) {
   await assertAdminSession();
 
-  const fields = readFields(formData);
-  if (!fields.label_ar || !fields.label_en || !fields.label_tr) {
-    throw new Error("Missing required fields");
-  }
-
   const parentKey = readParentKey(formData);
   if (parentKey === key) {
     throw new Error("A category cannot be its own parent");
+  }
+
+  const fields = readFields(formData, parentKey !== null);
+  if (!fields.label_ar || !fields.label_en || !fields.label_tr) {
+    throw new Error("Missing required fields");
   }
 
   const supabase = getServiceSupabaseClient();

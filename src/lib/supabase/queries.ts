@@ -1,5 +1,6 @@
 import { getPublicSupabaseClient } from "@/lib/supabase/public";
-import type { CategoryRow, ProductRow } from "@/lib/supabase/types";
+import { buildCategoryTree, getDescendantKeys } from "@/lib/categories";
+import type { CategoryKey, CategoryRow, ProductRow } from "@/lib/supabase/types";
 
 const PRODUCT_SELECT =
   "*, product_images(id, product_id, image_url, sort_order), product_sizes(id, product_id, label, sort_order), product_colors(id, product_id, label_ar, label_en, label_tr, sort_order), product_quantities(id, product_id, label_ar, label_en, label_tr, price, sort_order)";
@@ -80,4 +81,44 @@ export async function getProductCountsByCategory(): Promise<Record<string, numbe
     counts[row.category] = (counts[row.category] ?? 0) + 1;
   }
   return counts;
+}
+
+/** Picks one random "cover" image per top-level category, drawn from the
+ * first photo of every product filed under it (including its
+ * subcategories) — no manual per-category image is ever stored, so the
+ * homepage tile automatically reflects whatever products actually exist
+ * and picks a different one on every page load. Categories with no
+ * product photos yet are simply absent from the result. */
+export async function getCategoryCoverImages(
+  categories: CategoryRow[]
+): Promise<Record<CategoryKey, string>> {
+  const supabase = getPublicSupabaseClient();
+  const { data, error } = await supabase
+    .from("products")
+    .select("category, product_images(image_url, sort_order)");
+
+  if (error) throw new Error(error.message);
+
+  const imagesByCategory: Record<string, string[]> = {};
+  for (const row of (data ?? []) as {
+    category: string;
+    product_images: { image_url: string; sort_order: number }[];
+  }[]) {
+    const cover = [...(row.product_images ?? [])].sort(
+      (a, b) => a.sort_order - b.sort_order
+    )[0]?.image_url;
+    if (!cover) continue;
+    (imagesByCategory[row.category] ??= []).push(cover);
+  }
+
+  const result: Record<CategoryKey, string> = {};
+  for (const top of buildCategoryTree(categories)) {
+    const pool = getDescendantKeys(categories, top.key).flatMap(
+      (key) => imagesByCategory[key] ?? []
+    );
+    if (pool.length > 0) {
+      result[top.key] = pool[Math.floor(Math.random() * pool.length)];
+    }
+  }
+  return result;
 }

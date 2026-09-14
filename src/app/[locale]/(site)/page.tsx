@@ -3,7 +3,12 @@ import { Hero } from "@/components/home/Hero";
 import { CategoryTiles } from "@/components/home/CategoryTiles";
 import { FeaturedProducts } from "@/components/home/FeaturedProducts";
 import { OurStory } from "@/components/home/OurStory";
-import { getCategories, getFeaturedProducts } from "@/lib/supabase/queries";
+import {
+  getCategories,
+  getCategoryCoverImages,
+  getFeaturedProducts,
+  getProductCountsByCategory,
+} from "@/lib/supabase/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -15,15 +20,21 @@ export default async function HomePage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [categories, featuredProducts] = await Promise.all([
-    getCategories(),
+  const categories = await getCategories();
+  const [featuredProducts, coverImages, productCounts] = await Promise.all([
     getFeaturedProducts(8),
+    getCategoryCoverImages(categories),
+    getProductCountsByCategory(),
   ]);
 
   return (
     <>
       <Hero />
-      <CategoryTiles categories={categories} />
+      <CategoryTiles
+        categories={categories}
+        coverImages={coverImages}
+        productCounts={productCounts}
+      />
       <FeaturedProducts products={featuredProducts} categories={categories} />
       <OurStory />
     </>

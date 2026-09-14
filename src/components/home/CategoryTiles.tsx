@@ -1,33 +1,47 @@
 "use client";
 
+import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { motion } from "framer-motion";
-import { Shirt, Gem, Lamp, Gift, Sparkles, ArrowUpRight } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { GrainOverlay } from "@/components/ui/GrainOverlay";
+import { TatreezCorner } from "@/components/ui/TatreezCorner";
 import { SectionWrapper } from "@/components/ui/SectionWrapper";
 import { Badge } from "@/components/ui/Badge";
-import { localizeCategory, type CategoryRow, type Locale } from "@/lib/supabase/types";
-import type { CategoryKey } from "@/lib/supabase/types";
+import { getDescendantKeys } from "@/lib/categories";
+import { getCategoryIcon } from "@/lib/categoryIcons";
+import {
+  localizeCategory,
+  localizeCategoryDescription,
+  type CategoryRow,
+  type Locale,
+} from "@/lib/supabase/types";
 import { playClick } from "@/lib/sound";
 
-const ICONS: Record<CategoryKey, typeof Shirt> = {
-  clothing: Shirt,
-  accessories: Gem,
-  decor: Lamp,
-  "premium-embroidery": Sparkles,
-  games: Gift,
-};
+// Cycled by position rather than keyed by category, so any category an
+// admin adds later (the category tree is fully admin-managed) still gets
+// a consistent accent instead of falling back to nothing.
+const ACCENTS = [
+  { name: "forest", gradient: "from-forest/25 via-bg-secondary to-bg-secondary", hex: "#178f5e" },
+  { name: "terracotta", gradient: "from-terracotta/25 via-bg-secondary to-bg-secondary", hex: "#d2572e" },
+  { name: "olive", gradient: "from-olive/25 via-bg-secondary to-bg-secondary", hex: "#5b7f3f" },
+  { name: "terracotta-deep", gradient: "from-terracotta-deep/25 via-bg-secondary to-bg-secondary", hex: "#d6293a" },
+] as const;
 
-const GRADIENTS: Record<CategoryKey, string> = {
-  clothing: "from-forest/25 via-bg-secondary to-bg-secondary",
-  accessories: "from-terracotta/25 via-bg-secondary to-bg-secondary",
-  decor: "from-olive/25 via-bg-secondary to-bg-secondary",
-  "premium-embroidery": "from-terracotta-deep/25 via-bg-secondary to-bg-secondary",
-  games: "from-forest/25 via-bg-secondary to-bg-secondary",
-};
-
-export function CategoryTiles({ categories }: { categories: CategoryRow[] }) {
+export function CategoryTiles({
+  categories,
+  coverImages,
+  productCounts,
+}: {
+  categories: CategoryRow[];
+  /** One already-resolved image URL per top-level category key, picked
+   * server-side from that category's actual products — see
+   * getCategoryCoverImages. Never a manually-chosen image, and never
+   * persisted anywhere: a fresh pick happens on every page load. */
+  coverImages: Record<string, string>;
+  productCounts: Record<string, number>;
+}) {
   const t = useTranslations("categories");
   const locale = useLocale() as Locale;
   const topLevelCategories = categories.filter((c) => !c.parent_key);
@@ -46,12 +60,15 @@ export function CategoryTiles({ categories }: { categories: CategoryRow[] }) {
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {topLevelCategories.map((cat, i) => {
-          const descriptionKey = `${cat.key}.description`;
-          const Icon = ICONS[cat.key as CategoryKey] ?? Gift;
+          const Icon = getCategoryIcon(cat.icon_key);
           const label = localizeCategory(cat, locale);
-          const description = t.has(descriptionKey as "clothing.description")
-            ? t(descriptionKey as "clothing.description")
-            : null;
+          const description = localizeCategoryDescription(cat, locale) ?? t("defaultDescription");
+          const accent = ACCENTS[i % ACCENTS.length];
+          const coverImage = coverImages[cat.key];
+          const count = getDescendantKeys(categories, cat.key).reduce(
+            (sum, key) => sum + (productCounts[key] ?? 0),
+            0
+          );
 
           return (
             <motion.div
@@ -64,25 +81,85 @@ export function CategoryTiles({ categories }: { categories: CategoryRow[] }) {
               <Link
                 href={`/shop?category=${cat.key}`}
                 onClick={() => playClick()}
-                className={`border-gradient group relative flex h-72 flex-col justify-between overflow-hidden rounded-2xl border border-cream/10 bg-gradient-to-br p-6 transition-all duration-500 hover:-translate-y-1 hover:shadow-glow-terracotta ${GRADIENTS[cat.key as CategoryKey] ?? ""}`}
+                style={{ "--tile-accent": accent.hex } as React.CSSProperties}
+                className={`border-gradient group relative flex aspect-[3/4] flex-col justify-between overflow-hidden rounded-2xl border border-cream/10 p-6 transition-all duration-500 hover:-translate-y-1 hover:shadow-glow-terracotta ${
+                  coverImage ? "bg-bg-secondary" : `bg-gradient-to-br ${accent.gradient}`
+                }`}
               >
+                {coverImage && (
+                  <>
+                    <Image
+                      src={coverImage}
+                      alt=""
+                      fill
+                      sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                      className="object-cover grayscale brightness-[var(--tile-brightness)] contrast-[var(--tile-contrast)] transition-transform duration-700 ease-out group-hover:scale-110"
+                    />
+                    {/* Duotone tint: blends the brand accent color into the
+                        desaturated photo so it reads as "category mood"
+                        rather than a clear product shot. Stays constant
+                        across themes — the mood/intensity shift below is
+                        what actually differs between light and dark. */}
+                    <div
+                      aria-hidden
+                      className="absolute inset-0 mix-blend-color"
+                      style={{ backgroundColor: accent.hex }}
+                    />
+                    {/* Theme-aware wash: a brighter colored wash in light
+                        mode, a near-black dramatic one in dark mode — see
+                        --tile-wash-* in globals.css. */}
+                    <div
+                      aria-hidden
+                      className="absolute inset-0 bg-gradient-to-t from-[var(--tile-wash-bottom)] via-[var(--tile-wash-mid)] to-[var(--tile-wash-top)]"
+                    />
+                  </>
+                )}
+
                 <GrainOverlay opacity="opacity-[0.05]" />
+                <TatreezCorner className="absolute end-3 top-3 opacity-80" />
+
                 <div className="relative flex items-start justify-between">
-                  <Icon
-                    size={32}
-                    strokeWidth={1.25}
-                    className="text-cream transition-transform duration-500 group-hover:scale-110 group-hover:text-terracotta"
-                  />
+                  <span
+                    className="inline-flex rounded-full shadow-[var(--tile-icon-glow)]"
+                  >
+                    <Icon
+                      size={34}
+                      strokeWidth={1.25}
+                      className={`transition-transform duration-500 group-hover:scale-110 group-hover:text-terracotta ${
+                        coverImage ? "text-cream-fixed drop-shadow-[0_2px_8px_rgba(0,0,0,0.55)]" : "text-cream"
+                      }`}
+                    />
+                  </span>
                   <ArrowUpRight
                     size={20}
-                    className="text-cream/40 opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:translate-x-1 group-hover:-translate-y-1 rtl:group-hover:-translate-x-1"
+                    className={`opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:translate-x-1 group-hover:-translate-y-1 rtl:group-hover:-translate-x-1 ${
+                      coverImage ? "text-cream-fixed/70" : "text-cream/40"
+                    }`}
                   />
                 </div>
+
                 <div className="relative">
-                  <h3 className="font-playfair text-2xl font-bold text-cream">{label}</h3>
-                  {description && (
-                    <p className="mt-2 font-inter text-sm text-cream-secondary/70">
-                      {description}
+                  <h3
+                    className={`font-playfair text-2xl font-bold ${
+                      coverImage ? "text-cream-fixed drop-shadow-[0_1px_5px_rgba(0,0,0,0.5)]" : "text-cream"
+                    }`}
+                  >
+                    {label}
+                  </h3>
+                  <p
+                    className={`mt-1.5 line-clamp-1 font-inter text-sm ${
+                      coverImage ? "text-cream-fixed/80" : "text-cream-secondary/70"
+                    }`}
+                  >
+                    {description}
+                  </p>
+                  {count > 0 && (
+                    <p
+                      className={`mt-2 font-inter text-xs uppercase tracking-widest ${
+                        coverImage ? "text-cream-fixed/55" : "text-cream-secondary/50"
+                      }`}
+                    >
+                      {count} {t("productCount")}
                     </p>
                   )}
                 </div>

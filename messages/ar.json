@@ -52,25 +52,8 @@
     "eyebrow": "تصنيفات المتجر",
     "title": "تسوّق حسب الفئة",
     "subtitle": "كل قطعة تحمل جزءاً من حكاية أرضٍ عريقة",
-    "clothing": {
-      "label": "الملابس",
-      "description": "تطريز فلسطيني أصيل بلمسة عصرية"
-    },
-    "accessories": {
-      "label": "الإكسسوارات",
-      "description": "مجوهرات وإكسسوارات تحمل هوية"
-    },
-    "decor": {
-      "label": "الديكور",
-      "description": "لمسات تراثية لبيتك"
-    },
-    "games": {
-      "label": "ألعاب وهدايا",
-      "description": "هدايا تروي حكاية فلسطين"
-    },
-    "premium-embroidery": {
-      "description": "قطع تطريز نادرة تُصنع بأنامل فلسطينية بحب"
-    }
+    "productCount": "منتج",
+    "defaultDescription": "اكتشف قطعًا مختارة بعناية من هذه الفئة"
   },
   "featured": {
     "eyebrow": "وصل حديثًا",
@@ -234,7 +217,33 @@
       "linkedSubcategoriesCount": "{count, plural, =0 {لا توجد فئات فرعية} one {فئة فرعية واحدة مرتبطة} two {فئتان فرعيتان مرتبطتان} few {# فئات فرعية مرتبطة} many {# فئة فرعية مرتبطة} other {# فئة فرعية مرتبطة}}",
       "deleteBlockedIntro": "فئة \"{name}\" لا يمكن حذفها للأسباب التالية:",
       "collapse": "طي",
-      "expand": "توسيع"
+      "expand": "توسيع",
+      "descriptionLabel": "الوصف القصير",
+      "descriptionHint": "الوصف القصير اللي يظهر تحت اسم الفئة بالصفحة الرئيسية (٦٠ حرف كحد أقصى). إذا تركته فاضي بيظهر نص افتراضي عام.",
+      "descriptionAr": "الوصف بالعربية (اختياري)",
+      "descriptionEn": "الوصف بالإنجليزية (اختياري)",
+      "descriptionTr": "الوصف بالتركية (اختياري)",
+      "iconLabel": "الأيقونة",
+      "icons": {
+        "shirt": "قميص",
+        "gem": "جوهرة",
+        "home": "منزل",
+        "gamepad": "لعبة",
+        "utensils": "طبق",
+        "gift": "هدية",
+        "bag": "حقيبة",
+        "footprints": "حذاء",
+        "glasses": "نظارة",
+        "watch": "ساعة",
+        "flower": "زهرة",
+        "book": "كتاب",
+        "coffee": "قهوة",
+        "key": "مفتاح",
+        "diamond": "ألماسة",
+        "lamp": "مصباح",
+        "sparkles": "بريق",
+        "star": "نجمة"
+      }
     }
   },
   "cart": {
