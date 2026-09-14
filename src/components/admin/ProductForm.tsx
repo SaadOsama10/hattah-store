@@ -8,6 +8,7 @@ import { Toggle } from "@/components/ui/Toggle";
 import { ImageDropzone, type ExistingImage } from "@/components/admin/ImageDropzone";
 import { VariantListEditor } from "@/components/admin/VariantListEditor";
 import { ColorVariantListEditor, type ColorEntry } from "@/components/admin/ColorVariantListEditor";
+import { QuantityVariantListEditor, type QuantityEntry } from "@/components/admin/QuantityVariantListEditor";
 import { createProduct, updateProduct } from "@/actions/products";
 import { localizeCategory, type CategoryRow, type CategoryKey, type Locale } from "@/lib/supabase/types";
 import { buildCategoryTree } from "@/lib/categories";
@@ -25,8 +26,10 @@ export interface ProductFormInitialData {
   is_featured: boolean;
   has_sizes: boolean;
   has_colors: boolean;
+  has_quantities: boolean;
   sizes: string[];
   colors: ColorEntry[];
+  quantities: QuantityEntry[];
   images: ExistingImage[];
 }
 
@@ -58,10 +61,12 @@ export function ProductForm({
     is_featured: initialData?.is_featured ?? false,
     has_sizes: initialData?.has_sizes ?? false,
     has_colors: initialData?.has_colors ?? false,
+    has_quantities: initialData?.has_quantities ?? false,
   });
 
   const [sizes, setSizes] = useState<string[]>(initialData?.sizes ?? []);
   const [colors, setColors] = useState<ColorEntry[]>(initialData?.colors ?? []);
+  const [quantities, setQuantities] = useState<QuantityEntry[]>(initialData?.quantities ?? []);
 
   const [existingImages, setExistingImages] = useState<ExistingImage[]>(
     initialData?.images ?? []
@@ -101,6 +106,10 @@ export function ProductForm({
     if (fields.has_colors) {
       formData.set("has_colors", "on");
       formData.set("colors_json", JSON.stringify(colors));
+    }
+    if (fields.has_quantities) {
+      formData.set("has_quantities", "on");
+      formData.set("quantities_json", JSON.stringify(quantities));
     }
     newFiles.forEach((file) => formData.append("images", file));
 
@@ -224,6 +233,32 @@ export function ProductForm({
                   tr: t("addColorPlaceholderTr"),
                 }}
                 addLabel={tCommon("add")}
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="sm:col-span-2">
+          <Toggle
+            checked={fields.has_quantities}
+            onChange={(v) => update("has_quantities", v)}
+            label={t("hasQuantities")}
+            description={t("hasQuantitiesHint")}
+          />
+          {fields.has_quantities && (
+            <div className="mt-3">
+              <QuantityVariantListEditor
+                items={quantities}
+                onChange={setQuantities}
+                placeholders={{
+                  ar: t("addQuantityPlaceholderAr"),
+                  en: t("addQuantityPlaceholderEn"),
+                  tr: t("addQuantityPlaceholderTr"),
+                }}
+                priceLabel={t("price")}
+                pricePlaceholder={t("quantityPricePlaceholder")}
+                addLabel={tCommon("add")}
+                currency={tCommon("currency")}
               />
             </div>
           )}

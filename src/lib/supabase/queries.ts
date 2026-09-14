@@ -2,7 +2,7 @@ import { getPublicSupabaseClient } from "@/lib/supabase/public";
 import type { CategoryRow, ProductRow } from "@/lib/supabase/types";
 
 const PRODUCT_SELECT =
-  "*, product_images(id, product_id, image_url, sort_order), product_sizes(id, product_id, label, sort_order), product_colors(id, product_id, label_ar, label_en, label_tr, sort_order)";
+  "*, product_images(id, product_id, image_url, sort_order), product_sizes(id, product_id, label, sort_order), product_colors(id, product_id, label_ar, label_en, label_tr, sort_order), product_quantities(id, product_id, label_ar, label_en, label_tr, price, sort_order)";
 
 export async function getAllProducts(): Promise<ProductRow[]> {
   const supabase = getPublicSupabaseClient();

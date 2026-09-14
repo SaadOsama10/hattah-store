@@ -121,7 +121,11 @@
     "sizeLabel": "Size",
     "colorLabel": "Color",
     "selectSizeFirst": "Please select a size first",
-    "selectColorFirst": "Please select a color first"
+    "selectColorFirst": "Please select a color first",
+    "selectQuantity": "Select Quantity",
+    "quantityLabel": "Quantity",
+    "selectQuantityFirst": "Please select a quantity first",
+    "startingFrom": "Starting from"
   },
   "admin": {
     "nav": {
@@ -155,7 +159,8 @@
       "noResults": "No matching products",
       "loadMore": "Load More",
       "hasSizesIndicator": "Has sizes",
-      "hasColorsIndicator": "Has colors"
+      "hasColorsIndicator": "Has colors",
+      "hasQuantitiesIndicator": "Has quantities"
     },
     "form": {
       "addTitle": "Add New Product",
@@ -186,7 +191,13 @@
       "addSizePlaceholder": "e.g. M or a free-form size",
       "addColorPlaceholderAr": "مثال: أسود",
       "addColorPlaceholderEn": "e.g. Black",
-      "addColorPlaceholderTr": "örn. Siyah"
+      "addColorPlaceholderTr": "örn. Siyah",
+      "hasQuantities": "This product has quantity options with different prices",
+      "hasQuantitiesHint": "Enable to add quantity options, each with its own price (e.g. 250g, 500g, 1kg)",
+      "addQuantityPlaceholderAr": "e.g. 250 جرام",
+      "addQuantityPlaceholderEn": "e.g. 250g",
+      "addQuantityPlaceholderTr": "e.g. 250 gram",
+      "quantityPricePlaceholder": "Price"
     },
     "deleteModal": {
       "title": "Delete Product",

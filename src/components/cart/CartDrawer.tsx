@@ -24,13 +24,17 @@ export function CartDrawer() {
       items.map((i) => ({
         name: i.name,
         quantity: i.quantity,
+        price: i.price,
         size: i.size,
         color: i.color,
+        quantityOption: i.quantityOption,
       })),
       t("checkoutMessageIntro"),
       t("checkoutMessageTotal", { total: `${currency} ${subtotal.toLocaleString()}` }),
       tProduct("sizeLabel"),
-      tProduct("colorLabel")
+      tProduct("colorLabel"),
+      tProduct("quantityLabel"),
+      currency
     );
     window.open(href, "_blank", "noopener,noreferrer");
   }
@@ -115,11 +119,13 @@ export function CartDrawer() {
                               >
                                 {item.name}
                               </Link>
-                              {(item.size || item.color) && (
+                              {(item.size || item.color || item.quantityOption) && (
                                 <span className="mt-0.5 font-inter text-xs text-cream-secondary/60">
                                   {[
                                     item.size && `${tProduct("sizeLabel")}: ${item.size}`,
                                     item.color && `${tProduct("colorLabel")}: ${item.color}`,
+                                    item.quantityOption &&
+                                      `${tProduct("quantityLabel")}: ${item.quantityOption}`,
                                   ]
                                     .filter(Boolean)
                                     .join(" · ")}

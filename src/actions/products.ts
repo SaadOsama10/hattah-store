@@ -17,6 +17,7 @@ export interface ProductFormFields {
   is_featured: boolean;
   has_sizes: boolean;
   has_colors: boolean;
+  has_quantities: boolean;
 }
 
 function readFields(formData: FormData): ProductFormFields {
@@ -32,6 +33,7 @@ function readFields(formData: FormData): ProductFormFields {
     is_featured: formData.get("is_featured") === "on",
     has_sizes: formData.get("has_sizes") === "on",
     has_colors: formData.get("has_colors") === "on",
+    has_quantities: formData.get("has_quantities") === "on",
   };
 }
 
@@ -69,6 +71,43 @@ function readColorEntries(formData: FormData): ColorEntry[] {
       label_tr: String((entry as ColorEntry)?.label_tr ?? "").trim(),
     }))
     .filter((entry) => entry.label_ar && entry.label_en && entry.label_tr);
+}
+
+interface QuantityEntry {
+  label_ar: string;
+  label_en: string;
+  label_tr: string;
+  price: number;
+}
+
+/** Same JSON-blob approach as colors, plus a per-entry price — each
+ * quantity option (e.g. "250g") is sold at its own price, not the
+ * product's base price. */
+function readQuantityEntries(formData: FormData): QuantityEntry[] {
+  const raw = formData.get("quantities_json");
+  if (!raw) return [];
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(String(raw));
+  } catch {
+    return [];
+  }
+  if (!Array.isArray(parsed)) return [];
+
+  return parsed
+    .map((entry) => {
+      const e = entry as Partial<QuantityEntry>;
+      return {
+        label_ar: String(e?.label_ar ?? "").trim(),
+        label_en: String(e?.label_en ?? "").trim(),
+        label_tr: String(e?.label_tr ?? "").trim(),
+        price: Number(e?.price),
+      };
+    })
+    .filter(
+      (entry) =>
+        entry.label_ar && entry.label_en && entry.label_tr && Number.isFinite(entry.price) && entry.price > 0
+    );
 }
 
 /** Replaces every size row for a product with the given ordered label
@@ -109,6 +148,26 @@ async function replaceColorVariants(
   if (colors.length > 0) {
     const { error: insertError } = await supabase.from("product_colors").insert(
       colors.map((color, i) => ({ product_id: productId, ...color, sort_order: i }))
+    );
+    if (insertError) throw new Error(insertError.message);
+  }
+}
+
+/** Same replace-all approach again, for quantity options. */
+async function replaceQuantityVariants(
+  supabase: ReturnType<typeof getServiceSupabaseClient>,
+  productId: string,
+  quantities: QuantityEntry[]
+) {
+  const { error: deleteError } = await supabase
+    .from("product_quantities")
+    .delete()
+    .eq("product_id", productId);
+  if (deleteError) throw new Error(deleteError.message);
+
+  if (quantities.length > 0) {
+    const { error: insertError } = await supabase.from("product_quantities").insert(
+      quantities.map((q, i) => ({ product_id: productId, ...q, sort_order: i }))
     );
     if (insertError) throw new Error(insertError.message);
   }
@@ -195,6 +254,11 @@ export async function createProduct(formData: FormData) {
     product.id,
     fields.has_colors ? readColorEntries(formData) : []
   );
+  await replaceQuantityVariants(
+    supabase,
+    product.id,
+    fields.has_quantities ? readQuantityEntries(formData) : []
+  );
 
   revalidatePath("/", "layout");
   return { id: product.id as string };
@@ -264,6 +328,11 @@ export async function updateProduct(
     supabase,
     productId,
     fields.has_colors ? readColorEntries(formData) : []
+  );
+  await replaceQuantityVariants(
+    supabase,
+    productId,
+    fields.has_quantities ? readQuantityEntries(formData) : []
   );
 
   revalidatePath("/", "layout");

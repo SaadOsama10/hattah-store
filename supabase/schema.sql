@@ -73,11 +73,12 @@ create table if not exists products (
   price numeric(10, 2) not null default 0,
   category text not null references categories(key),
   is_featured boolean not null default false,
-  -- Product variants (sizes/colors) are opt-in per product — both default
-  -- to false so every existing product keeps working with zero extra
-  -- steps for the buyer.
+  -- Product variants (sizes/colors/quantities) are opt-in per product —
+  -- all default to false so every existing product keeps working with
+  -- zero extra steps for the buyer.
   has_sizes boolean not null default false,
   has_colors boolean not null default false,
+  has_quantities boolean not null default false,
   created_at timestamptz not null default now()
 );
 
@@ -125,6 +126,22 @@ create table if not exists product_colors (
 
 create index if not exists product_colors_product_id_idx on product_colors (product_id);
 
+-- Quantity options (e.g. "250g" / "500g" / "1kg") — unlike sizes and
+-- colors, each option carries its own price, since that's the whole
+-- point of the feature: the buyer pays what that specific option costs,
+-- not the product's base price.
+create table if not exists product_quantities (
+  id uuid primary key default gen_random_uuid(),
+  product_id uuid not null references products(id) on delete cascade,
+  label_ar text not null,
+  label_en text not null,
+  label_tr text not null,
+  price numeric(10, 2) not null,
+  sort_order int not null default 0
+);
+
+create index if not exists product_quantities_product_id_idx on product_quantities (product_id);
+
 -- ─────────────────────────────────────────────────────────────
 -- Row Level Security — public can only ever read.
 -- All writes go through server actions using the service-role key,
@@ -135,6 +152,7 @@ alter table products enable row level security;
 alter table product_images enable row level security;
 alter table product_sizes enable row level security;
 alter table product_colors enable row level security;
+alter table product_quantities enable row level security;
 
 create policy "Public can read categories"
   on categories for select
@@ -154,6 +172,10 @@ create policy "Public can read product_sizes"
 
 create policy "Public can read product_colors"
   on product_colors for select
+  using (true);
+
+create policy "Public can read product_quantities"
+  on product_quantities for select
   using (true);
 
 -- ─────────────────────────────────────────────────────────────

@@ -49,7 +49,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [items, hydrated]);
 
   const addItem = useCallback((item: AddCartItemInput, quantity = 1) => {
-    const lineId = buildCartLineId(item.id, item.size, item.color);
+    const lineId = buildCartLineId(item.id, item.size, item.color, item.quantityOption);
     setItems((prev) => {
       const existing = prev.find((p) => p.lineId === lineId);
       if (existing) {

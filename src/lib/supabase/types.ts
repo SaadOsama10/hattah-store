@@ -40,6 +40,18 @@ export interface ProductColorRow {
   sort_order: number;
 }
 
+export interface ProductQuantityRow {
+  id: string;
+  product_id: string;
+  label_ar: string;
+  label_en: string;
+  label_tr: string;
+  // Unlike sizes/colors, each quantity option is priced independently —
+  // this is what the buyer actually pays once they pick it.
+  price: number;
+  sort_order: number;
+}
+
 export interface ProductRow {
   id: string;
   name_ar: string;
@@ -53,24 +65,35 @@ export interface ProductRow {
   is_featured: boolean;
   has_sizes: boolean;
   has_colors: boolean;
+  has_quantities: boolean;
   created_at: string;
   product_images: ProductImageRow[];
   product_sizes: ProductSizeRow[];
   product_colors: ProductColorRow[];
+  product_quantities: ProductQuantityRow[];
+}
+
+export interface LocalizedQuantityOption {
+  label: string;
+  price: number;
 }
 
 export interface LocalizedProduct {
   id: string;
   name: string;
   description: string;
+  // Base/fallback price — what's shown on shop cards, and what applies
+  // directly when the product has no quantity options.
   price: number;
   category: CategoryKey;
   createdAt: string;
   images: string[];
-  // Sizes are plain admin-entered labels (not localized). Colors are
-  // resolved to the current site language below, same as name/description.
+  // Sizes are plain admin-entered labels (not localized). Colors and
+  // quantity labels are resolved to the current site language below,
+  // same as name/description.
   sizes: string[];
   colors: string[];
+  quantities: LocalizedQuantityOption[];
 }
 
 export function localizeProduct(
@@ -95,6 +118,12 @@ export function localizeProduct(
   const colors = [...(row.product_colors ?? [])]
     .sort((a, b) => a.sort_order - b.sort_order)
     .map((c) => (locale === "ar" ? c.label_ar : locale === "tr" ? c.label_tr : c.label_en));
+  const quantities = [...(row.product_quantities ?? [])]
+    .sort((a, b) => a.sort_order - b.sort_order)
+    .map((q) => ({
+      label: locale === "ar" ? q.label_ar : locale === "tr" ? q.label_tr : q.label_en,
+      price: q.price,
+    }));
 
   return {
     id: row.id,
@@ -106,6 +135,7 @@ export function localizeProduct(
     images,
     sizes,
     colors,
+    quantities,
   };
 }
 

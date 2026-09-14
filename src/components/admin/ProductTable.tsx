@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
-import { Pencil, Trash2, Plus, ImageOff, Star, Search, Ruler, Palette } from "lucide-react";
+import { Pencil, Trash2, Plus, ImageOff, Star, Search, Ruler, Palette, Package } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Toggle } from "@/components/ui/Toggle";
 import { DeleteConfirmModal } from "@/components/admin/DeleteConfirmModal";
@@ -227,6 +227,15 @@ export function ProductTable({
                                     size={14}
                                     className="text-cream-secondary/60"
                                     aria-label={t("hasColorsIndicator")}
+                                  />
+                                </span>
+                              )}
+                              {product.has_quantities && (
+                                <span title={t("hasQuantitiesIndicator")} className="shrink-0">
+                                  <Package
+                                    size={14}
+                                    className="text-cream-secondary/60"
+                                    aria-label={t("hasQuantitiesIndicator")}
                                   />
                                 </span>
                               )}

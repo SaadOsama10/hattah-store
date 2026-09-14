@@ -59,9 +59,6 @@ export default async function ProductDetailPage({
             <h1 className="font-playfair text-3xl font-bold leading-tight text-cream sm:text-4xl">
               {localized.name}
             </h1>
-            <p className="mt-4 font-inter text-2xl text-cream-secondary">
-              {tCommon("currency")} {localized.price.toLocaleString()}
-            </p>
 
             <div className="my-8 h-px w-full max-w-xs bg-gradient-to-r from-olive/50 to-transparent" />
 
@@ -74,6 +71,7 @@ export default async function ProductDetailPage({
               }}
               sizes={localized.sizes}
               colors={localized.colors}
+              quantities={localized.quantities}
             />
 
             {localized.description && (

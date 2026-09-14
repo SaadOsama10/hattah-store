@@ -208,7 +208,9 @@ export function ShopClient({
                 price={product.price}
                 image={product.images[0]}
                 categoryLabel={categoryLabelByKey[product.category]}
-                hasVariants={product.sizes.length > 0 || product.colors.length > 0}
+                hasVariants={
+                  product.sizes.length > 0 || product.colors.length > 0 || product.quantities.length > 0
+                }
               />
             ))}
           </div>

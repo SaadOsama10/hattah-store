@@ -43,7 +43,9 @@ export async function RelatedProducts({
               price={localized.price}
               image={localized.images[0]}
               categoryLabel={categoryLabelByKey[localized.category]}
-              hasVariants={localized.sizes.length > 0 || localized.colors.length > 0}
+              hasVariants={
+                localized.sizes.length > 0 || localized.colors.length > 0 || localized.quantities.length > 0
+              }
             />
           );
         })}

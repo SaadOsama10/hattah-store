@@ -121,7 +121,11 @@
     "sizeLabel": "المقاس",
     "colorLabel": "اللون",
     "selectSizeFirst": "الرجاء اختيار المقاس أولاً",
-    "selectColorFirst": "الرجاء اختيار اللون أولاً"
+    "selectColorFirst": "الرجاء اختيار اللون أولاً",
+    "selectQuantity": "اختر الكمية",
+    "quantityLabel": "الكمية",
+    "selectQuantityFirst": "الرجاء اختيار الكمية أولاً",
+    "startingFrom": "يبدأ من"
   },
   "admin": {
     "nav": {
@@ -155,7 +159,8 @@
       "noResults": "لا توجد منتجات مطابقة",
       "loadMore": "تحميل المزيد",
       "hasSizesIndicator": "له مقاسات",
-      "hasColorsIndicator": "له ألوان"
+      "hasColorsIndicator": "له ألوان",
+      "hasQuantitiesIndicator": "له كميات"
     },
     "form": {
       "addTitle": "إضافة منتج جديد",
@@ -186,7 +191,13 @@
       "addSizePlaceholder": "مثال: M أو مقاس حر",
       "addColorPlaceholderAr": "مثال: أسود",
       "addColorPlaceholderEn": "e.g. Black",
-      "addColorPlaceholderTr": "örn. Siyah"
+      "addColorPlaceholderTr": "örn. Siyah",
+      "hasQuantities": "هذا المنتج له كميات مختلفة بالسعر",
+      "hasQuantitiesHint": "فعّلها لإضافة خيارات كمية، كل وحدة بسعرها الخاص (مثلاً 250 جرام، 500 جرام، 1 كيلو)",
+      "addQuantityPlaceholderAr": "مثال: 250 جرام",
+      "addQuantityPlaceholderEn": "e.g. 250g",
+      "addQuantityPlaceholderTr": "örn. 250 gram",
+      "quantityPricePlaceholder": "السعر"
     },
     "deleteModal": {
       "title": "حذف المنتج",

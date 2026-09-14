@@ -6,20 +6,31 @@ export function buildWhatsAppOrderLink(message: string) {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encoded}`;
 }
 
-/** Appends the chosen size/color to a product name for display in a
- * WhatsApp message, e.g. "Shawl - Size: L - Color: Black". Used by both
- * the single-product order button and the cart checkout message so the
- * two stay in sync. */
+/** Appends the chosen size/color/quantity-option to a product name for
+ * display in a WhatsApp message, e.g. "Za'atar - Quantity: 250g - Color:
+ * Black". Used by both the single-product order button and the cart
+ * checkout message so the two stay in sync. */
 export function formatProductWithVariants(
   name: string,
   sizeLabel: string,
   colorLabel: string,
+  quantityLabel: string,
   size?: string,
-  color?: string
+  color?: string,
+  quantityOption?: string,
+  quantityPrice?: number,
+  currency?: string
 ): string {
   const parts = [name];
   if (size) parts.push(`${sizeLabel}: ${size}`);
   if (color) parts.push(`${colorLabel}: ${color}`);
+  if (quantityOption) {
+    const priceSuffix =
+      quantityPrice != null && currency
+        ? ` (${currency} ${quantityPrice.toLocaleString()})`
+        : "";
+    parts.push(`${quantityLabel}: ${quantityOption}${priceSuffix}`);
+  }
   return parts.join(" - ");
 }
 
@@ -28,14 +39,33 @@ export function formatProductWithVariants(
  * and returns the wa.me link, reusing the same number as a single-product
  * order so cart checkout and the per-product button behave identically. */
 export function buildWhatsAppCartLink(
-  items: { name: string; quantity: number; size?: string; color?: string }[],
+  items: {
+    name: string;
+    quantity: number;
+    price: number;
+    size?: string;
+    color?: string;
+    quantityOption?: string;
+  }[],
   intro: string,
   totalLine: string,
   sizeLabel: string,
-  colorLabel: string
+  colorLabel: string,
+  quantityLabel: string,
+  currency: string
 ): string {
   const lines = items.map((item, i) => {
-    const label = formatProductWithVariants(item.name, sizeLabel, colorLabel, item.size, item.color);
+    const label = formatProductWithVariants(
+      item.name,
+      sizeLabel,
+      colorLabel,
+      quantityLabel,
+      item.size,
+      item.color,
+      item.quantityOption,
+      item.quantityOption ? item.price : undefined,
+      currency
+    );
     return `${i + 1}. ${label} × ${item.quantity}`;
   });
   const message = [intro, "", ...lines, "", totalLine].join("\n");

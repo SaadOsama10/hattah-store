@@ -40,12 +40,21 @@ export default async function EditProductPage({
           is_featured: product.is_featured,
           has_sizes: product.has_sizes,
           has_colors: product.has_colors,
+          has_quantities: product.has_quantities,
           sizes: [...product.product_sizes]
             .sort((a, b) => a.sort_order - b.sort_order)
             .map((s) => s.label),
           colors: [...product.product_colors]
             .sort((a, b) => a.sort_order - b.sort_order)
             .map((c) => ({ label_ar: c.label_ar, label_en: c.label_en, label_tr: c.label_tr })),
+          quantities: [...product.product_quantities]
+            .sort((a, b) => a.sort_order - b.sort_order)
+            .map((q) => ({
+              label_ar: q.label_ar,
+              label_en: q.label_en,
+              label_tr: q.label_tr,
+              price: q.price,
+            })),
           images: [...product.product_images]
             .sort((a, b) => a.sort_order - b.sort_order)
             .map((img) => ({ id: img.id, url: img.image_url })),

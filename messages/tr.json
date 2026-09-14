@@ -121,7 +121,11 @@
     "sizeLabel": "Beden",
     "colorLabel": "Renk",
     "selectSizeFirst": "Lütfen önce bir beden seçin",
-    "selectColorFirst": "Lütfen önce bir renk seçin"
+    "selectColorFirst": "Lütfen önce bir renk seçin",
+    "selectQuantity": "Miktar Seçin",
+    "quantityLabel": "Miktar",
+    "selectQuantityFirst": "Lütfen önce bir miktar seçin",
+    "startingFrom": "Başlangıç"
   },
   "admin": {
     "nav": {
@@ -155,7 +159,8 @@
       "noResults": "Eşleşen ürün yok",
       "loadMore": "Daha Fazla Yükle",
       "hasSizesIndicator": "Bedenli",
-      "hasColorsIndicator": "Renkli"
+      "hasColorsIndicator": "Renkli",
+      "hasQuantitiesIndicator": "Miktarlı"
     },
     "form": {
       "addTitle": "Yeni Ürün Ekle",
@@ -186,7 +191,13 @@
       "addSizePlaceholder": "örn. M veya serbest beden",
       "addColorPlaceholderAr": "مثال: أسود",
       "addColorPlaceholderEn": "e.g. Black",
-      "addColorPlaceholderTr": "örn. Siyah"
+      "addColorPlaceholderTr": "örn. Siyah",
+      "hasQuantities": "Bu ürünün farklı fiyatlarla miktar seçenekleri var",
+      "hasQuantitiesHint": "Her biri kendi fiyatına sahip miktar seçenekleri eklemek için etkinleştirin (örn. 250g, 500g, 1kg)",
+      "addQuantityPlaceholderAr": "örn. 250 جرام",
+      "addQuantityPlaceholderEn": "örn. 250g",
+      "addQuantityPlaceholderTr": "örn. 250 gram",
+      "quantityPricePlaceholder": "Fiyat"
     },
     "deleteModal": {
       "title": "Ürünü Sil",
