@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { LogOut, ExternalLink, LayoutGrid, Tag } from "lucide-react";
+import { LogOut, ExternalLink, LayoutGrid, Tag, ClipboardList } from "lucide-react";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { Logo } from "@/components/ui/Logo";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
@@ -13,6 +13,7 @@ import { cn } from "@/lib/cn";
 const NAV_ITEMS = [
   { href: "/admin" as const, key: "dashboard", icon: LayoutGrid },
   { href: "/admin/categories" as const, key: "categories", icon: Tag },
+  { href: "/admin/inventory" as const, key: "inventory", icon: ClipboardList },
 ];
 
 export function AdminHeader() {

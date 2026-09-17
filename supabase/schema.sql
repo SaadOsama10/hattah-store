@@ -160,6 +160,29 @@ create table if not exists product_quantities (
 create index if not exists product_quantities_product_id_idx on product_quantities (product_id);
 
 -- ─────────────────────────────────────────────────────────────
+-- Inventory log — an internal purchase/sale ledger for the admin's own
+-- bookkeeping ("دفتر البضاعة"). Deliberately independent of `products`:
+-- a free-text description, not a product reference, since a batch of
+-- stock doesn't always map one-to-one to a storefront listing. Never
+-- read by the storefront.
+-- ─────────────────────────────────────────────────────────────
+create table if not exists inventory_log (
+  id uuid primary key default gen_random_uuid(),
+  entry_date date not null default current_date,
+  item_description text not null,
+  quantity int not null,
+  unit_cost numeric(10, 2) not null default 0,
+  status text not null default 'in_stock' check (status in ('in_stock', 'sold_out', 'partially_sold')),
+  quantity_sold int not null default 0,
+  unit_sale_price numeric(10, 2),
+  last_sale_date date,
+  notes text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists inventory_log_entry_date_idx on inventory_log (entry_date desc);
+
+-- ─────────────────────────────────────────────────────────────
 -- Row Level Security — public can only ever read.
 -- All writes go through server actions using the service-role key,
 -- which bypasses RLS entirely, so no write policies are defined here.
@@ -194,6 +217,11 @@ create policy "Public can read product_colors"
 create policy "Public can read product_quantities"
   on product_quantities for select
   using (true);
+
+-- inventory_log deliberately has RLS enabled but NO select/write policy
+-- at all — only the service-role key (bypasses RLS) can touch it. The
+-- public anon key gets zero access, unlike every other table above.
+alter table inventory_log enable row level security;
 
 -- ─────────────────────────────────────────────────────────────
 -- Storage bucket for product photos (public read).

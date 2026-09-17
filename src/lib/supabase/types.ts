@@ -21,6 +21,25 @@ export interface CategoryRow {
   icon_key: string;
 }
 
+export type InventoryStatus = "in_stock" | "sold_out" | "partially_sold";
+
+// Internal admin-only bookkeeping ledger — never read by the storefront,
+// never localized (admin-facing, Arabic-only UI). Deliberately independent
+// of ProductRow: a free-text description, not a product reference.
+export interface InventoryEntryRow {
+  id: string;
+  entry_date: string; // date, "YYYY-MM-DD"
+  item_description: string;
+  quantity: number;
+  unit_cost: number;
+  status: InventoryStatus;
+  quantity_sold: number;
+  unit_sale_price: number | null;
+  last_sale_date: string | null; // date, "YYYY-MM-DD"
+  notes: string | null;
+  created_at: string;
+}
+
 export interface ProductImageRow {
   id: string;
   product_id: string;

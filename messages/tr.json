@@ -116,7 +116,8 @@
   "admin": {
     "nav": {
       "dashboard": "Kontrol Paneli",
-      "categories": "Kategoriler"
+      "categories": "Kategoriler",
+      "inventory": "Envanter"
     },
     "login": {
       "title": "Yönetici Girişi",
