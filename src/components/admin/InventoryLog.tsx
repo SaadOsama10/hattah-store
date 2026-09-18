@@ -2,16 +2,30 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertTriangle, Check, Pencil, Plus, Trash2, X } from "lucide-react";
+import {
+  AlertTriangle,
+  Check,
+  ChevronDown,
+  Pencil,
+  Plus,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/Button";
 import {
+  createInventoryBatch,
   createInventoryEntry,
   deleteInventoryEntry,
+  updateInventoryBatch,
   updateInventoryEntry,
 } from "@/actions/inventory";
 import { cn } from "@/lib/cn";
-import type { InventoryEntryRow, InventoryStatus } from "@/lib/supabase/types";
+import type {
+  InventoryBatchWithEntries,
+  InventoryEntryRow,
+  InventoryStatus,
+} from "@/lib/supabase/types";
 
 const STATUS_LABELS: Record<InventoryStatus, string> = {
   in_stock: "متوفر بالمخزن",
@@ -26,6 +40,7 @@ const STATUS_BADGE_CLASSES: Record<InventoryStatus, string> = {
 };
 
 interface FieldsState {
+  batch_id: string;
   entry_date: string;
   item_description: string;
   quantity: string;
@@ -41,20 +56,24 @@ function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-const EMPTY_FIELDS: FieldsState = {
-  entry_date: todayISO(),
-  item_description: "",
-  quantity: "",
-  unit_cost: "",
-  status: "in_stock",
-  quantity_sold: "0",
-  unit_sale_price: "",
-  last_sale_date: "",
-  notes: "",
-};
+function emptyFields(batchId: string, batchDate: string): FieldsState {
+  return {
+    batch_id: batchId,
+    entry_date: batchDate || todayISO(),
+    item_description: "",
+    quantity: "",
+    unit_cost: "",
+    status: "in_stock",
+    quantity_sold: "0",
+    unit_sale_price: "",
+    last_sale_date: "",
+    notes: "",
+  };
+}
 
 function fieldsFromEntry(entry: InventoryEntryRow): FieldsState {
   return {
+    batch_id: entry.batch_id,
     entry_date: entry.entry_date,
     item_description: entry.item_description,
     quantity: String(entry.quantity),
@@ -69,6 +88,7 @@ function fieldsFromEntry(entry: InventoryEntryRow): FieldsState {
 
 function toFormData(fields: FieldsState): FormData {
   const fd = new FormData();
+  fd.set("batch_id", fields.batch_id);
   fd.set("entry_date", fields.entry_date);
   fd.set("item_description", fields.item_description);
   fd.set("quantity", fields.quantity);
@@ -98,6 +118,10 @@ function computeTotals(fields: Pick<FieldsState, "quantity" | "unit_cost" | "qua
   return { totalCost, totalSale, profit };
 }
 
+function batchCost(batch: InventoryBatchWithEntries): number {
+  return batch.inventory_log.reduce((sum, e) => sum + e.quantity * e.unit_cost, 0);
+}
+
 function money(n: number): string {
   return `₺ ${n.toLocaleString()}`;
 }
@@ -105,63 +129,82 @@ function money(n: number): string {
 const inputClass =
   "w-full rounded-lg border border-cream/20 bg-bg-primary px-2 py-1.5 font-inter text-sm text-cream focus:border-terracotta focus:outline-none";
 
-export function InventoryLog({ entries }: { entries: InventoryEntryRow[] }) {
+interface BatchFieldsState {
+  title: string;
+  batch_date: string;
+  amount_paid: string;
+}
+
+export function InventoryLog({ batches }: { batches: InventoryBatchWithEntries[] }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  const [isAdding, setIsAdding] = useState(false);
-  const [newFields, setNewFields] = useState<FieldsState>(EMPTY_FIELDS);
+  const [isAddingBatch, setIsAddingBatch] = useState(false);
+  const [newBatchFields, setNewBatchFields] = useState<BatchFieldsState>({
+    title: "",
+    batch_date: todayISO(),
+    amount_paid: "0",
+  });
+
+  const [editingBatchId, setEditingBatchId] = useState<string | null>(null);
+  const [editBatchFields, setEditBatchFields] = useState<BatchFieldsState>({
+    title: "",
+    batch_date: "",
+    amount_paid: "0",
+  });
+
+  const [addingRowBatchId, setAddingRowBatchId] = useState<string | null>(null);
+  const [newRowFields, setNewRowFields] = useState<FieldsState | null>(null);
 
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editFields, setEditFields] = useState<FieldsState>(EMPTY_FIELDS);
+  const [editFields, setEditFields] = useState<FieldsState | null>(null);
 
   const [deleteTarget, setDeleteTarget] = useState<InventoryEntryRow | null>(null);
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [statusFilter, setStatusFilter] = useState<"all" | InventoryStatus>("all");
 
-  const totals = useMemo(() => {
-    return entries.reduce(
-      (acc, e) => {
-        const { totalCost, totalSale, profit } = computeTotals({
-          quantity: String(e.quantity),
-          unit_cost: String(e.unit_cost),
-          quantity_sold: String(e.quantity_sold),
-          unit_sale_price: e.unit_sale_price != null ? String(e.unit_sale_price) : "",
-        });
-        acc.totalCost += totalCost;
-        acc.totalSale += totalSale;
-        acc.totalProfit += profit;
-        return acc;
-      },
-      { totalCost: 0, totalSale: 0, totalProfit: 0 }
-    );
-  }, [entries]);
+  const grand = useMemo(() => {
+    const acc = { totalCost: 0, totalPaid: 0, totalDebt: 0, totalSale: 0, totalProfit: 0 };
+    for (const batch of batches) {
+      const cost = batchCost(batch);
+      acc.totalCost += cost;
+      acc.totalPaid += batch.amount_paid;
+      acc.totalDebt += Math.max(cost - batch.amount_paid, 0);
+      for (const e of batch.inventory_log) {
+        const sale = e.quantity_sold * (e.unit_sale_price ?? 0);
+        acc.totalSale += sale;
+        acc.totalProfit += sale - e.quantity_sold * e.unit_cost;
+      }
+    }
+    return acc;
+  }, [batches]);
 
-  const filtered = useMemo(
-    () => (statusFilter === "all" ? entries : entries.filter((e) => e.status === statusFilter)),
-    [entries, statusFilter]
-  );
+  function toggleCollapsed(id: string) {
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
-  function startAdd() {
-    setIsAdding(true);
-    setEditingId(null);
-    setNewFields(EMPTY_FIELDS);
+  function startAddBatch() {
+    setIsAddingBatch(true);
+    setNewBatchFields({ title: "", batch_date: todayISO(), amount_paid: "0" });
     setError(null);
   }
 
-  function startEdit(entry: InventoryEntryRow) {
-    setEditingId(entry.id);
-    setEditFields(fieldsFromEntry(entry));
-    setIsAdding(false);
+  function handleCreateBatch() {
     setError(null);
-  }
-
-  function handleCreate() {
-    setError(null);
+    const fd = new FormData();
+    fd.set("title", newBatchFields.title);
+    fd.set("batch_date", newBatchFields.batch_date);
+    fd.set("amount_paid", newBatchFields.amount_paid);
     startTransition(async () => {
       try {
-        await createInventoryEntry(toFormData(newFields));
-        setIsAdding(false);
+        await createInventoryBatch(fd);
+        setIsAddingBatch(false);
         router.refresh();
       } catch (err) {
         setError(err instanceof Error ? err.message : "حدث خطأ ما، حاول مرة أخرى.");
@@ -169,11 +212,65 @@ export function InventoryLog({ entries }: { entries: InventoryEntryRow[] }) {
     });
   }
 
-  function handleUpdate(original: InventoryEntryRow) {
+  function startEditBatch(batch: InventoryBatchWithEntries) {
+    setEditingBatchId(batch.id);
+    setEditBatchFields({
+      title: batch.title,
+      batch_date: batch.batch_date,
+      amount_paid: String(batch.amount_paid),
+    });
     setError(null);
-    // "last_sale_date يتحدث لما أعدّل الكمية المباعة" — auto-stamp today
-    // only when quantity_sold actually changed and the admin didn't also
-    // touch last_sale_date themselves in this same edit.
+  }
+
+  function handleUpdateBatch(id: string) {
+    setError(null);
+    const fd = new FormData();
+    fd.set("title", editBatchFields.title);
+    fd.set("batch_date", editBatchFields.batch_date);
+    fd.set("amount_paid", editBatchFields.amount_paid);
+    startTransition(async () => {
+      try {
+        await updateInventoryBatch(id, fd);
+        setEditingBatchId(null);
+        router.refresh();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "حدث خطأ ما، حاول مرة أخرى.");
+      }
+    });
+  }
+
+  function startAddRow(batch: InventoryBatchWithEntries) {
+    setAddingRowBatchId(batch.id);
+    setNewRowFields(emptyFields(batch.id, batch.batch_date));
+    setEditingId(null);
+    setError(null);
+  }
+
+  function handleCreateRow() {
+    if (!newRowFields) return;
+    setError(null);
+    startTransition(async () => {
+      try {
+        await createInventoryEntry(toFormData(newRowFields));
+        setAddingRowBatchId(null);
+        setNewRowFields(null);
+        router.refresh();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "حدث خطأ ما، حاول مرة أخرى.");
+      }
+    });
+  }
+
+  function startEditRow(entry: InventoryEntryRow) {
+    setEditingId(entry.id);
+    setEditFields(fieldsFromEntry(entry));
+    setAddingRowBatchId(null);
+    setError(null);
+  }
+
+  function handleUpdateRow(original: InventoryEntryRow) {
+    if (!editFields) return;
+    setError(null);
     const soldChanged = editFields.quantity_sold !== String(original.quantity_sold);
     const dateUntouched = editFields.last_sale_date === (original.last_sale_date ?? "");
     const fields =
@@ -190,7 +287,7 @@ export function InventoryLog({ entries }: { entries: InventoryEntryRow[] }) {
     });
   }
 
-  async function handleDelete() {
+  async function handleDeleteRow() {
     if (!deleteTarget) return;
     setError(null);
     try {
@@ -209,11 +306,11 @@ export function InventoryLog({ entries }: { entries: InventoryEntryRow[] }) {
         <div>
           <h1 className="font-playfair text-3xl font-bold text-cream">دفتر البضاعة</h1>
           <p className="mt-1 font-inter text-sm text-cream-secondary/60">
-            سجل داخلي لتتبع دفعات البضاعة والمبيعات · {entries.length} دفعة
+            {batches.length} دفعة · {batches.reduce((s, b) => s + b.inventory_log.length, 0)} صنف
           </p>
         </div>
-        {!isAdding && (
-          <Button variant="primary" onClick={startAdd}>
+        {!isAddingBatch && (
+          <Button variant="primary" onClick={startAddBatch}>
             <Plus size={16} />
             إضافة دفعة جديدة
           </Button>
@@ -222,37 +319,81 @@ export function InventoryLog({ entries }: { entries: InventoryEntryRow[] }) {
 
       {error && <p className="mb-4 font-inter text-sm text-terracotta-deep">{error}</p>}
 
-      {/* All-time summary — always the full totals, unaffected by the filter below. */}
-      <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div className="rounded-2xl border border-cream/10 bg-bg-secondary p-4">
-          <p className="font-inter text-xs uppercase tracking-widest text-cream-secondary/50">
-            إجمالي المصروف على الجلب
-          </p>
-          <p className="mt-1 font-playfair text-xl font-bold text-cream">{money(totals.totalCost)}</p>
+      {isAddingBatch && (
+        <div className="mb-6 rounded-2xl border border-terracotta/30 bg-bg-secondary p-5">
+          <h2 className="mb-3 font-playfair text-lg font-bold text-cream">دفعة جديدة</h2>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div>
+              <label className="mb-1 block font-inter text-xs uppercase tracking-widest text-cream-secondary/50">
+                عنوان الدفعة
+              </label>
+              <input
+                type="text"
+                required
+                value={newBatchFields.title}
+                onChange={(e) => setNewBatchFields((f) => ({ ...f, title: e.target.value }))}
+                placeholder="مثال: بلايز"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="mb-1 block font-inter text-xs uppercase tracking-widest text-cream-secondary/50">
+                التاريخ
+              </label>
+              <input
+                type="date"
+                required
+                value={newBatchFields.batch_date}
+                onChange={(e) => setNewBatchFields((f) => ({ ...f, batch_date: e.target.value }))}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="mb-1 block font-inter text-xs uppercase tracking-widest text-cream-secondary/50">
+                المدفوع مسبقًا (اختياري)
+              </label>
+              <input
+                type="number"
+                min={0}
+                value={newBatchFields.amount_paid}
+                onChange={(e) => setNewBatchFields((f) => ({ ...f, amount_paid: e.target.value }))}
+                className={inputClass}
+              />
+            </div>
+          </div>
+          <div className="mt-4 flex gap-3">
+            <Button size="md" disabled={isPending} onClick={handleCreateBatch}>
+              حفظ الدفعة
+            </Button>
+            <Button variant="ghost" size="md" disabled={isPending} onClick={() => setIsAddingBatch(false)}>
+              إلغاء
+            </Button>
+          </div>
         </div>
-        <div className="rounded-2xl border border-cream/10 bg-bg-secondary p-4">
-          <p className="font-inter text-xs uppercase tracking-widest text-cream-secondary/50">
-            إجمالي الإيراد من المبيعات
-          </p>
-          <p className="mt-1 font-playfair text-xl font-bold text-cream">{money(totals.totalSale)}</p>
-        </div>
-        <div className="rounded-2xl border border-cream/10 bg-bg-secondary p-4">
-          <p className="font-inter text-xs uppercase tracking-widest text-cream-secondary/50">
-            إجمالي الربح الصافي
-          </p>
-          <p
-            className={cn(
-              "mt-1 font-playfair text-xl font-bold",
-              totals.totalProfit >= 0 ? "text-forest" : "text-terracotta-deep"
-            )}
-          >
-            {money(totals.totalProfit)}
-          </p>
-        </div>
+      )}
+
+      {/* All-time summary across every batch. */}
+      <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-4">
+        <SummaryTile label="عدد الدفعات" value={String(batches.length)} />
+        <SummaryTile label="إجمالي تكلفة البضاعة" value={money(grand.totalCost)} />
+        <SummaryTile label="إجمالي المدفوع" value={money(grand.totalPaid)} />
+        <SummaryTile
+          label="إجمالي الدين المتبقي"
+          value={money(grand.totalDebt)}
+          tone={grand.totalDebt > 0 ? "debt" : "clear"}
+        />
+      </div>
+      <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <SummaryTile label="إجمالي الإيراد من المبيعات" value={money(grand.totalSale)} />
+        <SummaryTile
+          label="إجمالي الربح الصافي"
+          value={money(grand.totalProfit)}
+          tone={grand.totalProfit >= 0 ? "clear" : "debt"}
+        />
       </div>
 
       {/* Status filter */}
-      <div className="mb-4 flex flex-wrap gap-2">
+      <div className="mb-6 flex flex-wrap gap-2">
         {(
           [
             ["all", "الكل"],
@@ -277,83 +418,246 @@ export function InventoryLog({ entries }: { entries: InventoryEntryRow[] }) {
         ))}
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-cream/10">
-        <table className="w-full min-w-[1500px] border-collapse text-start">
-          <thead>
-            <tr className="border-b border-cream/10 bg-bg-secondary">
-              {[
-                "التاريخ",
-                "البضاعة / الوصف",
-                "الكمية",
-                "سعر الجلب/وحدة",
-                "إجمالي الجلب",
-                "الحالة",
-                "الكمية المباعة",
-                "سعر البيع/وحدة",
-                "إجمالي البيع",
-                "الربح",
-                "تاريخ آخر بيع",
-                "ملاحظات",
-                "إجراءات",
-              ].map((col) => (
-                <th
-                  key={col}
-                  className="whitespace-nowrap px-4 py-3 text-start font-inter text-xs uppercase tracking-widest text-cream-secondary/60"
-                >
-                  {col}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {isAdding && (
-              <EditableRow
-                fields={newFields}
-                onChange={setNewFields}
-                onSave={handleCreate}
-                onCancel={() => setIsAdding(false)}
-                saving={isPending}
-              />
-            )}
+      {batches.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-cream/15 py-24 text-center">
+          <p className="font-inter text-cream-secondary/60">لا توجد دفعات بعد.</p>
+        </div>
+      ) : (
+        <div className="space-y-5">
+          {batches.map((batch) => {
+            const rows =
+              statusFilter === "all"
+                ? batch.inventory_log
+                : batch.inventory_log.filter((e) => e.status === statusFilter);
+            if (rows.length === 0 && statusFilter !== "all") return null;
 
-            {filtered.length === 0 && !isAdding ? (
-              <tr>
-                <td colSpan={13} className="px-4 py-16 text-center font-inter text-cream-secondary/60">
-                  لا توجد دفعات بعد.
-                </td>
-              </tr>
-            ) : (
-              filtered.map((entry) =>
-                editingId === entry.id ? (
-                  <EditableRow
-                    key={entry.id}
-                    fields={editFields}
-                    onChange={setEditFields}
-                    onSave={() => handleUpdate(entry)}
-                    onCancel={() => setEditingId(null)}
-                    saving={isPending}
-                  />
-                ) : (
-                  <DisplayRow
-                    key={entry.id}
-                    entry={entry}
-                    onEdit={() => startEdit(entry)}
-                    onDelete={() => setDeleteTarget(entry)}
-                  />
-                )
-              )
-            )}
-          </tbody>
-        </table>
-      </div>
+            const cost = batchCost(batch);
+            const debt = Math.max(cost - batch.amount_paid, 0);
+            const isCollapsed = collapsed.has(batch.id);
+            const isEditingBatch = editingBatchId === batch.id;
+
+            return (
+              <section key={batch.id} className="overflow-hidden rounded-2xl border border-cream/10">
+                <div className="flex flex-col gap-3 bg-bg-secondary p-5 sm:flex-row sm:items-center sm:justify-between">
+                  {isEditingBatch ? (
+                    <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-3">
+                      <input
+                        type="text"
+                        required
+                        value={editBatchFields.title}
+                        onChange={(e) => setEditBatchFields((f) => ({ ...f, title: e.target.value }))}
+                        className={inputClass}
+                      />
+                      <input
+                        type="date"
+                        required
+                        value={editBatchFields.batch_date}
+                        onChange={(e) => setEditBatchFields((f) => ({ ...f, batch_date: e.target.value }))}
+                        className={inputClass}
+                      />
+                      <input
+                        type="number"
+                        min={0}
+                        value={editBatchFields.amount_paid}
+                        onChange={(e) => setEditBatchFields((f) => ({ ...f, amount_paid: e.target.value }))}
+                        className={inputClass}
+                        placeholder="المدفوع"
+                      />
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => toggleCollapsed(batch.id)}
+                      className="flex flex-1 items-center gap-3 text-start"
+                    >
+                      <ChevronDown
+                        size={16}
+                        className={cn(
+                          "shrink-0 text-cream-secondary/50 transition-transform",
+                          isCollapsed && "-rotate-90"
+                        )}
+                      />
+                      <div>
+                        <h2 className="font-playfair text-lg font-bold text-cream">{batch.title}</h2>
+                        <p className="mt-0.5 font-inter text-xs text-cream-secondary/60">
+                          {batch.batch_date} · {rows.length} صنف · تكلفة {money(cost)} · مدفوع {money(batch.amount_paid)}
+                        </p>
+                      </div>
+                    </button>
+                  )}
+
+                  <div className="flex items-center gap-3">
+                    {!isEditingBatch && (
+                      <span
+                        className={cn(
+                          "whitespace-nowrap rounded-full px-3 py-1.5 font-inter text-xs font-semibold",
+                          debt > 0
+                            ? "bg-terracotta-deep/15 text-terracotta-deep"
+                            : "bg-forest/15 text-forest"
+                        )}
+                      >
+                        {debt > 0 ? `دين متبقٍ: ${money(debt)}` : "مسددة بالكامل"}
+                      </span>
+                    )}
+                    {isEditingBatch ? (
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateBatch(batch.id)}
+                          disabled={isPending}
+                          aria-label="حفظ الدفعة"
+                          className="flex h-8 w-8 items-center justify-center rounded-full border border-forest/40 text-forest transition-colors hover:bg-forest/10"
+                        >
+                          <Check size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingBatchId(null)}
+                          disabled={isPending}
+                          aria-label="إلغاء"
+                          className="flex h-8 w-8 items-center justify-center rounded-full border border-cream/15 text-cream-secondary transition-colors hover:bg-cream/5"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => startEditBatch(batch)}
+                        aria-label="تعديل الدفعة"
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-cream/15 text-cream-secondary transition-colors hover:border-forest hover:text-forest"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {!isCollapsed && (
+                  <div className="border-t border-cream/10 p-4">
+                    <div className="mb-3 flex justify-end">
+                      <Button size="md" variant="secondary" onClick={() => startAddRow(batch)}>
+                        <Plus size={14} />
+                        إضافة صنف
+                      </Button>
+                    </div>
+                    <div className="table-scroll overflow-x-auto rounded-xl border border-cream/10">
+                      <table className="w-full min-w-[1500px] border-collapse text-start">
+                        <thead>
+                          <tr className="border-b border-cream/10 bg-bg-primary">
+                            {[
+                              "التاريخ",
+                              "البضاعة / الوصف",
+                              "الكمية",
+                              "سعر الجلب/وحدة",
+                              "إجمالي الجلب",
+                              "الحالة",
+                              "الكمية المباعة",
+                              "سعر البيع/وحدة",
+                              "إجمالي البيع",
+                              "الربح",
+                              "تاريخ آخر بيع",
+                              "ملاحظات",
+                              "إجراءات",
+                            ].map((col) => (
+                              <th
+                                key={col}
+                                className="whitespace-nowrap px-4 py-2.5 text-start font-inter text-[11px] uppercase tracking-widest text-cream-secondary/60"
+                              >
+                                {col}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {addingRowBatchId === batch.id && newRowFields && (
+                            <EditableRow
+                              fields={newRowFields}
+                              onChange={setNewRowFields}
+                              onSave={handleCreateRow}
+                              onCancel={() => {
+                                setAddingRowBatchId(null);
+                                setNewRowFields(null);
+                              }}
+                              saving={isPending}
+                            />
+                          )}
+                          {rows.length === 0 && addingRowBatchId !== batch.id ? (
+                            <tr>
+                              <td colSpan={13} className="px-4 py-10 text-center font-inter text-cream-secondary/60">
+                                لا توجد أصناف بهاي الدفعة.
+                              </td>
+                            </tr>
+                          ) : (
+                            rows.map((entry) =>
+                              editingId === entry.id && editFields ? (
+                                <EditableRow
+                                  key={entry.id}
+                                  fields={editFields}
+                                  onChange={setEditFields}
+                                  onSave={() => handleUpdateRow(entry)}
+                                  onCancel={() => setEditingId(null)}
+                                  saving={isPending}
+                                />
+                              ) : (
+                                <DisplayRow
+                                  key={entry.id}
+                                  entry={entry}
+                                  onEdit={() => startEditRow(entry)}
+                                  onDelete={() => setDeleteTarget(entry)}
+                                />
+                              )
+                            )
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </section>
+            );
+          })}
+        </div>
+      )}
 
       {deleteTarget && (
         <ConfirmDeleteDialog
           description={deleteTarget.item_description}
           onCancel={() => setDeleteTarget(null)}
-          onConfirm={handleDelete}
+          onConfirm={handleDeleteRow}
         />
       )}
+    </div>
+  );
+}
+
+function SummaryTile({
+  label,
+  value,
+  tone = "neutral",
+}: {
+  label: string;
+  value: string;
+  tone?: "neutral" | "debt" | "clear";
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-2xl border p-4",
+        tone === "debt"
+          ? "border-terracotta-deep/30 bg-terracotta-deep/10"
+          : "border-cream/10 bg-bg-secondary"
+      )}
+    >
+      <p className="font-inter text-xs uppercase tracking-widest text-cream-secondary/50">{label}</p>
+      <p
+        className={cn(
+          "mt-1 font-playfair text-xl font-bold",
+          tone === "debt" ? "text-terracotta-deep" : tone === "clear" ? "text-forest" : "text-cream"
+        )}
+      >
+        {value}
+      </p>
     </div>
   );
 }
@@ -629,9 +933,9 @@ function ConfirmDeleteDialog({
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-terracotta-deep/15 text-terracotta-deep">
             <AlertTriangle size={22} />
           </div>
-          <h2 className="font-playfair text-xl font-bold text-cream">حذف الدفعة</h2>
+          <h2 className="font-playfair text-xl font-bold text-cream">حذف الصنف</h2>
           <p className="mt-2 font-inter text-sm text-cream-secondary/75">
-            هل أنت متأكد من حذف دفعة &quot;{description}&quot;؟ لا يمكن التراجع عن هذا الإجراء.
+            هل أنت متأكد من حذف &quot;{description}&quot;؟ لا يمكن التراجع عن هذا الإجراء.
           </p>
           <div className="mt-6 flex justify-end gap-3">
             <Button variant="ghost" size="md" onClick={onCancel} disabled={isPending}>

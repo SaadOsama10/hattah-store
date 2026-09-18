@@ -165,9 +165,24 @@ create index if not exists product_quantities_product_id_idx on product_quantiti
 -- a free-text description, not a product reference, since a batch of
 -- stock doesn't always map one-to-one to a storefront listing. Never
 -- read by the storefront.
+--
+-- Every line item belongs to one inventory_batches row — one purchase
+-- occasion (an invoice, a supplier visit) that may contain many line
+-- items. A batch's total cost and remaining debt are always computed
+-- from its line items and amount_paid at read time, never stored.
 -- ─────────────────────────────────────────────────────────────
+create table if not exists inventory_batches (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  batch_date date not null,
+  amount_paid numeric(10, 2) not null default 0,
+  notes text,
+  created_at timestamptz not null default now()
+);
+
 create table if not exists inventory_log (
   id uuid primary key default gen_random_uuid(),
+  batch_id uuid not null references inventory_batches(id) on delete cascade,
   entry_date date not null default current_date,
   item_description text not null,
   quantity int not null,
@@ -181,6 +196,7 @@ create table if not exists inventory_log (
 );
 
 create index if not exists inventory_log_entry_date_idx on inventory_log (entry_date desc);
+create index if not exists inventory_log_batch_id_idx on inventory_log (batch_id);
 
 -- ─────────────────────────────────────────────────────────────
 -- Row Level Security — public can only ever read.
@@ -218,9 +234,11 @@ create policy "Public can read product_quantities"
   on product_quantities for select
   using (true);
 
--- inventory_log deliberately has RLS enabled but NO select/write policy
--- at all — only the service-role key (bypasses RLS) can touch it. The
--- public anon key gets zero access, unlike every other table above.
+-- inventory_batches / inventory_log deliberately have RLS enabled but NO
+-- select/write policy at all — only the service-role key (bypasses RLS)
+-- can touch them. The public anon key gets zero access, unlike every
+-- other table above.
+alter table inventory_batches enable row level security;
 alter table inventory_log enable row level security;
 
 -- ─────────────────────────────────────────────────────────────

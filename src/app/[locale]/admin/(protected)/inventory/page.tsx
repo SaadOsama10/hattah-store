@@ -1,10 +1,10 @@
 import { InventoryLog } from "@/components/admin/InventoryLog";
-import { listInventoryEntries } from "@/actions/inventory";
+import { listInventoryBatches } from "@/actions/inventory";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminInventoryPage() {
-  const entries = await listInventoryEntries();
+  const batches = await listInventoryBatches();
 
-  return <InventoryLog entries={entries} />;
+  return <InventoryLog batches={batches} />;
 }

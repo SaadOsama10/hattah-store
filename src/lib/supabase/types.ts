@@ -23,11 +23,24 @@ export interface CategoryRow {
 
 export type InventoryStatus = "in_stock" | "sold_out" | "partially_sold";
 
+// One purchase occasion (an invoice, a supplier visit) grouping many
+// inventory_log line items. total cost and remaining debt are always
+// derived from its line items + amount_paid, never stored.
+export interface InventoryBatchRow {
+  id: string;
+  title: string;
+  batch_date: string; // date, "YYYY-MM-DD"
+  amount_paid: number;
+  notes: string | null;
+  created_at: string;
+}
+
 // Internal admin-only bookkeeping ledger — never read by the storefront,
 // never localized (admin-facing, Arabic-only UI). Deliberately independent
 // of ProductRow: a free-text description, not a product reference.
 export interface InventoryEntryRow {
   id: string;
+  batch_id: string;
   entry_date: string; // date, "YYYY-MM-DD"
   item_description: string;
   quantity: number;
@@ -38,6 +51,10 @@ export interface InventoryEntryRow {
   last_sale_date: string | null; // date, "YYYY-MM-DD"
   notes: string | null;
   created_at: string;
+}
+
+export interface InventoryBatchWithEntries extends InventoryBatchRow {
+  inventory_log: InventoryEntryRow[];
 }
 
 export interface ProductImageRow {
