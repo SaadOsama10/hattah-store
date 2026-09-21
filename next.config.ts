@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
         pathname: "/storage/v1/object/public/**",
       },
     ],
+    // Vercel's on-demand image optimization is capped on the free plan
+    // (1,000 source images/month) and starts returning 402s past that —
+    // Supabase Storage already serves these at a reasonable size, so skip
+    // Next's optimizer and serve them as-is instead.
+    unoptimized: true,
   },
   experimental: {
     serverActions: {
