@@ -45,6 +45,14 @@ export interface InventoryEntryRow {
   item_description: string;
   quantity: number;
   unit_cost: number;
+  // Reference-only original-currency price, for batches bought in a
+  // foreign currency (e.g. Egyptian pounds). unit_cost above (in TL) is
+  // always the value every calculation in this app actually uses — these
+  // two are never read by any total/profit/debt computation, just shown
+  // alongside unit_cost for the admin's own record. Both null together,
+  // or both set together.
+  original_currency: string | null;
+  original_unit_cost: number | null;
   status: InventoryStatus;
   quantity_sold: number;
   unit_sale_price: number | null;

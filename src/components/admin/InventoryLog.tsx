@@ -45,6 +45,8 @@ interface FieldsState {
   item_description: string;
   quantity: string;
   unit_cost: string;
+  original_currency: string;
+  original_unit_cost: string;
   status: InventoryStatus;
   quantity_sold: string;
   unit_sale_price: string;
@@ -63,6 +65,8 @@ function emptyFields(batchId: string, batchDate: string): FieldsState {
     item_description: "",
     quantity: "",
     unit_cost: "",
+    original_currency: "",
+    original_unit_cost: "",
     status: "in_stock",
     quantity_sold: "0",
     unit_sale_price: "",
@@ -78,6 +82,8 @@ function fieldsFromEntry(entry: InventoryEntryRow): FieldsState {
     item_description: entry.item_description,
     quantity: String(entry.quantity),
     unit_cost: String(entry.unit_cost),
+    original_currency: entry.original_currency ?? "",
+    original_unit_cost: entry.original_unit_cost != null ? String(entry.original_unit_cost) : "",
     status: entry.status,
     quantity_sold: String(entry.quantity_sold),
     unit_sale_price: entry.unit_sale_price != null ? String(entry.unit_sale_price) : "",
@@ -93,6 +99,8 @@ function toFormData(fields: FieldsState): FormData {
   fd.set("item_description", fields.item_description);
   fd.set("quantity", fields.quantity);
   fd.set("unit_cost", fields.unit_cost);
+  fd.set("original_currency", fields.original_currency);
+  fd.set("original_unit_cost", fields.original_unit_cost);
   fd.set("status", fields.status);
   fd.set("quantity_sold", fields.quantity_sold);
   fd.set("unit_sale_price", fields.unit_sale_price);
@@ -435,6 +443,9 @@ export function InventoryLog({ batches }: { batches: InventoryBatchWithEntries[]
             const debt = Math.max(cost - batch.amount_paid, 0);
             const isCollapsed = collapsed.has(batch.id);
             const isEditingBatch = editingBatchId === batch.id;
+            const showOriginalColumn = batch.inventory_log.some(
+              (e) => e.original_currency && e.original_unit_cost != null
+            );
 
             return (
               <section key={batch.id} className="overflow-hidden rounded-2xl border border-cream/10">
@@ -542,7 +553,12 @@ export function InventoryLog({ batches }: { batches: InventoryBatchWithEntries[]
                       </Button>
                     </div>
                     <div className="table-scroll overflow-x-auto rounded-xl border border-cream/10">
-                      <table className="w-full min-w-[1500px] border-collapse text-start">
+                      <table
+                        className={cn(
+                          "w-full border-collapse text-start",
+                          showOriginalColumn ? "min-w-[1650px]" : "min-w-[1500px]"
+                        )}
+                      >
                         <thead>
                           <tr className="border-b border-cream/10 bg-bg-primary">
                             {[
@@ -550,6 +566,7 @@ export function InventoryLog({ batches }: { batches: InventoryBatchWithEntries[]
                               "البضاعة / الوصف",
                               "الكمية",
                               "سعر الجلب/وحدة",
+                              ...(showOriginalColumn ? ["السعر الأصلي"] : []),
                               "إجمالي الجلب",
                               "الحالة",
                               "الكمية المباعة",
@@ -580,11 +597,15 @@ export function InventoryLog({ batches }: { batches: InventoryBatchWithEntries[]
                                 setNewRowFields(null);
                               }}
                               saving={isPending}
+                              showOriginalColumn={showOriginalColumn}
                             />
                           )}
                           {rows.length === 0 && addingRowBatchId !== batch.id ? (
                             <tr>
-                              <td colSpan={13} className="px-4 py-10 text-center font-inter text-cream-secondary/60">
+                              <td
+                                colSpan={showOriginalColumn ? 14 : 13}
+                                className="px-4 py-10 text-center font-inter text-cream-secondary/60"
+                              >
                                 لا توجد أصناف بهاي الدفعة.
                               </td>
                             </tr>
@@ -598,6 +619,7 @@ export function InventoryLog({ batches }: { batches: InventoryBatchWithEntries[]
                                   onSave={() => handleUpdateRow(entry)}
                                   onCancel={() => setEditingId(null)}
                                   saving={isPending}
+                                  showOriginalColumn={showOriginalColumn}
                                 />
                               ) : (
                                 <DisplayRow
@@ -605,6 +627,7 @@ export function InventoryLog({ batches }: { batches: InventoryBatchWithEntries[]
                                   entry={entry}
                                   onEdit={() => startEditRow(entry)}
                                   onDelete={() => setDeleteTarget(entry)}
+                                  showOriginalColumn={showOriginalColumn}
                                 />
                               )
                             )
@@ -666,10 +689,12 @@ function DisplayRow({
   entry,
   onEdit,
   onDelete,
+  showOriginalColumn,
 }: {
   entry: InventoryEntryRow;
   onEdit: () => void;
   onDelete: () => void;
+  showOriginalColumn: boolean;
 }) {
   const { totalCost, totalSale, profit } = computeTotals({
     quantity: String(entry.quantity),
@@ -677,6 +702,7 @@ function DisplayRow({
     quantity_sold: String(entry.quantity_sold),
     unit_sale_price: entry.unit_sale_price != null ? String(entry.unit_sale_price) : "",
   });
+  const hasOriginal = entry.original_currency != null && entry.original_unit_cost != null;
 
   return (
     <tr className="border-b border-cream/5 last:border-0 hover:bg-cream/[0.02]">
@@ -685,9 +711,19 @@ function DisplayRow({
       </td>
       <td className="max-w-xs px-4 py-3 font-inter text-sm text-cream">{entry.item_description}</td>
       <td className="px-4 py-3 font-inter text-sm text-cream-secondary/80">{entry.quantity}</td>
-      <td className="whitespace-nowrap px-4 py-3 font-inter text-sm text-cream-secondary/80">
-        {money(entry.unit_cost)}
+      <td
+        className="whitespace-nowrap px-4 py-3 font-inter text-sm text-cream-secondary/80"
+        title={hasOriginal ? "بالليرة (تقريبي، محسوب من العملة الأصلية)" : undefined}
+      >
+        {hasOriginal ? `≈ ${money(entry.unit_cost)}` : money(entry.unit_cost)}
       </td>
+      {showOriginalColumn && (
+        <td className="whitespace-nowrap px-4 py-3 font-inter text-sm text-cream-secondary/80">
+          {hasOriginal
+            ? `${entry.original_unit_cost!.toLocaleString()} ${entry.original_currency}`
+            : "—"}
+        </td>
+      )}
       <td className="whitespace-nowrap px-4 py-3 font-inter text-sm text-cream">{money(totalCost)}</td>
       <td className="px-4 py-3">
         <span
@@ -748,12 +784,14 @@ function EditableRow({
   onSave,
   onCancel,
   saving,
+  showOriginalColumn,
 }: {
   fields: FieldsState;
   onChange: (fields: FieldsState) => void;
   onSave: () => void;
   onCancel: () => void;
   saving: boolean;
+  showOriginalColumn: boolean;
 }) {
   const { totalCost, totalSale, profit } = computeTotals(fields);
 
@@ -802,7 +840,32 @@ function EditableRow({
           onChange={(e) => set("unit_cost", e.target.value)}
           className={cn(inputClass, "w-24")}
         />
+        <div className="mt-1.5 flex gap-1">
+          <input
+            type="text"
+            value={fields.original_currency}
+            onChange={(e) => set("original_currency", e.target.value)}
+            placeholder="عملة (اختياري)"
+            className={cn(inputClass, "w-16 !px-1.5 !py-1 text-[11px]")}
+          />
+          <input
+            type="number"
+            min={0}
+            step="0.01"
+            value={fields.original_unit_cost}
+            onChange={(e) => set("original_unit_cost", e.target.value)}
+            placeholder="السعر الأصلي"
+            className={cn(inputClass, "w-20 !px-1.5 !py-1 text-[11px]")}
+          />
+        </div>
       </td>
+      {showOriginalColumn && (
+        <td className="whitespace-nowrap px-4 py-2 font-inter text-sm text-cream-secondary/70">
+          {fields.original_currency && fields.original_unit_cost
+            ? `${fields.original_unit_cost} ${fields.original_currency.toUpperCase()}`
+            : "—"}
+        </td>
+      )}
       <td className="whitespace-nowrap px-4 py-2 font-inter text-sm text-cream-secondary/70">
         {money(totalCost)}
       </td>

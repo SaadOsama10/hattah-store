@@ -95,6 +95,8 @@ interface InventoryFields {
   item_description: string;
   quantity: number;
   unit_cost: number;
+  original_currency: string | null;
+  original_unit_cost: number | null;
   status: InventoryStatus;
   quantity_sold: number;
   unit_sale_price: number | null;
@@ -107,6 +109,8 @@ function readFields(formData: FormData): InventoryFields {
   const unitSalePriceRaw = String(formData.get("unit_sale_price") ?? "").trim();
   const lastSaleDateRaw = String(formData.get("last_sale_date") ?? "").trim();
   const notesRaw = String(formData.get("notes") ?? "").trim();
+  const originalCurrencyRaw = String(formData.get("original_currency") ?? "").trim();
+  const originalUnitCostRaw = String(formData.get("original_unit_cost") ?? "").trim();
 
   return {
     batch_id: String(formData.get("batch_id") ?? "").trim(),
@@ -114,6 +118,8 @@ function readFields(formData: FormData): InventoryFields {
     item_description: String(formData.get("item_description") ?? "").trim(),
     quantity: Number(formData.get("quantity") ?? 0),
     unit_cost: Number(formData.get("unit_cost") ?? 0),
+    original_currency: originalCurrencyRaw ? originalCurrencyRaw.toUpperCase() : null,
+    original_unit_cost: originalUnitCostRaw ? Number(originalUnitCostRaw) : null,
     status: VALID_STATUSES.includes(status as InventoryStatus)
       ? (status as InventoryStatus)
       : "in_stock",
@@ -136,6 +142,12 @@ function assertValidFields(fields: InventoryFields) {
   }
   if (!Number.isFinite(fields.unit_cost) || fields.unit_cost < 0) {
     throw new Error("Invalid unit cost");
+  }
+  if ((fields.original_currency == null) !== (fields.original_unit_cost == null)) {
+    throw new Error("العملة الأصلية والسعر الأصلي لازم يتعبّوا مع بعض أو يضلوا فاضيين مع بعض");
+  }
+  if (fields.original_unit_cost != null && (!Number.isFinite(fields.original_unit_cost) || fields.original_unit_cost < 0)) {
+    throw new Error("Invalid original unit cost");
   }
   if (!Number.isFinite(fields.quantity_sold) || fields.quantity_sold < 0) {
     throw new Error("Invalid quantity sold");

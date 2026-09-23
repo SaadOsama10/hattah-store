@@ -187,6 +187,13 @@ create table if not exists inventory_log (
   item_description text not null,
   quantity int not null,
   unit_cost numeric(10, 2) not null default 0,
+  -- Reference-only original-currency price, for line items bought in a
+  -- foreign currency (e.g. Egyptian pounds). unit_cost above (in TL) is
+  -- always what every total/profit/debt calculation actually uses — these
+  -- two columns are just shown alongside it, never computed from. Both
+  -- null together, or both set together.
+  original_currency text,
+  original_unit_cost numeric(10, 2),
   status text not null default 'in_stock' check (status in ('in_stock', 'sold_out', 'partially_sold')),
   quantity_sold int not null default 0,
   unit_sale_price numeric(10, 2),
