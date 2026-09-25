@@ -6,6 +6,7 @@
   "nav": {
     "home": "الرئيسية",
     "shop": "المتجر",
+    "offers": "العروض",
     "clothing": "الملابس",
     "accessories": "الإكسسوارات",
     "decor": "الديكور",
@@ -89,6 +90,17 @@
     "loadMore": "تحميل المزيد",
     "resultsCount": "منتج",
     "allSubcategories": "تسوّق الكل"
+  },
+  "offers": {
+    "title": "العروض الحالية",
+    "subtitle": "أفضل القطع بأسعار مميزة، لفترة محدودة",
+    "resultsCount": "عرض",
+    "emptyTitle": "لا توجد عروض حاليًا",
+    "emptyHint": "تابعونا قريبًا لعروض جديدة",
+    "emptyCta": "تصفّح المتجر",
+    "bannerTitle": "عروض حالية لفترة محدودة",
+    "bannerSubtitle": "اكتشف أفضل القطع بأسعار مخفضة الآن",
+    "bannerCta": "تسوّق العروض"
   },
   "product": {
     "orderWhatsapp": "اطلب عبر واتساب",

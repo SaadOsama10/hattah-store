@@ -11,17 +11,25 @@ import { SoundToggle } from "@/components/ui/SoundToggle";
 import { CartIcon } from "@/components/cart/CartIcon";
 import { cn } from "@/lib/cn";
 
-const NAV_ITEMS = [
+const BASE_NAV_ITEMS = [
   { href: "/" as const, key: "home" },
   { href: "/shop" as const, key: "shop" },
   { href: "/#our-story" as const, key: "about" },
 ];
 
-export function Header() {
+const OFFERS_NAV_ITEM = { href: "/offers" as const, key: "offers" };
+
+export function Header({ hasOffers = false }: { hasOffers?: boolean }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Only a real, currently-active sale makes this link worth showing —
+  // no point linking to an offers page that would just render empty.
+  const NAV_ITEMS = hasOffers
+    ? [...BASE_NAV_ITEMS.slice(0, 2), OFFERS_NAV_ITEM, ...BASE_NAV_ITEMS.slice(2)]
+    : BASE_NAV_ITEMS;
 
   useEffect(() => {
     function onScroll() {

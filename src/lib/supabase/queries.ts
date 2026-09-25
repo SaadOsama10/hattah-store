@@ -1,5 +1,6 @@
 import { getPublicSupabaseClient } from "@/lib/supabase/public";
 import { buildCategoryTree, getDescendantKeys } from "@/lib/categories";
+import { isProductOnSale } from "@/lib/supabase/types";
 import type { CategoryKey, CategoryRow, ProductRow } from "@/lib/supabase/types";
 
 const PRODUCT_SELECT =
@@ -14,6 +15,42 @@ export async function getAllProducts(): Promise<ProductRow[]> {
 
   if (error) throw new Error(error.message);
   return (data ?? []) as unknown as ProductRow[];
+}
+
+/** Every product currently on sale, across all categories — narrowed in
+ * SQL to rows that even have a sale_price set, then filtered in JS with
+ * isProductOnSale to drop any stale row where sale_price >= price. */
+export async function getOnSaleProducts(): Promise<ProductRow[]> {
+  const supabase = getPublicSupabaseClient();
+  const { data, error } = await supabase
+    .from("products")
+    .select(PRODUCT_SELECT)
+    .not("sale_price", "is", null)
+    .order("created_at", { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as unknown as ProductRow[]).filter((p) =>
+    isProductOnSale(p.price, p.sale_price)
+  );
+}
+
+/** Cheap existence check for the nav link / homepage banner — only reads
+ * the two columns it needs, not full product rows. Purely decorative
+ * gating (hide a link, hide a banner), so a transient Supabase error is
+ * swallowed and defaults to "no offers" rather than breaking the page. */
+export async function hasActiveOffers(): Promise<boolean> {
+  try {
+    const supabase = getPublicSupabaseClient();
+    const { data, error } = await supabase
+      .from("products")
+      .select("price, sale_price")
+      .not("sale_price", "is", null);
+    if (error) throw new Error(error.message);
+    return (data ?? []).some((p) => isProductOnSale(p.price, p.sale_price));
+  } catch (err) {
+    console.error("hasActiveOffers failed, defaulting to false:", err);
+    return false;
+  }
 }
 
 export async function getFeaturedProducts(limit = 12): Promise<ProductRow[]> {

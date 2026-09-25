@@ -1,6 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
 import { Hero } from "@/components/home/Hero";
 import { CategoryTiles } from "@/components/home/CategoryTiles";
+import { OffersBanner } from "@/components/home/OffersBanner";
 import { FeaturedProducts } from "@/components/home/FeaturedProducts";
 import { OurStory } from "@/components/home/OurStory";
 import {
@@ -8,6 +9,7 @@ import {
   getCategoryCoverImages,
   getFeaturedProducts,
   getProductCountsByCategory,
+  hasActiveOffers,
 } from "@/lib/supabase/queries";
 
 export const dynamic = "force-dynamic";
@@ -21,10 +23,11 @@ export default async function HomePage({
   setRequestLocale(locale);
 
   const categories = await getCategories();
-  const [featuredProducts, coverImages, productCounts] = await Promise.all([
+  const [featuredProducts, coverImages, productCounts, offersActive] = await Promise.all([
     getFeaturedProducts(8),
     getCategoryCoverImages(categories),
     getProductCountsByCategory(),
+    hasActiveOffers(),
   ]);
 
   return (
@@ -35,6 +38,7 @@ export default async function HomePage({
         coverImages={coverImages}
         productCounts={productCounts}
       />
+      {offersActive && <OffersBanner />}
       <FeaturedProducts products={featuredProducts} categories={categories} />
       <OurStory />
     </>

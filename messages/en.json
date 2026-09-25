@@ -6,6 +6,7 @@
   "nav": {
     "home": "Home",
     "shop": "Shop",
+    "offers": "Offers",
     "clothing": "Clothing",
     "accessories": "Accessories",
     "decor": "Decor",
@@ -89,6 +90,17 @@
     "loadMore": "Load More",
     "resultsCount": "products",
     "allSubcategories": "Shop All"
+  },
+  "offers": {
+    "title": "Current Offers",
+    "subtitle": "Standout pieces at special prices, for a limited time",
+    "resultsCount": "offers",
+    "emptyTitle": "No offers right now",
+    "emptyHint": "Check back soon for new deals",
+    "emptyCta": "Browse the Shop",
+    "bannerTitle": "Limited-Time Offers",
+    "bannerSubtitle": "Discover standout pieces at discounted prices now",
+    "bannerCta": "Shop the Offers"
   },
   "product": {
     "orderWhatsapp": "Order via WhatsApp",

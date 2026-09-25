@@ -6,6 +6,7 @@
   "nav": {
     "home": "Ana Sayfa",
     "shop": "Mağaza",
+    "offers": "Fırsatlar",
     "clothing": "Giyim",
     "accessories": "Aksesuar",
     "decor": "Dekor",
@@ -89,6 +90,17 @@
     "loadMore": "Daha Fazla Yükle",
     "resultsCount": "ürün",
     "allSubcategories": "Tümünü Gör"
+  },
+  "offers": {
+    "title": "Güncel Fırsatlar",
+    "subtitle": "Öne çıkan parçalar özel fiyatlarla, sınırlı süre için",
+    "resultsCount": "fırsat",
+    "emptyTitle": "Şu anda fırsat yok",
+    "emptyHint": "Yeni fırsatlar için yakında tekrar bakın",
+    "emptyCta": "Mağazaya Göz At",
+    "bannerTitle": "Sınırlı Süreli Fırsatlar",
+    "bannerSubtitle": "Öne çıkan parçaları şimdi indirimli fiyatlarla keşfedin",
+    "bannerCta": "Fırsatları İncele"
   },
   "product": {
     "orderWhatsapp": "WhatsApp ile Sipariş Ver",
