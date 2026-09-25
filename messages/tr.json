@@ -111,7 +111,8 @@
     "selectQuantity": "Miktar Seçin",
     "quantityLabel": "Miktar",
     "selectQuantityFirst": "Lütfen önce bir miktar seçin",
-    "startingFrom": "Başlangıç"
+    "startingFrom": "Başlangıç",
+    "discountBadge": "-%{percent}"
   },
   "admin": {
     "nav": {
@@ -147,7 +148,8 @@
       "loadMore": "Daha Fazla Yükle",
       "hasSizesIndicator": "Bedenli",
       "hasColorsIndicator": "Renkli",
-      "hasQuantitiesIndicator": "Miktarlı"
+      "hasQuantitiesIndicator": "Miktarlı",
+      "onSaleIndicator": "Şu anda indirimde"
     },
     "form": {
       "addTitle": "Yeni Ürün Ekle",
@@ -161,6 +163,10 @@
       "descEn": "Açıklama (İngilizce)",
       "descTr": "Açıklama (Türkçe)",
       "price": "Fiyat (₺)",
+      "salePrice": "İndirimli Fiyat (isteğe bağlı)",
+      "salePriceHint": "Ürün indirimsiz normal fiyattaysa boş bırakın",
+      "invalidSalePrice": "Geçersiz indirimli fiyat",
+      "salePriceTooHigh": "İndirimli fiyat, ana fiyattan düşük olmalı",
       "category": "Kategori",
       "selectCategory": "Kategori seçin",
       "isFeatured": "Ana sayfada Öne Çıkan Parçalar'da göster",

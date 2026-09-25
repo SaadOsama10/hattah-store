@@ -9,7 +9,13 @@ export function buildWhatsAppOrderLink(message: string) {
 /** Appends the chosen size/color/quantity-option to a product name for
  * display in a WhatsApp message, e.g. "Za'atar - Quantity: 250g - Color:
  * Black". Used by both the single-product order button and the cart
- * checkout message so the two stay in sync. */
+ * checkout message so the two stay in sync.
+ *
+ * `priceOverride` appends "(currency price)" directly after the product
+ * name instead — used for a sale-priced product with no quantity option,
+ * so the message states the price actually being charged. It's ignored
+ * whenever a quantityOption is present, since that already carries its
+ * own price and the two never apply to the same product. */
 export function formatProductWithVariants(
   name: string,
   sizeLabel: string,
@@ -19,17 +25,17 @@ export function formatProductWithVariants(
   color?: string,
   quantityOption?: string,
   quantityPrice?: number,
-  currency?: string
+  currency?: string,
+  priceOverride?: number
 ): string {
-  const parts = [name];
+  const priceSuffix = (value?: number) =>
+    value != null && currency ? ` (${currency} ${value.toLocaleString()})` : "";
+
+  const parts = [`${name}${quantityOption ? "" : priceSuffix(priceOverride)}`];
   if (size) parts.push(`${sizeLabel}: ${size}`);
   if (color) parts.push(`${colorLabel}: ${color}`);
   if (quantityOption) {
-    const priceSuffix =
-      quantityPrice != null && currency
-        ? ` (${currency} ${quantityPrice.toLocaleString()})`
-        : "";
-    parts.push(`${quantityLabel}: ${quantityOption}${priceSuffix}`);
+    parts.push(`${quantityLabel}: ${quantityOption}${priceSuffix(quantityPrice)}`);
   }
   return parts.join(" - ");
 }
@@ -43,6 +49,10 @@ export function buildWhatsAppCartLink(
     name: string;
     quantity: number;
     price: number;
+    // Set only for a line added at a discounted sale price — lets the
+    // message state the sale price being charged, same as the
+    // single-product order button does.
+    originalPrice?: number;
     size?: string;
     color?: string;
     quantityOption?: string;
@@ -64,7 +74,8 @@ export function buildWhatsAppCartLink(
       item.color,
       item.quantityOption,
       item.quantityOption ? item.price : undefined,
-      currency
+      currency,
+      item.originalPrice != null ? item.price : undefined
     );
     return `${i + 1}. ${label} × ${item.quantity}`;
   });

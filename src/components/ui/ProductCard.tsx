@@ -7,11 +7,13 @@ import { ImageOff, ShoppingBag } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useCart } from "@/contexts/CartContext";
 import { playClick } from "@/lib/sound";
+import { isProductOnSale, effectivePrice, discountPercent } from "@/lib/supabase/types";
 
 export function ProductCard({
   id,
   name,
   price,
+  salePrice = null,
   image,
   categoryLabel,
   hasVariants = false,
@@ -19,6 +21,7 @@ export function ProductCard({
   id: string;
   name: string;
   price: number;
+  salePrice?: number | null;
   image: string | undefined;
   categoryLabel?: string;
   // When true, the product needs a size/color chosen before it can be
@@ -28,14 +31,24 @@ export function ProductCard({
 }) {
   const t = useTranslations("common");
   const tCart = useTranslations("cart");
+  const tProduct = useTranslations("product");
   const { addItem } = useCart();
+
+  const onSale = isProductOnSale(price, salePrice);
+  const chargedPrice = effectivePrice(price, salePrice);
 
   function handleAddToCart(e: React.MouseEvent) {
     if (hasVariants) return;
     e.preventDefault();
     e.stopPropagation();
     playClick();
-    addItem({ id, name, price, image });
+    addItem({
+      id,
+      name,
+      price: chargedPrice,
+      image,
+      ...(onSale ? { originalPrice: price } : {}),
+    });
   }
 
   return (
@@ -67,6 +80,11 @@ export function ProductCard({
               {categoryLabel}
             </span>
           )}
+          {onSale && (
+            <span className="absolute end-3 top-3 rounded-full bg-terracotta px-3 py-1 text-[10px] font-inter font-bold uppercase tracking-widest text-cream shadow-glow-terracotta">
+              {tProduct("discountBadge", { percent: discountPercent(price, salePrice as number) })}
+            </span>
+          )}
           <button
             type="button"
             onClick={handleAddToCart}
@@ -80,9 +98,20 @@ export function ProductCard({
           <h3 className="font-playfair text-lg font-bold text-cream transition-colors duration-300 group-hover:text-terracotta">
             {name}
           </h3>
-          <p className="font-inter text-sm text-cream-secondary/80">
-            {t("currency")} {price.toLocaleString()}
-          </p>
+          {onSale ? (
+            <p className="flex items-baseline gap-2 font-inter text-sm">
+              <span className="text-cream-secondary/50 line-through">
+                {t("currency")} {price.toLocaleString()}
+              </span>
+              <span className="font-semibold text-terracotta">
+                {t("currency")} {chargedPrice.toLocaleString()}
+              </span>
+            </p>
+          ) : (
+            <p className="font-inter text-sm text-cream-secondary/80">
+              {t("currency")} {price.toLocaleString()}
+            </p>
+          )}
         </div>
       </Link>
     </motion.div>

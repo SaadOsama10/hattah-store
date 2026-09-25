@@ -111,7 +111,8 @@
     "selectQuantity": "اختر الكمية",
     "quantityLabel": "الكمية",
     "selectQuantityFirst": "الرجاء اختيار الكمية أولاً",
-    "startingFrom": "يبدأ من"
+    "startingFrom": "يبدأ من",
+    "discountBadge": "-{percent}%"
   },
   "admin": {
     "nav": {
@@ -147,7 +148,8 @@
       "loadMore": "تحميل المزيد",
       "hasSizesIndicator": "له مقاسات",
       "hasColorsIndicator": "له ألوان",
-      "hasQuantitiesIndicator": "له كميات"
+      "hasQuantitiesIndicator": "له كميات",
+      "onSaleIndicator": "عليه عرض حاليًا"
     },
     "form": {
       "addTitle": "إضافة منتج جديد",
@@ -161,6 +163,10 @@
       "descEn": "الوصف بالإنجليزية",
       "descTr": "الوصف بالتركية",
       "price": "السعر (₺)",
+      "salePrice": "سعر العرض (اختياري)",
+      "salePriceHint": "اتركه فاضي لو المنتج بسعره العادي بدون عرض",
+      "invalidSalePrice": "سعر العرض غير صالح",
+      "salePriceTooHigh": "سعر العرض لازم يكون أقل من السعر الأساسي",
       "category": "الفئة",
       "selectCategory": "اختر الفئة",
       "isFeatured": "إظهار في المختارات المميزة بالصفحة الرئيسية",

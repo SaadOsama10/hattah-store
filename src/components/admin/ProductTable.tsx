@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
-import { Pencil, Trash2, Plus, ImageOff, Star, Search, Ruler, Palette, Package } from "lucide-react";
+import { Pencil, Trash2, Plus, ImageOff, Star, Search, Ruler, Palette, Package, Tag } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Toggle } from "@/components/ui/Toggle";
 import { DeleteConfirmModal } from "@/components/admin/DeleteConfirmModal";
@@ -14,6 +14,7 @@ import { buildCategoryTree, getDescendantKeys } from "@/lib/categories";
 import {
   localizeProduct,
   localizeCategory,
+  isProductOnSale,
   type ProductRow,
   type CategoryRow,
   type CategoryKey,
@@ -182,6 +183,7 @@ export function ProductTable({
                   <tbody>
                     {visible.map((product) => {
                       const localized = localizeProduct(product, locale);
+                      const onSale = isProductOnSale(localized.price, localized.salePrice);
                       return (
                         <tr key={product.id} className="border-b border-cream/5 last:border-0">
                           <td className="px-5 py-3">
@@ -239,14 +241,35 @@ export function ProductTable({
                                   />
                                 </span>
                               )}
+                              {onSale && (
+                                <span
+                                  title={t("onSaleIndicator")}
+                                  className="flex shrink-0 items-center gap-1 rounded-full bg-terracotta/15 px-2 py-0.5 text-terracotta"
+                                >
+                                  <Tag size={11} aria-label={t("onSaleIndicator")} />
+                                </span>
+                              )}
                               {localized.name}
                             </span>
                           </td>
                           <td className="px-5 py-3 font-inter text-sm text-cream-secondary/70">
                             {categoryLabelByKey[localized.category]}
                           </td>
-                          <td className="px-5 py-3 font-inter text-sm text-cream-secondary/70">
-                            {tCommon("currency")} {localized.price.toLocaleString()}
+                          <td className="px-5 py-3 font-inter text-sm">
+                            {onSale ? (
+                              <span className="flex items-center gap-2">
+                                <span className="text-cream-secondary/40 line-through">
+                                  {tCommon("currency")} {localized.price.toLocaleString()}
+                                </span>
+                                <span className="font-semibold text-terracotta">
+                                  {tCommon("currency")} {localized.salePrice!.toLocaleString()}
+                                </span>
+                              </span>
+                            ) : (
+                              <span className="text-cream-secondary/70">
+                                {tCommon("currency")} {localized.price.toLocaleString()}
+                              </span>
+                            )}
                           </td>
                           <td className="px-5 py-3">
                             <div className="flex items-center justify-end gap-3">

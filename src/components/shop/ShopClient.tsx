@@ -206,6 +206,7 @@ export function ShopClient({
                 id={product.id}
                 name={product.name}
                 price={product.price}
+                salePrice={product.salePrice}
                 image={product.images[0]}
                 categoryLabel={categoryLabelByKey[product.category]}
                 hasVariants={

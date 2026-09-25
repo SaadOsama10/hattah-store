@@ -25,6 +25,7 @@ export function CartDrawer() {
         name: i.name,
         quantity: i.quantity,
         price: i.price,
+        originalPrice: i.originalPrice,
         size: i.size,
         color: i.color,
         quantityOption: i.quantityOption,
@@ -164,8 +165,21 @@ export function CartDrawer() {
                                 <Plus size={12} />
                               </button>
                             </div>
-                            <span className="font-inter text-sm text-cream-secondary/80">
-                              {currency} {(item.price * item.quantity).toLocaleString()}
+                            <span className="flex items-baseline gap-1.5 font-inter text-sm">
+                              {item.originalPrice != null && (
+                                <span className="text-cream-secondary/40 line-through">
+                                  {currency} {(item.originalPrice * item.quantity).toLocaleString()}
+                                </span>
+                              )}
+                              <span
+                                className={
+                                  item.originalPrice != null
+                                    ? "font-semibold text-terracotta"
+                                    : "text-cream-secondary/80"
+                                }
+                              >
+                                {currency} {(item.price * item.quantity).toLocaleString()}
+                              </span>
                             </span>
                           </div>
                         </div>

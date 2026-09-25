@@ -6,8 +6,13 @@ export interface CartItem {
   id: string;
   name: string;
   // The price actually paid for one unit of this line — either the
-  // product's base price, or the chosen quantity option's own price.
+  // product's base price, its sale price, or the chosen quantity
+  // option's own price.
   price: number;
+  // Set only when this line was added at a discounted sale price — the
+  // pre-discount price, kept so the cart drawer and WhatsApp message can
+  // show the struck-through original alongside what's actually charged.
+  originalPrice?: number;
   image?: string;
   quantity: number;
   size?: string;

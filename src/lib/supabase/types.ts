@@ -111,6 +111,10 @@ export interface ProductRow {
   description_en: string;
   description_tr: string;
   price: number;
+  // Optional sale price for plain (non-quantity) products — null unless
+  // the product is currently on sale. See isProductOnSale/effectivePrice
+  // below for the rule on when it actually applies.
+  sale_price: number | null;
   category: CategoryKey;
   is_featured: boolean;
   has_sizes: boolean;
@@ -135,6 +139,10 @@ export interface LocalizedProduct {
   // Base/fallback price — what's shown on shop cards, and what applies
   // directly when the product has no quantity options.
   price: number;
+  // Optional sale price — use isProductOnSale/effectivePrice rather than
+  // reading this directly, since it only counts as "on sale" when it's
+  // actually lower than price.
+  salePrice: number | null;
   category: CategoryKey;
   createdAt: string;
   images: string[];
@@ -180,6 +188,7 @@ export function localizeProduct(
     name,
     description,
     price: row.price,
+    salePrice: row.sale_price,
     category: row.category,
     createdAt: row.created_at,
     images,
@@ -187,6 +196,24 @@ export function localizeProduct(
     colors,
     quantities,
   };
+}
+
+/** A sale_price only ever counts as an actual discount when it's set and
+ * strictly lower than price — guards against stale/invalid data showing
+ * a "sale" that isn't one. */
+export function isProductOnSale(price: number, salePrice: number | null): boolean {
+  return salePrice != null && salePrice < price;
+}
+
+/** The price to actually charge: sale_price when on sale, price otherwise. */
+export function effectivePrice(price: number, salePrice: number | null): number {
+  return isProductOnSale(price, salePrice) ? (salePrice as number) : price;
+}
+
+/** Rounded discount percentage, e.g. 20 for a 20% markdown. Only
+ * meaningful when isProductOnSale is true. */
+export function discountPercent(price: number, salePrice: number): number {
+  return Math.round((1 - salePrice / price) * 100);
 }
 
 export function localizeCategory(row: CategoryRow, locale: Locale): string {

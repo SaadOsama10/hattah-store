@@ -88,6 +88,11 @@ create table if not exists products (
   description_en text not null default '',
   description_tr text not null default '',
   price numeric(10, 2) not null default 0,
+  -- Optional sale price for plain (non-quantity) products. NULL keeps a
+  -- product working exactly as before. When set and lower than price,
+  -- price becomes the struck-through original and sale_price the price
+  -- actually charged everywhere (cards, product page, cart, WhatsApp).
+  sale_price numeric(10, 2),
   category text not null references categories(key),
   is_featured boolean not null default false,
   -- Product variants (sizes/colors/quantities) are opt-in per product —

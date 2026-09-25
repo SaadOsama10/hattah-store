@@ -36,6 +36,7 @@ export default async function EditProductPage({
           description_en: product.description_en,
           description_tr: product.description_tr,
           price: product.price,
+          sale_price: product.sale_price,
           category: product.category,
           is_featured: product.is_featured,
           has_sizes: product.has_sizes,

@@ -8,6 +8,7 @@ import { useCart } from "@/contexts/CartContext";
 import { buildWhatsAppOrderLink, formatProductWithVariants } from "@/lib/whatsapp";
 import { playClick } from "@/lib/sound";
 import { cn } from "@/lib/cn";
+import { isProductOnSale, discountPercent } from "@/lib/supabase/types";
 
 export interface PurchaseProduct {
   id: string;
@@ -15,6 +16,9 @@ export interface PurchaseProduct {
   // Base/fallback price — used directly when the product has no
   // quantity options, and as the "starting from" figure otherwise.
   price: number;
+  // Optional sale price — only ever applies when the product has no
+  // quantity options (quantities carry their own per-option pricing).
+  salePrice?: number | null;
   image?: string;
 }
 
@@ -61,9 +65,12 @@ export function ProductPurchaseActions({
   const minQuantityPrice = hasQuantities
     ? Math.min(...quantities.map((q) => q.price))
     : null;
+  const isOnSale = !hasQuantities && isProductOnSale(product.price, product.salePrice ?? null);
   const displayPrice = hasQuantities
     ? (selectedQuantityOption?.price ?? minQuantityPrice!)
-    : product.price;
+    : isOnSale
+      ? (product.salePrice as number)
+      : product.price;
   const showStartingFrom = hasQuantities && !selectedQuantityOption;
 
   function validate(): boolean {
@@ -89,6 +96,7 @@ export function ProductPurchaseActions({
       id: product.id,
       name: product.name,
       price: displayPrice,
+      originalPrice: isOnSale ? product.price : undefined,
       image: product.image,
       size: selectedSize ?? undefined,
       color: selectedColor ?? undefined,
@@ -113,16 +121,31 @@ export function ProductPurchaseActions({
     selectedColor ?? undefined,
     selectedQuantity ?? undefined,
     selectedQuantityOption?.price,
-    currency
+    currency,
+    isOnSale ? displayPrice : undefined
   );
   const whatsappHref = buildWhatsAppOrderLink(t("whatsappMessage", { productName: productLabel }));
 
   return (
     <div className="space-y-5">
-      <p className="font-inter text-2xl text-cream-secondary">
-        {showStartingFrom && <span className="me-1.5 text-sm text-cream-secondary/70">{t("startingFrom")}</span>}
-        {currency} {displayPrice.toLocaleString()}
-      </p>
+      {isOnSale ? (
+        <div className="flex flex-wrap items-baseline gap-3">
+          <p className="font-inter text-lg text-cream-secondary/50 line-through">
+            {currency} {product.price.toLocaleString()}
+          </p>
+          <p className="font-inter text-2xl font-semibold text-terracotta">
+            {currency} {displayPrice.toLocaleString()}
+          </p>
+          <span className="rounded-full bg-terracotta/15 px-3 py-1 font-inter text-xs font-bold uppercase tracking-widest text-terracotta">
+            {t("discountBadge", { percent: discountPercent(product.price, displayPrice) })}
+          </span>
+        </div>
+      ) : (
+        <p className="font-inter text-2xl text-cream-secondary">
+          {showStartingFrom && <span className="me-1.5 text-sm text-cream-secondary/70">{t("startingFrom")}</span>}
+          {currency} {displayPrice.toLocaleString()}
+        </p>
+      )}
 
       {hasSizes && (
         <div>

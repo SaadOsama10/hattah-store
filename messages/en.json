@@ -111,7 +111,8 @@
     "selectQuantity": "Select Quantity",
     "quantityLabel": "Quantity",
     "selectQuantityFirst": "Please select a quantity first",
-    "startingFrom": "Starting from"
+    "startingFrom": "Starting from",
+    "discountBadge": "-{percent}%"
   },
   "admin": {
     "nav": {
@@ -147,7 +148,8 @@
       "loadMore": "Load More",
       "hasSizesIndicator": "Has sizes",
       "hasColorsIndicator": "Has colors",
-      "hasQuantitiesIndicator": "Has quantities"
+      "hasQuantitiesIndicator": "Has quantities",
+      "onSaleIndicator": "Currently on sale"
     },
     "form": {
       "addTitle": "Add New Product",
@@ -161,6 +163,10 @@
       "descEn": "Description (English)",
       "descTr": "Description (Turkish)",
       "price": "Price (₺)",
+      "salePrice": "Sale Price (optional)",
+      "salePriceHint": "Leave empty if this product is at its regular price with no sale",
+      "invalidSalePrice": "Invalid sale price",
+      "salePriceTooHigh": "Sale price must be lower than the base price",
       "category": "Category",
       "selectCategory": "Select category",
       "isFeatured": "Show in Featured Pieces on the homepage",

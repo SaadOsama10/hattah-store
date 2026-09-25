@@ -22,6 +22,7 @@ export interface ProductFormInitialData {
   description_en: string;
   description_tr: string;
   price: number;
+  sale_price: number | null;
   category: CategoryKey;
   is_featured: boolean;
   has_sizes: boolean;
@@ -57,6 +58,7 @@ export function ProductForm({
     description_en: initialData?.description_en ?? "",
     description_tr: initialData?.description_tr ?? "",
     price: initialData?.price ?? 0,
+    sale_price: initialData?.sale_price != null ? String(initialData.sale_price) : "",
     category: initialData?.category ?? ("" as CategoryKey | ""),
     is_featured: initialData?.is_featured ?? false,
     has_sizes: initialData?.has_sizes ?? false,
@@ -89,6 +91,19 @@ export function ProductForm({
     e.preventDefault();
     setError(null);
 
+    const salePriceTrimmed = fields.sale_price.trim();
+    if (salePriceTrimmed && !fields.has_quantities) {
+      const salePriceNum = Number(salePriceTrimmed);
+      if (!Number.isFinite(salePriceNum) || salePriceNum <= 0) {
+        setError(t("invalidSalePrice"));
+        return;
+      }
+      if (salePriceNum >= fields.price) {
+        setError(t("salePriceTooHigh"));
+        return;
+      }
+    }
+
     const formData = new FormData();
     formData.set("name_ar", fields.name_ar);
     formData.set("name_en", fields.name_en);
@@ -97,6 +112,7 @@ export function ProductForm({
     formData.set("description_en", fields.description_en);
     formData.set("description_tr", fields.description_tr);
     formData.set("price", String(fields.price));
+    formData.set("sale_price", fields.has_quantities ? "" : salePriceTrimmed);
     formData.set("category", fields.category);
     if (fields.is_featured) formData.set("is_featured", "on");
     if (fields.has_sizes) {
@@ -187,6 +203,23 @@ export function ProductForm({
           />
         </div>
 
+        {!fields.has_quantities && (
+          <div className="sm:col-span-2">
+            <label className="mb-2 block font-inter text-xs uppercase tracking-widest text-cream-secondary/60">
+              {t("salePrice")}
+            </label>
+            <input
+              type="number"
+              min={0}
+              step="0.01"
+              value={fields.sale_price}
+              onChange={(e) => update("sale_price", e.target.value)}
+              className="w-full rounded-2xl border border-cream/20 bg-bg-secondary px-4 py-3 font-inter text-sm text-cream focus:border-terracotta focus:outline-none"
+            />
+            <p className="mt-1.5 font-inter text-xs text-cream-secondary/50">{t("salePriceHint")}</p>
+          </div>
+        )}
+
         <div className="sm:col-span-2">
           <Toggle
             checked={fields.is_featured}
@@ -241,7 +274,13 @@ export function ProductForm({
         <div className="sm:col-span-2">
           <Toggle
             checked={fields.has_quantities}
-            onChange={(v) => update("has_quantities", v)}
+            onChange={(v) => {
+              update("has_quantities", v);
+              // Sale price only applies to plain single-price products —
+              // clear it so a stale value can't linger once quantities
+              // (which have their own per-option pricing) take over.
+              if (v) update("sale_price", "");
+            }}
             label={t("hasQuantities")}
             description={t("hasQuantitiesHint")}
           />

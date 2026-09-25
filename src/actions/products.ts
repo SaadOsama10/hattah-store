@@ -13,6 +13,7 @@ export interface ProductFormFields {
   description_en: string;
   description_tr: string;
   price: number;
+  sale_price: number | null;
   category: CategoryKey;
   is_featured: boolean;
   has_sizes: boolean;
@@ -21,6 +22,7 @@ export interface ProductFormFields {
 }
 
 function readFields(formData: FormData): ProductFormFields {
+  const salePriceRaw = String(formData.get("sale_price") ?? "").trim();
   return {
     name_ar: String(formData.get("name_ar") ?? "").trim(),
     name_en: String(formData.get("name_en") ?? "").trim(),
@@ -29,12 +31,26 @@ function readFields(formData: FormData): ProductFormFields {
     description_en: String(formData.get("description_en") ?? "").trim(),
     description_tr: String(formData.get("description_tr") ?? "").trim(),
     price: Number(formData.get("price") ?? 0),
+    sale_price: salePriceRaw ? Number(salePriceRaw) : null,
     category: String(formData.get("category") ?? "") as CategoryKey,
     is_featured: formData.get("is_featured") === "on",
     has_sizes: formData.get("has_sizes") === "on",
     has_colors: formData.get("has_colors") === "on",
     has_quantities: formData.get("has_quantities") === "on",
   };
+}
+
+/** A sale_price, when present, must be a real discount — positive and
+ * strictly below price — otherwise it wouldn't compute to a valid "on
+ * sale" state everywhere it's read (see isProductOnSale). */
+function assertValidPrice(fields: Pick<ProductFormFields, "price" | "sale_price">) {
+  if (fields.sale_price == null) return;
+  if (!Number.isFinite(fields.sale_price) || fields.sale_price <= 0) {
+    throw new Error("سعر العرض غير صالح");
+  }
+  if (fields.sale_price >= fields.price) {
+    throw new Error("سعر العرض لازم يكون أقل من السعر الأساسي");
+  }
 }
 
 function readSizeLabels(formData: FormData): string[] {
@@ -223,6 +239,7 @@ export async function createProduct(formData: FormData) {
   if (!fields.name_ar || !fields.name_en || !fields.name_tr || !fields.category) {
     throw new Error("Missing required fields");
   }
+  assertValidPrice(fields);
 
   const supabase = getServiceSupabaseClient();
 
@@ -273,6 +290,7 @@ export async function updateProduct(
 
   const fields = readFields(formData);
   const newImages = formData.getAll("images").filter((f) => f instanceof File) as File[];
+  assertValidPrice(fields);
 
   const supabase = getServiceSupabaseClient();
 

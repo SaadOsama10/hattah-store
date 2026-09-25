@@ -67,6 +67,7 @@ export default async function ProductDetailPage({
                 id: localized.id,
                 name: localized.name,
                 price: localized.price,
+                salePrice: localized.salePrice,
                 image: localized.images[0],
               }}
               sizes={localized.sizes}
