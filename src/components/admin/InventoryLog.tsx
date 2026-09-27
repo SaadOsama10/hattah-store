@@ -8,6 +8,7 @@ import {
   ChevronDown,
   Pencil,
   Plus,
+  StickyNote,
   Trash2,
   X,
 } from "lucide-react";
@@ -543,6 +544,13 @@ export function InventoryLog({ batches }: { batches: InventoryBatchWithEntries[]
                     )}
                   </div>
                 </div>
+
+                {!isEditingBatch && batch.notes && (
+                  <div className="flex items-start gap-2.5 border-t border-cream/10 bg-bg-primary/40 px-5 py-3">
+                    <StickyNote size={15} className="mt-0.5 shrink-0 text-terracotta" />
+                    <p className="font-inter text-sm text-cream-secondary/90">{batch.notes}</p>
+                  </div>
+                )}
 
                 {!isCollapsed && (
                   <div className="border-t border-cream/10 p-4">
