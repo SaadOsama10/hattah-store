@@ -17,6 +17,7 @@ export function ProductCard({
   image,
   categoryLabel,
   hasVariants = false,
+  startingFrom = false,
 }: {
   id: string;
   name: string;
@@ -24,6 +25,9 @@ export function ProductCard({
   salePrice?: number | null;
   image: string | undefined;
   categoryLabel?: string;
+  // When true, `price` is the cheapest of several quantity options rather
+  // than a single fixed price — shown with the "starting from" prefix.
+  startingFrom?: boolean;
   // When true, the product needs a size/color chosen before it can be
   // added — the quick-add icon just follows the card's Link to the
   // product page instead of silently adding without a selection.
@@ -109,6 +113,9 @@ export function ProductCard({
             </p>
           ) : (
             <p className="font-inter text-sm text-cream-secondary/80">
+              {startingFrom && (
+                <span className="me-1.5 text-xs text-cream-secondary/60">{tProduct("startingFrom")}</span>
+              )}
               {t("currency")} {price.toLocaleString()}
             </p>
           )}

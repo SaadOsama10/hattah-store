@@ -136,12 +136,19 @@ export interface LocalizedProduct {
   id: string;
   name: string;
   description: string;
-  // Base/fallback price — what's shown on shop cards, and what applies
-  // directly when the product has no quantity options.
+  // The raw base price column. For a product with quantity options this is
+  // NOT what a buyer pays and can drift out of sync with the options —
+  // anything outside the product page that shows "the" price (cards,
+  // lists) must read startingPrice instead.
   price: number;
+  // The price to show wherever a single price is displayed: the cheapest
+  // current quantity option when the product has any, otherwise price.
+  // Always derived from the live option rows, never stored.
+  startingPrice: number;
   // Optional sale price — use isProductOnSale/effectivePrice rather than
   // reading this directly, since it only counts as "on sale" when it's
-  // actually lower than price.
+  // actually lower than price. Always null for a product with quantity
+  // options (those carry their own per-option pricing, no sale).
   salePrice: number | null;
   category: CategoryKey;
   createdAt: string;
@@ -183,12 +190,15 @@ export function localizeProduct(
       price: q.price,
     }));
 
+  const hasQuantities = quantities.length > 0;
+
   return {
     id: row.id,
     name,
     description,
     price: row.price,
-    salePrice: row.sale_price,
+    startingPrice: hasQuantities ? Math.min(...quantities.map((q) => q.price)) : row.price,
+    salePrice: hasQuantities ? null : row.sale_price,
     category: row.category,
     createdAt: row.created_at,
     images,

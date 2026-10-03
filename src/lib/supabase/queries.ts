@@ -25,6 +25,7 @@ export async function getOnSaleProducts(): Promise<ProductRow[]> {
   const { data, error } = await supabase
     .from("products")
     .select(PRODUCT_SELECT)
+    .eq("has_quantities", false)
     .not("sale_price", "is", null)
     .order("created_at", { ascending: false });
 
@@ -44,6 +45,7 @@ export async function hasActiveOffers(): Promise<boolean> {
     const { data, error } = await supabase
       .from("products")
       .select("price, sale_price")
+      .eq("has_quantities", false)
       .not("sale_price", "is", null);
     if (error) throw new Error(error.message);
     return (data ?? []).some((p) => isProductOnSale(p.price, p.sale_price));

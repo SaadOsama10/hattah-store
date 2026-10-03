@@ -183,7 +183,7 @@ export function ProductTable({
                   <tbody>
                     {visible.map((product) => {
                       const localized = localizeProduct(product, locale);
-                      const onSale = isProductOnSale(localized.price, localized.salePrice);
+                      const onSale = isProductOnSale(localized.startingPrice, localized.salePrice);
                       return (
                         <tr key={product.id} className="border-b border-cream/5 last:border-0">
                           <td className="px-5 py-3">
@@ -259,7 +259,7 @@ export function ProductTable({
                             {onSale ? (
                               <span className="flex items-center gap-2">
                                 <span className="text-cream-secondary/40 line-through">
-                                  {tCommon("currency")} {localized.price.toLocaleString()}
+                                  {tCommon("currency")} {localized.startingPrice.toLocaleString()}
                                 </span>
                                 <span className="font-semibold text-terracotta">
                                   {tCommon("currency")} {localized.salePrice!.toLocaleString()}
@@ -267,7 +267,7 @@ export function ProductTable({
                               </span>
                             ) : (
                               <span className="text-cream-secondary/70">
-                                {tCommon("currency")} {localized.price.toLocaleString()}
+                                {tCommon("currency")} {localized.startingPrice.toLocaleString()}
                               </span>
                             )}
                           </td>

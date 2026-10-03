@@ -40,8 +40,9 @@ export async function RelatedProducts({
               key={product.id}
               id={localized.id}
               name={localized.name}
-              price={localized.price}
+              price={localized.startingPrice}
               salePrice={localized.salePrice}
+              startingFrom={localized.quantities.length > 0}
               image={localized.images[0]}
               categoryLabel={categoryLabelByKey[localized.category]}
               hasVariants={

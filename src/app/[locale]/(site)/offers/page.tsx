@@ -55,8 +55,9 @@ export default async function OffersPage({
                 key={product.id}
                 id={product.id}
                 name={product.name}
-                price={product.price}
+                price={product.startingPrice}
                 salePrice={product.salePrice}
+                startingFrom={product.quantities.length > 0}
                 image={product.images[0]}
                 categoryLabel={categoryLabelByKey[product.category]}
                 hasVariants={
