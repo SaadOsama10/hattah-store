@@ -137,7 +137,8 @@
       "subtitle": "Panele erişmek için şifreyi girin",
       "password": "Şifre",
       "submit": "Giriş Yap",
-      "error": "Şifre yanlış"
+      "error": "Şifre yanlış",
+      "locked": "Çok fazla başarısız deneme. {minutes} dakika sonra tekrar deneyin."
     },
     "dashboard": {
       "title": "Kontrol Paneli",

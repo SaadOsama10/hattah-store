@@ -137,7 +137,8 @@
       "subtitle": "Enter the password to access the dashboard",
       "password": "Password",
       "submit": "Log In",
-      "error": "Incorrect password"
+      "error": "Incorrect password",
+      "locked": "Too many failed attempts. Try again in {minutes} min."
     },
     "dashboard": {
       "title": "Dashboard",

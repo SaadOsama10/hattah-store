@@ -253,6 +253,19 @@ create policy "Public can read product_quantities"
 alter table inventory_batches enable row level security;
 alter table inventory_log enable row level security;
 
+-- Failed admin login attempts (rate limiting, see src/lib/login-rate-limit.ts).
+-- Admin-only: RLS on, no policies — the service-role key only.
+create table if not exists admin_login_attempts (
+  id uuid primary key default gen_random_uuid(),
+  ip text not null,
+  attempted_at timestamptz not null default now()
+);
+
+create index if not exists admin_login_attempts_ip_time_idx
+  on admin_login_attempts (ip, attempted_at desc);
+
+alter table admin_login_attempts enable row level security;
+
 -- ─────────────────────────────────────────────────────────────
 -- Storage bucket for product photos (public read).
 -- ─────────────────────────────────────────────────────────────

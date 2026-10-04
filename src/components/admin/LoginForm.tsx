@@ -14,16 +14,20 @@ export function LoginForm() {
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
+  const [lockedMinutes, setLockedMinutes] = useState<number | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(false);
+    setLockedMinutes(null);
     startTransition(async () => {
       const result = await loginAdmin(password);
       if (result.success) {
         router.replace("/admin");
         router.refresh();
+      } else if (result.locked) {
+        setLockedMinutes(Math.max(1, Math.ceil(result.retryAfterSeconds / 60)));
       } else {
         setError(true);
       }
@@ -58,7 +62,13 @@ export function LoginForm() {
             />
           </div>
 
-          {error && (
+          {lockedMinutes !== null && (
+            <p role="alert" className="font-inter text-sm text-terracotta-deep">
+              {t("locked", { minutes: lockedMinutes })}
+            </p>
+          )}
+
+          {error && lockedMinutes === null && (
             <p className="font-inter text-sm text-terracotta-deep">{t("error")}</p>
           )}
 
