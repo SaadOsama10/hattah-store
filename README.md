@@ -259,15 +259,16 @@ This is a live store, so the defaults are conservative:
 
 | Layer | What protects it |
 |---|---|
-| **Database (RLS)** | Row Level Security is enabled on **every** table. The anonymous role gets `SELECT` policies on the catalogue tables only. There are **no** insert/update/delete policies, and the `inventory_*` tables have **no policies at all**, so the public key cannot write anything or read the ledger. |
+| **Database (RLS)** | Row Level Security is enabled on **every** table. The anonymous role gets `SELECT` policies on the catalogue tables only. There are **no** insert/update/delete policies, and the `inventory_*` tables have **no policies at all**, so the public key cannot write anything or read the ledger. ✅ **Verified on the production database** (2026-10-04): RLS is on for all 8 public tables, policies are `SELECT`-only for public on the catalogue tables and storage objects, and the inventory tables have none. |
 | **Writes** | All writes happen in Next.js Server Actions using the Supabase **service-role key**, which lives only in server environment variables. The client is guarded with `import "server-only"` so it can't be bundled into browser code. |
 | **Admin routes** | Checked in **two places**: middleware redirects any `/admin/*` request without a valid session cookie, and the protected layout re-checks on the server. |
 | **Server Actions** | Every exported admin action calls `assertAdminSession()` first, so calling an action directly (without visiting the UI) is still rejected. |
+| **Login rate limiting** | **5 failed attempts per IP per 15 minutes**, then the login form shows a lockout message (localized AR/EN/TR) with the minutes remaining. While locked, even the correct password is refused. A successful login clears the counter. Failures are stored in an admin-only `admin_login_attempts` table (RLS on, no policies), so the limit is shared across serverless instances; if that table is missing the app falls back to a per-instance in-memory limiter. |
 | **Session** | HMAC-SHA256 signed cookie: `httpOnly`, `sameSite=lax`, `secure` in production, 2-hour **sliding** expiry. Password and token comparisons are constant-time. |
 | **Storage** | The `product-images` bucket is public-read; there are no storage write policies for the anon role. |
 | **Secrets** | `.env*` is git-ignored (only `.env.example` with placeholders is tracked). The git history was scanned: no service-role key, admin password or session secret was ever committed. Only the public URL and anon key reach the browser. |
 
-Known trade-offs, stated honestly: admin access is a single shared password (not per-user accounts), and login attempts are not rate-limited at the application layer. Rotating `ADMIN_SESSION_SECRET` signs everyone out immediately.
+Known trade-off, stated honestly: admin access is a single shared password (not per-user accounts). Rotating `ADMIN_SESSION_SECRET` signs everyone out immediately.
 
 ---
 
@@ -310,7 +311,7 @@ hattah-store/
 ├── scripts/seed.mjs          # demo-data seeder (local Supabase only by default)
 ├── supabase/
 │   ├── schema.sql            # full schema + RLS + storage bucket (fresh install)
-│   └── migrations/           # incremental SQL for existing projects (001 … 011)
+│   └── migrations/           # incremental SQL for existing projects (001 … 012)
 └── src/
     ├── middleware.ts         # locale routing + admin session gate
     ├── i18n/                 # routing, request config, navigation helpers
@@ -320,7 +321,7 @@ hattah-store/
     │   └── admin/            # login + protected dashboard, products, categories, inventory
     ├── components/           # admin · cart · home · layout · product · shop · ui
     ├── contexts/CartContext.tsx
-    └── lib/                  # supabase clients, whatsapp links, sound, admin-auth, types
+    └── lib/                  # supabase clients, whatsapp links, sound, admin-auth, login-rate-limit, types
 ```
 
 ---
@@ -339,7 +340,7 @@ cp .env.example .env.local        # then fill in the values below
 ### 1. Create the database
 
 In your Supabase project → **SQL Editor**, run [`supabase/schema.sql`](supabase/schema.sql). It creates all tables, the default category tree, RLS policies and the public `product-images` bucket.
-(Already have an older database? Apply the numbered files in [`supabase/migrations/`](supabase/migrations) in order.)
+(Already have an older database? Apply the numbered files in [`supabase/migrations/`](supabase/migrations) in order — `012_add_admin_login_attempts.sql` enables the shared login rate limiter.)
 
 ### 2. Environment variables
 
@@ -402,6 +403,12 @@ Import the repo in Vercel, add the same environment variables, deploy. (This is 
 
 **Saed O S Radi** — 4th-year Software Engineering student at FSMVU.
 [GitHub @SaadOsama10](https://github.com/SaadOsama10)
+
+## 📄 License
+
+© Saed O S Radi. All rights reserved. Code is shared for portfolio purposes. The HATTAH name, logo and product images are proprietary. See [LICENSE](LICENSE).
+
+---
 
 <div align="center">
 <sub>Built with care for Palestinian heritage. 🇵🇸</sub>
