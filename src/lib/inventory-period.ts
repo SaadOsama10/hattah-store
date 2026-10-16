@@ -146,7 +146,7 @@ export function ledgerRows(
       const qty = view === "purchases" ? e.quantity : e.quantity_sold;
       const unitPrice = view === "purchases" ? e.unit_cost : (e.unit_sale_price ?? 0);
       const totalCents = qty * toCents(unitPrice);
-      if (view === "purchases" ? totalCents <= 0 : e.quantity_sold <= 0) continue;
+      if (view === "purchases" ? totalCents === 0 : e.quantity_sold <= 0) continue;
       rows.push({
         id: e.id,
         batchId: batch.id,
@@ -188,4 +188,71 @@ export function groupByNote(rows: LedgerRow[], emptyLabel: string): OrderGroup[]
   return [...map.entries()]
     .map(([key, g]) => ({ key, rows: g.rows, qty: g.qty, total: g.cents / 100 }))
     .sort((a, b) => b.total - a.total);
+}
+
+export interface BatchGroup {
+  batch: InventoryBatchWithEntries;
+  rows: LedgerRow[];
+  total: number;
+  qty: number;
+  paid: number;
+  debt: number;
+}
+
+export interface DayGroup {
+  date: string;
+  batches: BatchGroup[];
+  total: number;
+  qty: number;
+  rows: number;
+  paid: number;
+  debt: number;
+}
+
+/** date (newest first) → batch (newest first) → rows. Batch `debt` is its
+ * full cost minus paid (floored at 0), same definition as the all-time view. */
+export function groupByDayAndBatch(
+  rows: LedgerRow[],
+  batches: InventoryBatchWithEntries[]
+): DayGroup[] {
+  const byId = new Map(batches.map((b) => [b.id, b]));
+  const perBatch = new Map<string, LedgerRow[]>();
+  for (const r of rows) {
+    const list = perBatch.get(r.batchId) ?? [];
+    list.push(r);
+    perBatch.set(r.batchId, list);
+  }
+
+  const days = new Map<string, BatchGroup[]>();
+  for (const [id, list] of perBatch) {
+    const batch = byId.get(id)!;
+    const cost = batch.inventory_log.reduce((s, e) => s + e.quantity * toCents(e.unit_cost), 0);
+    const paid = toCents(batch.amount_paid);
+    const group: BatchGroup = {
+      batch,
+      rows: list,
+      total: sumRows(list),
+      qty: list.reduce((s, r) => s + r.qty, 0),
+      paid: paid / 100,
+      debt: Math.max(cost - paid, 0) / 100,
+    };
+    days.set(batch.batch_date, [...(days.get(batch.batch_date) ?? []), group]);
+  }
+
+  return [...days.entries()]
+    .sort((a, b) => b[0].localeCompare(a[0]))
+    .map(([date, groups]) => {
+      groups.sort((a, b) => b.batch.created_at.localeCompare(a.batch.created_at));
+      const c = (pick: (g: BatchGroup) => number) =>
+        groups.reduce((s, g) => s + toCents(pick(g)), 0) / 100;
+      return {
+        date,
+        batches: groups,
+        total: c((g) => g.total),
+        qty: groups.reduce((s, g) => s + g.qty, 0),
+        rows: groups.reduce((s, g) => s + g.rows.length, 0),
+        paid: c((g) => g.paid),
+        debt: c((g) => g.debt),
+      };
+    });
 }

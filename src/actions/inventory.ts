@@ -55,7 +55,9 @@ function assertValidBatchFields(fields: BatchFields) {
   if (!fields.title || !fields.batch_date) {
     throw new Error("Missing required fields");
   }
-  if (!Number.isFinite(fields.amount_paid) || fields.amount_paid < 0) {
+  // Negative is allowed: a supplier refund (money received back) is booked
+  // as a negative amount_paid / unit_cost.
+  if (!Number.isFinite(fields.amount_paid)) {
     throw new Error("Invalid amount paid");
   }
 }
@@ -140,7 +142,7 @@ function assertValidFields(fields: InventoryFields) {
   if (!Number.isFinite(fields.quantity) || fields.quantity < 0) {
     throw new Error("Invalid quantity");
   }
-  if (!Number.isFinite(fields.unit_cost) || fields.unit_cost < 0) {
+  if (!Number.isFinite(fields.unit_cost)) {
     throw new Error("Invalid unit cost");
   }
   if ((fields.original_currency == null) !== (fields.original_unit_cost == null)) {

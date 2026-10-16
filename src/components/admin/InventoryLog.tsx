@@ -374,7 +374,6 @@ export function InventoryLog({
               </label>
               <input
                 type="number"
-                min={0}
                 value={newBatchFields.amount_paid}
                 onChange={(e) => setNewBatchFields((f) => ({ ...f, amount_paid: e.target.value }))}
                 className={inputClass}
@@ -486,7 +485,6 @@ export function InventoryLog({
                       />
                       <input
                         type="number"
-                        min={0}
                         value={editBatchFields.amount_paid}
                         onChange={(e) => setEditBatchFields((f) => ({ ...f, amount_paid: e.target.value }))}
                         className={inputClass}
@@ -860,7 +858,6 @@ function EditableRow({
       <td className="px-4 py-2">
         <input
           type="number"
-          min={0}
           step="0.01"
           required
           value={fields.unit_cost}
