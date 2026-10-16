@@ -8,6 +8,7 @@ import {
   presetRange,
   summarizePeriod,
   type PeriodPreset,
+  type InventoryView,
   type PeriodRange,
 } from "@/lib/inventory-period";
 import type { InventoryBatchWithEntries } from "@/lib/supabase/types";
@@ -19,6 +20,12 @@ const PRESETS: [PeriodPreset, string][] = [
   ["lastMonth", "الشهر الماضي"],
   ["last30", "آخر 30 يوم"],
   ["all", "الكل"],
+];
+
+const VIEWS: [InventoryView, string][] = [
+  ["all", "الكل"],
+  ["purchases", "المشتريات"],
+  ["sales", "المبيعات"],
 ];
 
 const money = (n: number) => `₺ ${n.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
@@ -33,16 +40,19 @@ const dateInputClass =
 export function InventoryPeriodFilter({
   batches,
   range,
+  view,
 }: {
   batches: InventoryBatchWithEntries[];
   range: PeriodRange;
+  view: InventoryView;
 }) {
   const router = useRouter();
   const filtered = isFiltered(range);
   const summary = useMemo(() => summarizePeriod(batches, range), [batches, range]);
 
-  function apply(next: PeriodRange) {
+  function apply(next: PeriodRange, nextView: InventoryView = view) {
     const qs = new URLSearchParams();
+    if (nextView !== "all") qs.set("view", nextView);
     if (next.from) qs.set("from", next.from);
     if (next.to) qs.set("to", next.to);
     const q = qs.toString();
@@ -56,7 +66,26 @@ export function InventoryPeriodFilter({
 
   return (
     <section className="mb-6 rounded-2xl border border-cream/10 bg-bg-secondary p-4 sm:p-5">
-      <h2 className="mb-3 font-playfair text-lg font-bold text-cream">فترة زمنية</h2>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-playfair text-lg font-bold text-cream">فترة زمنية</h2>
+        <div className="inline-flex rounded-full border border-cream/20 p-0.5" role="tablist">
+          {VIEWS.map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              role="tab"
+              aria-selected={view === key}
+              onClick={() => apply(range, key)}
+              className={cn(
+                "rounded-full px-4 py-1.5 font-inter text-xs transition-colors",
+                view === key ? "bg-terracotta text-cream" : "text-cream-secondary hover:text-cream"
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:max-w-md">
         <label className="block">

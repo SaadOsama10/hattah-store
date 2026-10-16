@@ -15,7 +15,8 @@ import {
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/Button";
 import { InventoryPeriodFilter } from "@/components/admin/InventoryPeriodFilter";
-import type { PeriodRange } from "@/lib/inventory-period";
+import { InventoryLedgerView } from "@/components/admin/InventoryLedgerView";
+import type { InventoryView, PeriodRange } from "@/lib/inventory-period";
 import {
   createInventoryBatch,
   createInventoryEntry,
@@ -149,9 +150,11 @@ interface BatchFieldsState {
 export function InventoryLog({
   batches,
   range,
+  view,
 }: {
   batches: InventoryBatchWithEntries[];
   range: PeriodRange;
+  view: InventoryView;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -389,8 +392,12 @@ export function InventoryLog({
         </div>
       )}
 
-      <InventoryPeriodFilter batches={batches} range={range} />
+      <InventoryPeriodFilter batches={batches} range={range} view={view} />
 
+      {view !== "all" && <InventoryLedgerView batches={batches} range={range} view={view} />}
+
+      {view === "all" && (
+        <>
       {/* All-time summary across every batch. */}
       <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-4">
         <SummaryTile label="عدد الدفعات" value={String(batches.length)} />
@@ -659,6 +666,8 @@ export function InventoryLog({
             );
           })}
         </div>
+      )}
+        </>
       )}
 
       {deleteTarget && (

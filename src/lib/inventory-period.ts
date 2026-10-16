@@ -110,3 +110,82 @@ export function presetRange(preset: PeriodPreset, now = new Date()): PeriodRange
       return { from: null, to: null };
   }
 }
+
+export type InventoryView = "all" | "purchases" | "sales";
+
+export function parseViewParam(value: string | null | undefined): InventoryView {
+  return value === "purchases" || value === "sales" ? value : "all";
+}
+
+export interface LedgerRow {
+  id: string;
+  batchId: string;
+  date: string;
+  batchTitle: string;
+  description: string;
+  qty: number;
+  unitPrice: number; // unit_cost (purchases) or unit_sale_price (sales)
+  total: number;
+  notes: string | null;
+}
+
+function inRange(date: string, range: PeriodRange): boolean {
+  return (!range.from || date >= range.from) && (!range.to || date <= range.to);
+}
+
+/** Flat purchase or sale rows for batches inside the period, newest first. */
+export function ledgerRows(
+  batches: InventoryBatchWithEntries[],
+  range: PeriodRange,
+  view: "purchases" | "sales"
+): LedgerRow[] {
+  const rows: LedgerRow[] = [];
+  for (const batch of batches) {
+    if (!inRange(batch.batch_date, range)) continue;
+    for (const e of batch.inventory_log) {
+      const qty = view === "purchases" ? e.quantity : e.quantity_sold;
+      const unitPrice = view === "purchases" ? e.unit_cost : (e.unit_sale_price ?? 0);
+      const totalCents = qty * toCents(unitPrice);
+      if (view === "purchases" ? totalCents <= 0 : e.quantity_sold <= 0) continue;
+      rows.push({
+        id: e.id,
+        batchId: batch.id,
+        date: batch.batch_date,
+        batchTitle: batch.title,
+        description: e.item_description,
+        qty,
+        unitPrice,
+        total: totalCents / 100,
+        notes: e.notes,
+      });
+    }
+  }
+  return rows.sort((a, b) => b.date.localeCompare(a.date));
+}
+
+export const sumRows = (rows: LedgerRow[]): number =>
+  rows.reduce((s, r) => s + toCents(r.total), 0) / 100;
+
+export interface OrderGroup {
+  key: string;
+  rows: number;
+  qty: number;
+  total: number;
+}
+
+/** Sales grouped by the row note (customer/order); rows without a note are
+ * collected under one "no note" group. */
+export function groupByNote(rows: LedgerRow[], emptyLabel: string): OrderGroup[] {
+  const map = new Map<string, { rows: number; qty: number; cents: number }>();
+  for (const r of rows) {
+    const key = r.notes?.trim() || emptyLabel;
+    const g = map.get(key) ?? { rows: 0, qty: 0, cents: 0 };
+    g.rows += 1;
+    g.qty += r.qty;
+    g.cents += toCents(r.total);
+    map.set(key, g);
+  }
+  return [...map.entries()]
+    .map(([key, g]) => ({ key, rows: g.rows, qty: g.qty, total: g.cents / 100 }))
+    .sort((a, b) => b.total - a.total);
+}
