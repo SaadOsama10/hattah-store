@@ -154,7 +154,7 @@ export function placeholderDesign(p: ProductRecord, angle: Angle, salt = 0): Req
 }
 
 async function callModel(p: ProductRecord, categoryAr: string, angle: Angle, languages: string[], recent: string[], hint = ""): Promise<CaptionJson> {
-  const client = new OpenAI({ apiKey: need("OPENAI_API_KEY") });
+  const client = new OpenAI({ apiKey: need("OPENAI_API_KEY"), timeout: 180_000, maxRetries: 1 });
   const model = process.env.OPENAI_MODEL || "gpt-6.1-sol";
   const user = `زاوية المنشور: ${angle} — ${ANGLE_BRIEF[angle]}
 
