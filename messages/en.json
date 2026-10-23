@@ -367,5 +367,55 @@
     "title": "Page not found",
     "body": "The link may be wrong or the page has moved. Browse the shop or go back home.",
     "shop": "Browse the shop"
+  },
+  "legal": {
+    "updated": "Last updated: 23 October 2026",
+    "privacyTitle": "Privacy Policy",
+    "privacyLead": "This policy explains how HATTAH handles your data when you browse the site or order through WhatsApp.",
+    "privacySections": [
+      {
+        "h": "Who we are",
+        "p": "HATTAH (حَطّة) is an online store based in Istanbul, Türkiye, selling Palestinian heritage products. Contact: hattah.store.co@gmail.com or WhatsApp +90 552 998 71 12."
+      },
+      {
+        "h": "What data we collect",
+        "p": "The site has no user accounts or sign-up forms. When you order on WhatsApp you give us your name, phone number, delivery address and order details; we use them only to prepare, deliver and follow up on your order. Your browser stores your cart and theme/sound preferences locally — these are not sent to us."
+      },
+      {
+        "h": "How we use your data",
+        "p": "We use order data to prepare and deliver your order and for after-sales support. We do not sell your data or share it for advertising."
+      },
+      {
+        "h": "Third-party services",
+        "p": "The site is hosted on Vercel and product data is stored in Supabase. Orders are received through WhatsApp (Meta). We also publish store content on our Facebook Page and Instagram account. These services are governed by their own policies."
+      },
+      {
+        "h": "Social media publishing",
+        "p": "We use an internal automated tool to publish our own product photos and offers to the HATTAH Facebook Page and the store's Instagram account only. The tool posts our content; it does not access visitors' accounts or personal data and does not collect any data about our followers."
+      },
+      {
+        "h": "Retention and your rights",
+        "p": "We keep order data for as long as needed to fulfil orders and meet legal obligations. You may ask to access, correct or delete your data at any time — see the data deletion page."
+      },
+      {
+        "h": "Changes",
+        "p": "We may update this policy; the last-updated date appears at the top."
+      }
+    ],
+    "deletionTitle": "Data Deletion Request",
+    "deletionLead": "You can ask HATTAH to delete your personal data at any time.",
+    "deletionSteps": [
+      "Send an email to hattah.store.co@gmail.com with the subject “Data deletion request”.",
+      "Include your name and the phone number you used when ordering on WhatsApp so we can verify it is you.",
+      "We will confirm receipt, delete the data we hold about you and tell you when it is done, within 30 days at most.",
+      "You can also send the same request on WhatsApp at +90 552 998 71 12."
+    ],
+    "deletionNote": "The site has no user accounts, so the data we hold is only the order details you sent us on WhatsApp. Some records may be kept where the law requires it.",
+    "seoPrivacyTitle": "Privacy Policy | HATTAH",
+    "seoPrivacyDescription": "HATTAH privacy policy: how we handle WhatsApp order data and publish content to Facebook and Instagram.",
+    "seoDeletionTitle": "Data Deletion Request | HATTAH",
+    "seoDeletionDescription": "How to request deletion of your data from HATTAH: email hattah.store.co@gmail.com or message us on WhatsApp.",
+    "privacy": "Privacy",
+    "deletion": "Data deletion"
   }
 }

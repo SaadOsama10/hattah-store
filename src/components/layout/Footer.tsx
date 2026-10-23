@@ -61,6 +61,16 @@ export function Footer() {
                   {t("seo.faq")}
                 </Link>
               </li>
+              <li>
+                <Link href="/privacy" className="transition-colors hover:text-cream">
+                  {t("legal.privacy")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/data-deletion" className="transition-colors hover:text-cream">
+                  {t("legal.deletion")}
+                </Link>
+              </li>
             </ul>
           </div>
 

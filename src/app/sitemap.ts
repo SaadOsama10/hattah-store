@@ -32,6 +32,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...(offers ? entry("/offers", stamp, 0.7, "daily") : []),
     ...entry("/about", stamp, 0.6, "monthly"),
     ...entry("/faq", stamp, 0.6, "monthly"),
+    ...entry("/privacy", stamp, 0.3, "yearly"),
+    ...entry("/data-deletion", stamp, 0.3, "yearly"),
   ];
   for (const c of categories) out.push(...entry(categoryPath(c.key), stamp, 0.8, "weekly"));
   for (const p of products) out.push(...entry(productPath(p), new Date(p.created_at), 0.7, "weekly"));

@@ -57,3 +57,5 @@ try {
 } finally {
   await renderer.close();
 }
+// Explicit exit: leftover keep-alive sockets / browser handles must never hang the Actions job.
+process.exit(0);

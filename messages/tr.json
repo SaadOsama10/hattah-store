@@ -367,5 +367,55 @@
     "title": "Sayfa bulunamadı",
     "body": "Bağlantı hatalı olabilir veya sayfa taşınmış olabilir. Mağazaya göz atın veya ana sayfaya dönün.",
     "shop": "Mağazaya göz at"
+  },
+  "legal": {
+    "updated": "Son güncelleme: 23 Ekim 2026",
+    "privacyTitle": "Gizlilik Politikası",
+    "privacyLead": "Bu politika, siteyi gezdiğinizde veya WhatsApp üzerinden sipariş verdiğinizde HATTAH'ın verilerinizi nasıl işlediğini açıklar.",
+    "privacySections": [
+      {
+        "h": "Biz kimiz",
+        "p": "HATTAH (حَطّة), İstanbul, Türkiye merkezli, Filistin mirası ürünleri satan çevrimiçi bir mağazadır. İletişim: hattah.store.co@gmail.com veya WhatsApp +90 552 998 71 12."
+      },
+      {
+        "h": "Hangi verileri topluyoruz",
+        "p": "Sitede kullanıcı hesabı veya kayıt formu yoktur. WhatsApp'tan sipariş verdiğinizde ad, telefon numarası, teslimat adresi ve sipariş ayrıntılarını bize siz iletirsiniz; bunları yalnızca siparişi hazırlamak, teslim etmek ve sizinle iletişim kurmak için kullanırız. Tarayıcınız sepetinizi ve tema/ses tercihlerinizi yerel olarak saklar; bunlar bize gönderilmez."
+      },
+      {
+        "h": "Verilerinizi nasıl kullanıyoruz",
+        "p": "Sipariş verilerini siparişi hazırlamak, teslim etmek ve satış sonrası destek için kullanırız. Verilerinizi satmaz ve reklam amacıyla paylaşmayız."
+      },
+      {
+        "h": "Üçüncü taraf hizmetler",
+        "p": "Site Vercel üzerinde barındırılır ve ürün verileri Supabase'de saklanır. Siparişler WhatsApp (Meta) üzerinden alınır. Ayrıca mağaza içeriklerini Facebook Sayfamızda ve Instagram hesabımızda yayımlıyoruz. Bu hizmetler kendi politikalarına tabidir."
+      },
+      {
+        "h": "Sosyal medyada yayın",
+        "p": "Yalnızca kendi ürün fotoğraflarımızı ve tekliflerimizi HATTAH Facebook Sayfası ve mağazanın Instagram hesabında yayımlamak için dahili otomatik bir araç kullanıyoruz. Araç kendi içeriğimizi paylaşır; ziyaretçilerin hesaplarına veya kişisel verilerine erişmez ve takipçilerimiz hakkında veri toplamaz."
+      },
+      {
+        "h": "Saklama ve haklarınız",
+        "p": "Sipariş verilerini siparişleri yerine getirmek ve yasal yükümlülükler için gerektiği süre boyunca saklarız. Verilerinize erişim, düzeltme veya silme talebinde her zaman bulunabilirsiniz; veri silme sayfasına bakın."
+      },
+      {
+        "h": "Değişiklikler",
+        "p": "Bu politikayı güncelleyebiliriz; son güncelleme tarihi en üstte yer alır."
+      }
+    ],
+    "deletionTitle": "Veri Silme Talebi",
+    "deletionLead": "HATTAH'tan kişisel verilerinizin silinmesini her zaman talep edebilirsiniz.",
+    "deletionSteps": [
+      "hattah.store.co@gmail.com adresine “Veri silme talebi” konulu bir e-posta gönderin.",
+      "Sizi doğrulayabilmemiz için WhatsApp'tan sipariş verirken kullandığınız ad ve telefon numarasını yazın.",
+      "Talebi aldığımızı teyit eder, hakkınızdaki verileri siler ve en geç 30 gün içinde sizi bilgilendiririz.",
+      "Aynı talebi +90 552 998 71 12 numarasından WhatsApp ile de iletebilirsiniz."
+    ],
+    "deletionNote": "Sitede kullanıcı hesabı yoktur; elimizdeki veriler yalnızca WhatsApp'tan gönderdiğiniz sipariş bilgileridir. Bazı kayıtlar yasanın gerektirdiği durumlarda saklanabilir.",
+    "seoPrivacyTitle": "Gizlilik Politikası | HATTAH",
+    "seoPrivacyDescription": "HATTAH gizlilik politikası: WhatsApp sipariş verilerini nasıl işlediğimiz ve Facebook ile Instagram'da içerik yayımlama.",
+    "seoDeletionTitle": "Veri Silme Talebi | HATTAH",
+    "seoDeletionDescription": "HATTAH'tan verilerinizin silinmesini nasıl talep edersiniz: hattah.store.co@gmail.com adresine e-posta veya WhatsApp.",
+    "privacy": "Gizlilik",
+    "deletion": "Veri silme"
   }
 }

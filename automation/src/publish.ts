@@ -144,3 +144,4 @@ for (const post of due) {
   await sleep(3000);
 }
 log("done");
+process.exit(0);

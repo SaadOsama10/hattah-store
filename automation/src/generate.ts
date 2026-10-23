@@ -141,3 +141,5 @@ try {
   await renderer.close();
 }
 log(`done: ${ok} generated, ${skipped} skipped`);
+// Explicit exit: leftover keep-alive sockets / browser handles must never hang the Actions job.
+process.exit(0);
