@@ -1,0 +1,34 @@
+name: Social — find Meta IDs (one-off helper)
+
+# Prints ONLY the Page id / name and the linked Instagram business account id.
+# The token is never echoed (and GitHub masks it in logs anyway).
+on:
+  workflow_dispatch:
+
+jobs:
+  ids:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      META_ACCESS_TOKEN: ${{ secrets.META_ACCESS_TOKEN }}
+      META_GRAPH_VERSION: ${{ vars.META_GRAPH_VERSION || 'v25.0' }}
+      BUSINESS_ID: "1322758020915664"
+    steps:
+      - name: Query pages and linked Instagram accounts
+        run: |
+          set +x
+          fetch() {
+            curl -sS -G "https://graph.facebook.com/${META_GRAPH_VERSION}/$1" \
+              --data-urlencode "fields=id,name,instagram_business_account" \
+              --data-urlencode "access_token=${META_ACCESS_TOKEN}"
+          }
+          out="$(fetch me/accounts)"
+          if [ "$(echo "$out" | jq '(.data // []) | length')" = "0" ]; then
+            echo "me/accounts empty → trying business owned_pages"
+            out="$(fetch "${BUSINESS_ID}/owned_pages")"
+          fi
+          if echo "$out" | jq -e '.error' >/dev/null 2>&1; then
+            echo "Graph error: $(echo "$out" | jq -r '.error.message') (code $(echo "$out" | jq -r '.error.code'))"
+            exit 1
+          fi
+          echo "$out" | jq -r '.data[] | "PAGE_ID=\(.id)  PAGE_NAME=\(.name)  IG_USER_ID=\(.instagram_business_account.id // "none")"'
