@@ -27,6 +27,16 @@ export async function loadProduct(sb: SupabaseClient, id: string): Promise<Produ
   return data as unknown as ProductRecord;
 }
 
+/** Products with the per-product "remove background" option switched on. */
+export async function loadRemoveBgIds(sb: SupabaseClient): Promise<Set<string>> {
+  const { data, error } = await sb.from("social_product_settings").select("product_id").eq("remove_bg", true);
+  if (error) {
+    log("social_product_settings unavailable (migration 014 not applied?):", error.message);
+    return new Set();
+  }
+  return new Set((data ?? []).map((r: any) => r.product_id));
+}
+
 const shuffle = <T>(a: T[]) => a.map((x) => [Math.random(), x] as const).sort((x, y) => x[0] - y[0]).map((x) => x[1]);
 
 /** Top-level category of a product, so "same category" means the family. */
@@ -135,6 +145,7 @@ export async function buildPostAssets(
       oldPrice: price.old,
       photoUrl: sortedImages(product)[0],
       text: design,
+      removeBg: (await loadRemoveBgIds(sb)).has(product.id),
     });
     const day = new Date().toISOString().slice(0, 10);
     const path = `${day}/${post.id}-${Date.now()}.jpg`;

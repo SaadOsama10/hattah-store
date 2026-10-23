@@ -159,3 +159,45 @@ export async function testMetaConnection(): Promise<
     return { ok: false, error: (e as Error).message };
   }
 }
+
+export interface SocialProductRow {
+  id: string;
+  name_ar: string;
+  image_url: string | null;
+  remove_bg: boolean;
+}
+
+export async function listSocialProducts(): Promise<SocialProductRow[]> {
+  await assertAdminSession();
+  const supabase = getServiceSupabaseClient();
+  const [{ data: prods, error }, { data: opts }] = await Promise.all([
+    supabase
+      .from("products")
+      .select("id, name_ar, product_images(image_url, sort_order)")
+      .order("name_ar"),
+    supabase.from("social_product_settings").select("product_id, remove_bg"),
+  ]);
+  if (error) throw new Error(error.message);
+  const flags = new Map((opts ?? []).map((o) => [o.product_id as string, o.remove_bg as boolean]));
+  return (prods ?? []).map((p) => {
+    const imgs = [...((p.product_images as { image_url: string; sort_order: number }[]) ?? [])].sort(
+      (a, b) => a.sort_order - b.sort_order
+    );
+    return {
+      id: p.id as string,
+      name_ar: p.name_ar as string,
+      image_url: imgs[0]?.image_url ?? null,
+      remove_bg: flags.get(p.id as string) ?? false,
+    };
+  });
+}
+
+export async function setProductRemoveBg(productId: string, removeBg: boolean) {
+  await assertAdminSession();
+  const supabase = getServiceSupabaseClient();
+  const { error } = await supabase
+    .from("social_product_settings")
+    .upsert({ product_id: productId, remove_bg: removeBg, updated_at: new Date().toISOString() });
+  if (error) throw new Error(error.message);
+  revalidatePath("/[locale]/admin/social", "page");
+}

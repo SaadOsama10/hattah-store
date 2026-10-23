@@ -52,7 +52,7 @@ const picks = await pickProducts(sb, settings, cats, slots.length, {
 });
 if (picks.length < slots.length) log(`only ${picks.length} eligible product(s) found`);
 
-const renderer = new Renderer();
+const renderer = new Renderer(sb);
 try {
   for (const [i, pick] of picks.entries()) {
     const slot = slots[i];

@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import sharp from "sharp";
+import { getCutoutDataUri } from "./cutout.js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { buildHtml, type TemplateInput } from "./templates.js";
 import type { Angle, DesignText, PostType } from "../types.js";
 
@@ -65,6 +67,8 @@ export interface RenderRequest {
   oldPrice: number | null;
   photoUrl: string;
   text: DesignText;
+  /** Cut the product out of its photo (per-product option). */
+  removeBg?: boolean;
 }
 
 export const SIZES: Record<PostType, { width: number; height: number }> = {
@@ -80,6 +84,8 @@ export function whatsappDisplay(): string {
 
 export class Renderer {
   private browser: Browser | null = null;
+  lastViolations = 0;
+  constructor(private sb: SupabaseClient | null = null) {}
 
   async open() {
     if (!this.browser) this.browser = await chromium.launch();
@@ -100,6 +106,7 @@ export class Renderer {
       price: req.price,
       oldPrice: req.oldPrice,
       photo: await fetchPhotoDataUri(req.photoUrl),
+      cutout: req.removeBg ? await getCutoutDataUri(this.sb, req.photoUrl) : null,
       logo: logoDataUri(),
       fontCss: fontCss(),
       whatsappDisplay: whatsappDisplay(),
@@ -126,6 +133,38 @@ export class Renderer {
           }
         });
       });
+      // Stand the cut-out on a ground line with a soft contact shadow.
+      await page.evaluate(async () => {
+        for (const box of Array.from(document.querySelectorAll<HTMLElement>(".photo.cut"))) {
+          const img = box.querySelector<HTMLImageElement>(".cutimg")!;
+          const ground = box.querySelector<HTMLElement>(".ground")!;
+          await img.decode();
+          const round = box.classList.contains("round");
+          const bw = box.clientWidth, bh = box.clientHeight;
+          const scale = Math.min((bw * (round ? 0.7 : 0.84)) / img.naturalWidth, (bh * (round ? 0.62 : 0.74)) / img.naturalHeight, 1.8);
+          const w = img.naturalWidth * scale, h = img.naturalHeight * scale;
+          const base = Math.min(bh * (round ? 0.78 : 0.9), bh * 0.5 + h / 2 + bh * 0.04);
+          img.style.width = `${w}px`; img.style.height = `${h}px`;
+          img.style.left = `${(bw - w) / 2}px`; img.style.top = `${base - h}px`;
+          const gw = w * 0.92, gh = Math.max(20, bh * 0.055);
+          ground.style.width = `${gw}px`; ground.style.height = `${gh}px`;
+          ground.style.left = `${(bw - gw) / 2}px`; ground.style.top = `${base - gh * 0.55}px`;
+        }
+      });
+      const violations = await page.evaluate(
+        ({ W, H, top, bottom, side }) => {
+          const bad: string[] = [];
+          document.querySelectorAll<HTMLElement>(".logo,.fit>span,.wa,.cat,.price,.old,.flag").forEach((el) => {
+            const r = el.getBoundingClientRect();
+            if (r.left < side - 1 || r.right > W - side + 1 || r.top < top - 1 || r.bottom > H - bottom + 1)
+              bad.push(`${el.className || el.tagName} [${Math.round(r.left)},${Math.round(r.top)} → ${Math.round(r.right)},${Math.round(r.bottom)}] "${(el.textContent ?? "").slice(0, 24)}"`);
+          });
+          return bad;
+        },
+        { W: size.width, H: size.height, top: req.type === "story" ? 250 : 60, bottom: req.type === "story" ? 250 : 60, side: 90 },
+      );
+      if (violations.length) console.warn(`[render] SAFE-AREA violations (${req.type}/${req.angle}):\n  ` + violations.join("\n  "));
+      this.lastViolations = violations.length;
       const overflow = await page.evaluate(() =>
         Array.from(document.querySelectorAll<HTMLElement>(".fit")).filter((b) => {
           const i = b.firstElementChild as HTMLElement;

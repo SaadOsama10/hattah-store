@@ -40,7 +40,7 @@ if (what === "swap") {
 }
 
 const product = await loadProduct(sb, productId);
-const renderer = new Renderer();
+const renderer = new Renderer(sb);
 try {
   const image = what === "image" || what === "both" || what === "swap";
   const caption = what === "caption" || what === "both" || what === "swap";
