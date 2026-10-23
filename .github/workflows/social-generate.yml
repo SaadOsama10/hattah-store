@@ -43,6 +43,8 @@ jobs:
       OPENAI_MODEL: ${{ secrets.OPENAI_MODEL || vars.OPENAI_MODEL || 'gpt-6.1-sol' }}
       WHATSAPP_NUMBER: "905529987112"
       DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
+      # A manual run is explicit intent: generate even while the system is switched off.
+      FORCE: ${{ github.event_name == 'workflow_dispatch' && 'true' || 'false' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
