@@ -1,6 +1,9 @@
+import type { Metadata } from "next";
 import { redirect } from "@/i18n/navigation";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { AdminHeader } from "@/components/admin/AdminHeader";
+
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export default async function ProtectedAdminLayout({
   children,

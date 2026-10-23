@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { assertAdminSession } from "@/lib/admin-auth";
+import sharp from "sharp";
+import { VARIANT_WIDTHS, variantPath } from "@/lib/image-variants";
 import { getServiceSupabaseClient, PRODUCT_IMAGES_BUCKET } from "@/lib/supabase/service";
 import type { CategoryKey } from "@/lib/supabase/types";
 
@@ -19,6 +21,10 @@ export interface ProductFormFields {
   has_sizes: boolean;
   has_colors: boolean;
   has_quantities: boolean;
+  // Only present when the admin touched the alt-text fields (needs migration 017).
+  image_alt_ar?: string | null;
+  image_alt_en?: string | null;
+  image_alt_tr?: string | null;
 }
 
 function readFields(formData: FormData): ProductFormFields {
@@ -37,6 +43,13 @@ function readFields(formData: FormData): ProductFormFields {
     has_sizes: formData.get("has_sizes") === "on",
     has_colors: formData.get("has_colors") === "on",
     has_quantities: formData.get("has_quantities") === "on",
+    ...(formData.get("alt_touched") === "1"
+      ? {
+          image_alt_ar: String(formData.get("image_alt_ar") ?? "").trim() || null,
+          image_alt_en: String(formData.get("image_alt_en") ?? "").trim() || null,
+          image_alt_tr: String(formData.get("image_alt_tr") ?? "").trim() || null,
+        }
+      : {}),
   };
 }
 
@@ -217,6 +230,24 @@ async function uploadImages(productId: string, files: File[], startOrder: number
       throw new Error(`Image upload failed: ${uploadError.message}`);
     }
 
+    // Small WebP variants for fast listing pages. Best-effort: a failure here never blocks
+    // the upload (the loader falls back to nothing, so we log it loudly instead).
+    try {
+      const source = Buffer.from(await file.arrayBuffer());
+      for (const w of VARIANT_WIDTHS) {
+        const webp = await sharp(source)
+          .rotate()
+          .resize({ width: w, withoutEnlargement: true })
+          .webp({ quality: 78 })
+          .toBuffer();
+        await supabase.storage
+          .from(PRODUCT_IMAGES_BUCKET)
+          .upload(variantPath(path, w), webp, { contentType: "image/webp", upsert: true });
+      }
+    } catch (e) {
+      console.error("image variant generation failed for", path, e);
+    }
+
     const { data: publicUrlData } = supabase.storage
       .from(PRODUCT_IMAGES_BUCKET)
       .getPublicUrl(path);
@@ -314,7 +345,7 @@ export async function updateProduct(
         .map((row) => extractStoragePath(row.image_url))
         .filter((p): p is string => Boolean(p));
       if (paths.length > 0) {
-        await supabase.storage.from(PRODUCT_IMAGES_BUCKET).remove(paths);
+        await supabase.storage.from(PRODUCT_IMAGES_BUCKET).remove(withVariants(paths));
       }
       await supabase.from("product_images").delete().in("id", removedImageIds);
     }
@@ -372,7 +403,7 @@ export async function deleteProduct(productId: string) {
       .map((row) => extractStoragePath(row.image_url))
       .filter((p): p is string => Boolean(p));
     if (paths.length > 0) {
-      await supabase.storage.from(PRODUCT_IMAGES_BUCKET).remove(paths);
+      await supabase.storage.from(PRODUCT_IMAGES_BUCKET).remove(withVariants(paths));
     }
   }
 
@@ -382,6 +413,11 @@ export async function deleteProduct(productId: string) {
   }
 
   revalidatePath("/", "layout");
+}
+
+/** Original paths plus their generated WebP variants (so deleting a photo leaves no orphans). */
+function withVariants(paths: string[]): string[] {
+  return paths.flatMap((p) => [p, ...VARIANT_WIDTHS.map((w) => variantPath(p, w))]);
 }
 
 function extractStoragePath(publicUrl: string): string | null {

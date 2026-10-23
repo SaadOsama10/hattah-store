@@ -28,6 +28,9 @@ export interface ProductFormInitialData {
   has_sizes: boolean;
   has_colors: boolean;
   has_quantities: boolean;
+  image_alt_ar?: string | null;
+  image_alt_en?: string | null;
+  image_alt_tr?: string | null;
   sizes: string[];
   colors: ColorEntry[];
   quantities: QuantityEntry[];
@@ -64,6 +67,9 @@ export function ProductForm({
     has_sizes: initialData?.has_sizes ?? false,
     has_colors: initialData?.has_colors ?? false,
     has_quantities: initialData?.has_quantities ?? false,
+    image_alt_ar: initialData?.image_alt_ar ?? "",
+    image_alt_en: initialData?.image_alt_en ?? "",
+    image_alt_tr: initialData?.image_alt_tr ?? "",
   });
 
   const [sizes, setSizes] = useState<string[]>(initialData?.sizes ?? []);
@@ -126,6 +132,16 @@ export function ProductForm({
     if (fields.has_quantities) {
       formData.set("has_quantities", "on");
       formData.set("quantities_json", JSON.stringify(quantities));
+    }
+    const altChanged =
+      fields.image_alt_ar !== (initialData?.image_alt_ar ?? "") ||
+      fields.image_alt_en !== (initialData?.image_alt_en ?? "") ||
+      fields.image_alt_tr !== (initialData?.image_alt_tr ?? "");
+    if (altChanged) {
+      formData.set("alt_touched", "1");
+      formData.set("image_alt_ar", fields.image_alt_ar);
+      formData.set("image_alt_en", fields.image_alt_en);
+      formData.set("image_alt_tr", fields.image_alt_tr);
     }
     newFiles.forEach((file) => formData.append("images", file));
 
@@ -329,6 +345,16 @@ export function ProductForm({
           textarea
           className="sm:col-span-2"
         />
+
+        <div className="sm:col-span-2">
+          <h3 className="mb-1 font-inter text-sm font-semibold text-cream">نص بديل لصور المنتج (SEO / إمكانية الوصول)</h3>
+          <p className="mb-3 font-inter text-xs text-cream-secondary/60">
+            اختياري. إذا تُرك فارغًا يُولَّد تلقائيًا من اسم المنتج + الفئة بكل لغة. اكتب وصفًا قصيرًا لما يظهر في الصورة.
+          </p>
+        </div>
+        <FormField label="Alt — العربية" dir="rtl" value={fields.image_alt_ar} onChange={(v) => update("image_alt_ar", v)} />
+        <FormField label="Alt — English" value={fields.image_alt_en} onChange={(v) => update("image_alt_en", v)} />
+        <FormField label="Alt — Türkçe" value={fields.image_alt_tr} onChange={(v) => update("image_alt_tr", v)} />
       </div>
 
       {error && <p className="font-inter text-sm text-terracotta-deep">{error}</p>}

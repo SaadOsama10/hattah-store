@@ -1,4 +1,7 @@
-import { setRequestLocale } from "next-intl/server";
+import type { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { buildMetadata, organizationGraph } from "@/lib/seo";
 import { Hero } from "@/components/home/Hero";
 import { CategoryTiles } from "@/components/home/CategoryTiles";
 import { OffersBanner } from "@/components/home/OffersBanner";
@@ -13,6 +16,12 @@ import {
 } from "@/lib/supabase/queries";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "meta" });
+  return buildMetadata({ locale, title: t("title"), description: t("description") });
+}
 
 export default async function HomePage({
   params,
@@ -32,6 +41,7 @@ export default async function HomePage({
 
   return (
     <>
+      <JsonLd data={organizationGraph(locale)} />
       <Hero />
       <CategoryTiles
         categories={categories}

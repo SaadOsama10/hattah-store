@@ -7,7 +7,7 @@ export function LoadingScreen() {
         <span className="absolute inset-0 animate-ping rounded-full bg-terracotta/20" />
         <span className="absolute inset-0 rounded-full ring-1 ring-cream/15" />
         <Image
-          src="/images/hattah-logo.jpg"
+          src="/images/hattah-logo-sm.webp"
           alt="HATTAH — حَطّة"
           width={80}
           height={80}

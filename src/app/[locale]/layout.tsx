@@ -4,6 +4,7 @@ import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing, localeDirections, type AppLocale } from "@/i18n/routing";
+import { SITE_URL } from "@/lib/site";
 import { THEME_INIT_SCRIPT, ThemeSync } from "@/components/ui/ThemeToggle";
 import "../globals.css";
 
@@ -54,8 +55,16 @@ export async function generateMetadata({
   const t = await getTranslations({ locale, namespace: "meta" });
 
   return {
+    metadataBase: new URL(SITE_URL),
     title: t("title"),
     description: t("description"),
+    applicationName: "HATTAH",
+    // Search Console / Bing verification (meta-tag method) come from env so they can be
+    // added without code changes; see lib/site.ts for the single site-URL config.
+    verification: {
+      google: process.env.NEXT_PUBLIC_GSC_VERIFICATION || undefined,
+      other: process.env.NEXT_PUBLIC_BING_VERIFICATION ? { "msvalidate.01": process.env.NEXT_PUBLIC_BING_VERIFICATION } : undefined,
+    },
     icons: {
       icon: "/icon.png",
       apple: "/apple-icon.png",

@@ -39,6 +39,7 @@ export async function RelatedProducts({
             <ProductCard
               key={product.id}
               id={localized.id}
+                slug={localized.slug}
               name={localized.name}
               price={localized.startingPrice}
               salePrice={localized.salePrice}

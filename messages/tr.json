@@ -286,5 +286,86 @@
     "checkoutMessageIntro": "Merhaba! Aşağıdaki ürünleri sipariş etmek istiyorum:",
     "checkoutMessageTotal": "Toplam: {total}",
     "itemsCount": "{count, plural, =0 {Sepet boş} other {# ürün}}"
+  },
+  "seo": {
+    "shopTitle": "Filistin Mirası Ürünleri Alışveriş | HATTAH",
+    "shopDescription": "İstanbul'dan HATTAH ile özgün Filistin kapüşonluları, tatreez nakışı, tablolar, madalyonlar ve ev yapımı yiyecekler. Mağazadan veya WhatsApp'tan sipariş verin; Türkiye'ye teslimat.",
+    "offersTitle": "HATTAH Fırsatlar ve İndirimler | HATTAH",
+    "offersDescription": "HATTAH'ın Filistin mirası ürünlerinde güncel fırsatlar ve indirimler. Mağazadan veya WhatsApp'tan hemen sipariş verin.",
+    "aboutTitle": "HATTAH Hakkında — İstanbul'da Filistin Mirası Mağazası",
+    "aboutDescription": "HATTAH, İstanbul merkezli çevrimiçi bir mağazadır: Filistin ve Gazze mirasından kapüşonlular, nakış, tablolar ve yiyecekler. Türkiye'ye teslimat, Başakşehir'de ücretsiz.",
+    "faqTitle": "Sık Sorulan Sorular | HATTAH",
+    "faqDescription": "Türkiye'ye teslimat, Başakşehir'de ücretsiz teslimat, bedenler, özel tasarım kapüşonlu ve sipariş yöntemi hakkında yanıtlar.",
+    "categoryTitle": "{name} | HATTAH",
+    "categoryDescription": "HATTAH'tan {name}: İstanbul'dan özgün Filistin ürünleri, Türkiye'ye teslimat. Mağazadan veya WhatsApp'tan sipariş verin.",
+    "home": "Ana sayfa",
+    "shop": "Mağaza",
+    "about": "HATTAH Hakkında",
+    "faq": "SSS",
+    "categories": "Kategoriler"
+  },
+  "about": {
+    "title": "HATTAH Hakkında",
+    "lead": "HATTAH (حَطّة), özgün Filistin ve Gazze mirası ürünleri sunan, İstanbul merkezli çevrimiçi bir mağazadır.",
+    "whoTitle": "Biz kimiz",
+    "who": "HATTAH, İstanbul'da bulunan bir Filistin markasıdır. Filistin'in hafızasını ve mirasını taşıyan ürünleri; net fotoğraflar, açıklama ve Türk lirası fiyatla sunuyoruz.",
+    "offerTitle": "Neler sunuyoruz",
+    "offer": "Miras tasarımlı kapüşonlular, Filistin tatreez nakışı, tablolar, madalyonlar ve kolyeler ile ev yapımı Filistin yiyecekleri sunuyoruz. Tüm ürünler mağazada ayrıntılarıyla listelenir.",
+    "deliveryTitle": "Teslimat",
+    "delivery": "Türkiye'nin her yerine teslimat yapıyoruz. İstanbul Başakşehir içinde teslimat ücretsizdir.",
+    "orderTitle": "Nasıl sipariş verilir",
+    "order": "Mağazadan ürünü seçin, sepete ekleyin ve siparişinizi tek dokunuşla WhatsApp'tan gönderin. Bize doğrudan {phone} numarasından WhatsApp'tan da yazabilirsiniz.",
+    "contactTitle": "İletişim",
+    "contactEmail": "E-posta",
+    "contactPhone": "WhatsApp / telefon",
+    "cta": "Alışverişe başla",
+    "faqLink": "Sık sorulan soruları oku"
+  },
+  "faq": {
+    "title": "Sık sorulan sorular",
+    "lead": "HATTAH'ta sipariş, teslimat ve ürünler hakkında kısa yanıtlar.",
+    "items": [
+      {
+        "q": "HATTAH nedir ve nerede bulunuyorsunuz?",
+        "a": "HATTAH (حَطّة), İstanbul merkezli; kapüşonlu, tatreez nakışı, tablo, madalyon ve ev yapımı yiyecek gibi Filistin ve Gazze mirası ürünler sunan çevrimiçi bir mağazadır. Ziyaretçilere açık bir mağazamız yok; çevrimiçi mağaza ve WhatsApp üzerinden çalışıyoruz."
+      },
+      {
+        "q": "HATTAH'tan nasıl sipariş verebilirim?",
+        "a": "Mağazadan ürünü seçip sepete ekleyin ve siparişi tek dokunuşla WhatsApp'tan gönderin; ya da istediğiniz ürünü {phone} numarasından doğrudan WhatsApp'ta yazın."
+      },
+      {
+        "q": "Hangi bölgelere teslimat yapıyorsunuz?",
+        "a": "Türkiye'nin her yerine teslimat yapıyoruz."
+      },
+      {
+        "q": "Teslimat ücretsiz mi?",
+        "a": "Evet, İstanbul Başakşehir içinde teslimat ücretsizdir. Diğer bölgeler için sipariş onaylanmadan önce teslimat ücretini WhatsApp'tan size bildiriyoruz."
+      },
+      {
+        "q": "Teslimat ne kadar sürer?",
+        "a": "Şehrinize ve ürüne göre değişir. Sipariş verdiğinizde tahmini teslimat tarihini WhatsApp'tan teyit ediyoruz."
+      },
+      {
+        "q": "Kapüşonlular için hangi bedenler var?",
+        "a": "Mevcut bedenler her ürün sayfasında listelenir. Beden seçiminde yardım için WhatsApp'tan yazabilirsiniz."
+      },
+      {
+        "q": "Özel tasarım kapüşonlu sipariş edebilir miyim?",
+        "a": "Evet. Fikrinizi WhatsApp'tan gönderin; yapılıp yapılamayacağını, fiyatı ve hazırlık süresini size bildirelim."
+      },
+      {
+        "q": "Hangi ödeme yöntemlerini kabul ediyorsunuz?",
+        "a": "Siparişi onayladığımızda geçerli ödeme yöntemlerini WhatsApp'tan sizinle teyit ediyoruz."
+      },
+      {
+        "q": "Hangi ürünleri satıyorsunuz?",
+        "a": "Miras tasarımlı kapüşonlular, Filistin tatreez nakışı, tablolar, madalyonlar ve kolyeler, ev yapımı Filistin yiyecekleri ve diğer miras hediyeleri."
+      }
+    ]
+  },
+  "notFoundPage": {
+    "title": "Sayfa bulunamadı",
+    "body": "Bağlantı hatalı olabilir veya sayfa taşınmış olabilir. Mağazaya göz atın veya ana sayfaya dönün.",
+    "shop": "Mağazaya göz at"
   }
 }

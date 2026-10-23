@@ -1,3 +1,5 @@
+import { productSlug } from "@/lib/slug";
+
 export type Locale = "ar" | "en" | "tr";
 
 // Category keys are fully data-driven (managed via the admin panel), so this
@@ -120,6 +122,10 @@ export interface ProductRow {
   has_sizes: boolean;
   has_colors: boolean;
   has_quantities: boolean;
+  // Admin-editable alt text for the product's photos, per language (null → auto from name + category).
+  image_alt_ar?: string | null;
+  image_alt_en?: string | null;
+  image_alt_tr?: string | null;
   created_at: string;
   product_images: ProductImageRow[];
   product_sizes: ProductSizeRow[];
@@ -134,6 +140,8 @@ export interface LocalizedQuantityOption {
 
 export interface LocalizedProduct {
   id: string;
+  // SEO-friendly URL segment: /product/{slug} (see lib/slug.ts).
+  slug: string;
   name: string;
   description: string;
   // The raw base price column. For a product with quantity options this is
@@ -194,6 +202,7 @@ export function localizeProduct(
 
   return {
     id: row.id,
+    slug: productSlug(row),
     name,
     description,
     price: row.price,

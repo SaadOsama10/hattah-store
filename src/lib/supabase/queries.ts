@@ -80,6 +80,22 @@ export async function getProductById(id: string): Promise<ProductRow | null> {
   return (data as unknown as ProductRow) ?? null;
 }
 
+/** Looks a product up by the 8-hex prefix of its id (the tail of its SEO slug). */
+export async function getProductByShortId(shortId: string): Promise<ProductRow | null> {
+  if (!/^[0-9a-f]{8}$/i.test(shortId)) return null;
+  const supabase = getPublicSupabaseClient();
+  const { data, error } = await supabase
+    .from("products")
+    .select(PRODUCT_SELECT)
+    .gte("id", `${shortId}-0000-0000-0000-000000000000`)
+    .lte("id", `${shortId}-ffff-ffff-ffff-ffffffffffff`)
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return (data as unknown as ProductRow) ?? null;
+}
+
 export async function getRelatedProducts(
   category: string,
   excludeId: string,

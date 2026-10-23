@@ -22,7 +22,7 @@ export function Logo({
 
   const image = (
     <Image
-      src="/images/hattah-logo.jpg"
+      src="/images/hattah-logo-sm.webp"
       alt="HATTAH — حَطّة"
       width={px}
       height={px}

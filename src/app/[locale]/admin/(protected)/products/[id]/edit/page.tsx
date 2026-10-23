@@ -42,6 +42,9 @@ export default async function EditProductPage({
           has_sizes: product.has_sizes,
           has_colors: product.has_colors,
           has_quantities: product.has_quantities,
+          image_alt_ar: product.image_alt_ar ?? "",
+          image_alt_en: product.image_alt_en ?? "",
+          image_alt_tr: product.image_alt_tr ?? "",
           sizes: [...product.product_sizes]
             .sort((a, b) => a.sort_order - b.sort_order)
             .map((s) => s.label),

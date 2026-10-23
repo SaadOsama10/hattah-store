@@ -3,6 +3,10 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 const nextConfig: NextConfig = {
   images: {
+    // Custom loader: product photos have pre-generated small WebP variants in Supabase
+    // Storage (see lib/image-variants.ts), so no dependence on Vercel's capped optimizer.
+    loader: "custom",
+    loaderFile: "./src/lib/image-loader.ts",
     remotePatterns: [
       {
         protocol: "https",
@@ -10,11 +14,6 @@ const nextConfig: NextConfig = {
         pathname: "/storage/v1/object/public/**",
       },
     ],
-    // Vercel's on-demand image optimization is capped on the free plan
-    // (1,000 source images/month) and starts returning 402s past that —
-    // Supabase Storage already serves these at a reasonable size, so skip
-    // Next's optimizer and serve them as-is instead.
-    unoptimized: true,
   },
   experimental: {
     serverActions: {

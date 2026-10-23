@@ -84,6 +84,7 @@ export function FeaturedProducts({
             >
               <ProductCard
                 id={localized.id}
+                slug={localized.slug}
                 name={localized.name}
                 price={localized.startingPrice}
                 salePrice={localized.salePrice}

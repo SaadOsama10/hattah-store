@@ -11,6 +11,7 @@ import { isProductOnSale, effectivePrice, discountPercent } from "@/lib/supabase
 
 export function ProductCard({
   id,
+  slug,
   name,
   price,
   salePrice = null,
@@ -20,6 +21,8 @@ export function ProductCard({
   startingFrom = false,
 }: {
   id: string;
+  // SEO slug for the product URL; falls back to the raw id (which redirects).
+  slug?: string;
   name: string;
   price: number;
   salePrice?: number | null;
@@ -63,12 +66,12 @@ export function ProductCard({
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       className="group"
     >
-      <Link href={`/product/${id}`} className="block">
+      <Link href={`/product/${slug ?? id}`} className="block">
         <div className="border-gradient relative aspect-[4/5] overflow-hidden rounded-2xl bg-bg-secondary transition-shadow duration-500 group-hover:shadow-soft">
           {image ? (
             <Image
               src={image}
-              alt={name}
+              alt={categoryLabel ? `${name} — ${categoryLabel}` : name}
               fill
               sizes="(min-width: 1024px) 25vw, (min-width: 640px) 45vw, 90vw"
               className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"

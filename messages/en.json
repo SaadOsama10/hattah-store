@@ -286,5 +286,86 @@
     "checkoutMessageIntro": "Hi! I'd like to order the following items:",
     "checkoutMessageTotal": "Total: {total}",
     "itemsCount": "{count, plural, =0 {Cart is empty} one {# item} other {# items}}"
+  },
+  "seo": {
+    "shopTitle": "Shop Palestinian Heritage Products | HATTAH",
+    "shopDescription": "Authentic Palestinian hoodies, tatreez embroidery, artwork, medallions and homemade food from HATTAH in Istanbul. Order online or via WhatsApp, delivery across Turkey.",
+    "offersTitle": "HATTAH Offers & Discounts | HATTAH",
+    "offersDescription": "Latest offers and discounts on Palestinian heritage products from HATTAH. Order now from the store or on WhatsApp.",
+    "aboutTitle": "About HATTAH — Palestinian Heritage Store in Istanbul",
+    "aboutDescription": "HATTAH is an Istanbul-based online store for Palestinian and Gazan heritage: hoodies, tatreez embroidery, artwork and food. Delivery in Turkey, free in Başakşehir.",
+    "faqTitle": "FAQ — Delivery, Sizes & Ordering | HATTAH",
+    "faqDescription": "Answers about delivery across Turkey, free delivery in Başakşehir, sizes, custom hoodies and how to order from HATTAH.",
+    "categoryTitle": "{name} | HATTAH",
+    "categoryDescription": "Shop {name} from HATTAH: authentic Palestinian products from Istanbul with delivery across Turkey. Order online or on WhatsApp.",
+    "home": "Home",
+    "shop": "Shop",
+    "about": "About HATTAH",
+    "faq": "FAQ",
+    "categories": "Categories"
+  },
+  "about": {
+    "title": "About HATTAH",
+    "lead": "HATTAH (حَطّة) is an Istanbul-based online store for authentic Palestinian and Gazan heritage products.",
+    "whoTitle": "Who we are",
+    "who": "HATTAH is a Palestinian brand based in Istanbul. We offer products that carry the memory and heritage of Palestine, each shown with clear photos, a description and a price in Turkish lira.",
+    "offerTitle": "What we offer",
+    "offer": "We offer hoodies with heritage designs, Palestinian tatreez embroidery, artwork, medallions and necklaces, and homemade Palestinian food. Every product is listed in the shop with its details.",
+    "deliveryTitle": "Delivery",
+    "delivery": "We deliver everywhere in Turkey. Delivery is free within Başakşehir, Istanbul.",
+    "orderTitle": "How to order",
+    "order": "Pick a product in the store, add it to your cart and send your order on WhatsApp in one tap. You can also message us directly on WhatsApp at {phone}.",
+    "contactTitle": "Contact",
+    "contactEmail": "Email",
+    "contactPhone": "WhatsApp / phone",
+    "cta": "Shop now",
+    "faqLink": "Read the FAQ"
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "lead": "Quick answers about ordering, delivery and products from HATTAH.",
+    "items": [
+      {
+        "q": "What is HATTAH and where are you based?",
+        "a": "HATTAH (حَطّة) is an online store based in Istanbul offering Palestinian and Gazan heritage products such as hoodies, tatreez embroidery, artwork, medallions and homemade food. We do not have a public shop for walk-ins; we work through the online store and WhatsApp."
+      },
+      {
+        "q": "How do I order from HATTAH?",
+        "a": "Choose a product in the store, add it to your cart and send the order on WhatsApp in one tap, or message us directly on WhatsApp at {phone} with the product you want."
+      },
+      {
+        "q": "Which areas do you deliver to?",
+        "a": "We deliver everywhere in Turkey."
+      },
+      {
+        "q": "Is delivery free?",
+        "a": "Yes, delivery is free within Başakşehir, Istanbul. For other areas we confirm the delivery cost with you on WhatsApp before the order is confirmed."
+      },
+      {
+        "q": "How long does delivery take?",
+        "a": "It depends on your city and the product. We confirm the expected delivery date with you on WhatsApp when you order."
+      },
+      {
+        "q": "What sizes are available for the hoodies?",
+        "a": "Available sizes are listed on each product page. If you need help choosing a size, message us on WhatsApp."
+      },
+      {
+        "q": "Can I order a custom-design hoodie?",
+        "a": "Yes. Send us your idea on WhatsApp and we will confirm whether it can be made, the price and the preparation time."
+      },
+      {
+        "q": "What payment methods do you accept?",
+        "a": "We confirm the available payment methods with you on WhatsApp when the order is confirmed."
+      },
+      {
+        "q": "What products do you sell?",
+        "a": "Hoodies with heritage designs, Palestinian tatreez embroidery, artwork, medallions and necklaces, homemade Palestinian food and other heritage gifts."
+      }
+    ]
+  },
+  "notFoundPage": {
+    "title": "Page not found",
+    "body": "The link may be wrong or the page has moved. Browse the shop or go back home.",
+    "shop": "Browse the shop"
   }
 }

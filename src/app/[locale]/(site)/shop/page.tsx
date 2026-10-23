@@ -1,9 +1,18 @@
-import { setRequestLocale } from "next-intl/server";
+import type { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { buildMetadata } from "@/lib/seo";
 import { ShopClient } from "@/components/shop/ShopClient";
 import { getAllProducts, getCategories } from "@/lib/supabase/queries";
 import type { CategoryKey } from "@/lib/supabase/types";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "seo" });
+  // ?category= filters are the same page — canonical stays /shop.
+  return buildMetadata({ locale, path: "/shop", title: t("shopTitle"), description: t("shopDescription") });
+}
 
 export default async function ShopPage({
   params,

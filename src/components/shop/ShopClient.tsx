@@ -204,6 +204,7 @@ export function ShopClient({
               <ProductCard
                 key={product.id}
                 id={product.id}
+                slug={product.slug}
                 name={product.name}
                 price={product.startingPrice}
                 salePrice={product.salePrice}

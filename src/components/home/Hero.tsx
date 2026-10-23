@@ -64,7 +64,7 @@ export function Hero() {
           <span className="absolute inset-[-14px] animate-pulse rounded-full bg-terracotta/15 blur-xl" />
           <span className="absolute inset-0 rounded-full ring-1 ring-cream/10" />
           <Image
-            src="/images/hattah-logo.jpg"
+            src="/images/hattah-logo-sm.webp"
             alt="HATTAH — حَطّة"
             width={132}
             height={132}

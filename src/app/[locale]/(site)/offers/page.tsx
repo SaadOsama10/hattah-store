@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { buildMetadata } from "@/lib/seo";
 import { Tag } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ProductCard } from "@/components/ui/ProductCard";
@@ -6,6 +8,12 @@ import { getOnSaleProducts, getCategories } from "@/lib/supabase/queries";
 import { localizeProduct, localizeCategory, type Locale } from "@/lib/supabase/types";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "seo" });
+  return buildMetadata({ locale, path: "/offers", title: t("offersTitle"), description: t("offersDescription") });
+}
 
 export default async function OffersPage({
   params,
@@ -54,6 +62,7 @@ export default async function OffersPage({
               <ProductCard
                 key={product.id}
                 id={product.id}
+                slug={product.slug}
                 name={product.name}
                 price={product.startingPrice}
                 salePrice={product.salePrice}
