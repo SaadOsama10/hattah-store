@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { Renderer } from "./render/render.js";
-import { generateCaption } from "./captions.js";
+import { CTA_POOL, ctaIndexOf, generateCaption } from "./captions.js";
 import { SOCIAL_BUCKET } from "./db.js";
 import { effectivePrice, sortedImages } from "./products.js";
 import { ANGLES, type Angle, type ProductRecord, type SocialPostRow, type SocialSettings } from "./types.js";
@@ -49,6 +49,32 @@ export async function loadRecentTexts(sb: SupabaseClient, excludePostId?: string
     }
   }
   return out;
+}
+
+/** In-process reservations so parallel jobs of one run never pick the same phrasing. */
+const reservedCtas = new Map<string, Set<number>>();
+
+/** A CTA phrasing not yet used by another post on the same Istanbul day (never the same sentence twice in a day). */
+export async function pickCtaIndex(sb: SupabaseClient, scheduledAt: string | null, excludePostId: string): Promise<number> {
+  const at = new Date(scheduledAt ?? Date.now());
+  const day = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul" }).format(at);
+  const start = new Date(`${day}T00:00:00+03:00`);
+  const end = new Date(start.getTime() + 86400e3);
+  const { data } = await sb
+    .from("social_posts")
+    .select("id, caption_full")
+    .gte("scheduled_at", start.toISOString())
+    .lt("scheduled_at", end.toISOString())
+    .not("caption_full", "is", null);
+  const used = new Set((data ?? []).filter((r) => r.id !== excludePostId).map((r) => ctaIndexOf(r.caption_full)));
+  const reserved = reservedCtas.get(day) ?? new Set<number>();
+  reservedCtas.set(day, reserved);
+  const all = CTA_POOL.map((_, i) => i);
+  const free = all.filter((i) => !used.has(i) && !reserved.has(i));
+  const pool = free.length ? free : all.filter((i) => !reserved.has(i)).length ? all.filter((i) => !reserved.has(i)) : all;
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  reserved.add(pick);
+  return pick;
 }
 
 export async function loadProduct(sb: SupabaseClient, id: string): Promise<ProductRecord> {
@@ -179,7 +205,8 @@ export async function buildPostAssets(
   // generating it only if the post has none yet.
   const needText = what.image && !(design.headline && design.subline);
   if (what.caption || needText) {
-    const res = await generateCaption(product, categoryAr, post.angle, settings, await loadRecentTexts(sb, post.id, product.id));
+    const ctaIndex = await pickCtaIndex(sb, (post as { scheduled_at?: string }).scheduled_at ?? null, post.id);
+    const res = await generateCaption(product, categoryAr, post.angle, settings, await loadRecentTexts(sb, post.id, product.id), ctaIndex);
     design = res.design;
     out.design = design;
     if (post.post_type === "feed" && what.caption) out.caption_full = res.caption;

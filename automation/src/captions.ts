@@ -2,13 +2,34 @@ import OpenAI from "openai";
 import { z } from "zod";
 import type { Angle, DesignText, ProductRecord, SocialSettings } from "./types.js";
 import { effectivePrice } from "./products.js";
-import { siteDisplay, whatsappDisplay } from "./render/render.js";
+import { whatsappDisplay } from "./render/render.js";
 import { isDryRun, need } from "./env.js";
 import { log } from "./time.js";
 
 const wordCount = (v: string) => v.trim().split(/\s+/).filter(Boolean).length;
 export const normalizeText = (v: string) =>
   v.replace(/[\u064B-\u0652\u0640]/g, "").replace(/[^\p{L}\p{N}\s]/gu, "").replace(/\s+/g, " ").trim().toLowerCase();
+
+/** Closing lines for feed captions. No store URL — the link lives in the bio. {WA} = WhatsApp number. */
+export const CTA_POOL = [
+  "رابط المتجر بالبايو 🔗 أو اطلب عبر واتساب: {WA}",
+  "تصفّح المتجر من الرابط بالبايو 🛍️ أو راسلنا على واتساب: {WA}",
+  "كل التفاصيل برابط البايو 🔗 وللطلب المباشر واتساب: {WA}",
+  "المتجر كامل بالرابط اللي بالبايو ✨ أو اطلب مباشرة عبر واتساب: {WA}",
+  "اطلبها من رابط البايو 🔗 أو كلّمنا على واتساب: {WA}",
+  "رابط المتجر بالبايو 🛒 وإذا بتحب نرتّب طلبك عالواتساب: {WA}",
+  "زورونا من رابط البايو 🔗 أو أرسلوا لنا على واتساب: {WA}",
+  "شوفوا المجموعة كاملة من رابط البايو 🛍️ أو اطلبوا عبر واتساب: {WA}",
+  "الرابط بالبايو يوصلك للمتجر 🔗 وللاستفسار والطلب واتساب: {WA}",
+  "تلاقوها بالمتجر من رابط البايو ✨ أو اطلبوا مباشرة عبر واتساب: {WA}",
+];
+export const renderCta = (i: number) => CTA_POOL[i % CTA_POOL.length].replace("{WA}", whatsappDisplay());
+
+/** Index of the pool phrasing used inside an existing caption (or -1). */
+export function ctaIndexOf(caption: string | null): number {
+  if (!caption) return -1;
+  return CTA_POOL.findIndex((c) => caption.includes(c.split("{WA}")[0]));
+}
 
 export const BODY_MIN = 600;
 export const BODY_MAX = 1000;
@@ -190,9 +211,9 @@ export interface CaptionResult {
   design: Required<DesignText>;
 }
 
-export function assembleCaption(c: CaptionJson, settings: SocialSettings): string {
+export function assembleCaption(c: CaptionJson, settings: SocialSettings, ctaIndex = 0): string {
   const body = captionBody(c, settings.caption_languages.includes("tr"));
-  const cta = `اطلب من المتجر: ${siteDisplay()}\nأو عبر واتساب: ${whatsappDisplay()}`;
+  const cta = renderCta(ctaIndex);
 
   const seen = new Set<string>();
   const tags: string[] = [];
@@ -220,6 +241,7 @@ export async function generateCaption(
   angle: Angle,
   settings: SocialSettings,
   recentTexts: string[] = [],
+  ctaIndex = 0,
 ): Promise<CaptionResult> {
   const nameTokens = normalizeText(p.name_ar).split(" ").filter((t) => t.length > 2);
   /** Rules the model was told but may break: prices/digits in text, or a subline that just restates the product name. */
@@ -263,5 +285,5 @@ export async function generateCaption(
       if (attempt === 3) throw new Error(broken ?? "model kept repeating a headline used in the last 30 days");
     }
   }
-  return { caption: assembleCaption(json, settings), design: { headline: json.image_headline.trim(), subline: json.image_subline.trim() } };
+  return { caption: assembleCaption(json, settings, ctaIndex), design: { headline: json.image_headline.trim(), subline: json.image_subline.trim() } };
 }

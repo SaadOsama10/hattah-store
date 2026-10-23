@@ -114,7 +114,6 @@ export class Renderer {
       logo: logoDataUri(),
       fontCss: fontCss(),
       whatsappDisplay: whatsappDisplay(),
-      siteDisplay: siteDisplay(),
       text: req.text,
     };
     const size = SIZES[req.type];
