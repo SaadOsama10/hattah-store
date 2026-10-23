@@ -15,6 +15,7 @@ export interface TemplateInput {
   logo: string;
   fontCss: string;
   whatsappDisplay: string;
+  siteDisplay: string;
   text: Required<DesignText>;
 }
 
@@ -79,9 +80,8 @@ body{font-family:'Amiri','Playfair Display',serif;color:${C.oliveDeep}}
 .cat{font-size:${story ? 34 : 28}px;color:${C.terraDeep};letter-spacing:.02em}
 .price{font-family:'Playfair Display','Amiri',serif;font-weight:700;direction:ltr;white-space:nowrap}
 .old{font-family:'Playfair Display','Amiri',serif;text-decoration:line-through;opacity:.6;direction:ltr}
-.wa{display:flex;align-items:center;justify-content:center;gap:14px;font-size:${story ? 36 : 30}px;direction:rtl;flex:none}
-.wa b{font-family:'Playfair Display',serif;font-weight:600;direction:ltr;unicode-bidi:isolate;letter-spacing:.03em}
-.wa .dot{width:7px;height:7px;border-radius:50%;background:${C.terra}}
+.cta{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:${story ? 29 : 25}px;line-height:1.45;direction:rtl;flex:none;text-align:center;opacity:.92}
+.cta b{font-family:'Playfair Display',serif;font-weight:600;direction:ltr;unicode-bidi:isolate;letter-spacing:.02em}
 .diamond{width:12px;height:12px;background:${C.terra};transform:rotate(45deg);flex:none}
 .rule{display:flex;align-items:center;gap:14px;width:240px;flex:none}
 .rule::before,.rule::after{content:"";flex:1;height:2px;background:${C.terra};opacity:.55}
@@ -104,7 +104,7 @@ function photoBox(
 }
 
 const waLine = (t: TemplateInput) =>
-  `<div class="wa"><span>اطلب عبر واتساب</span><span class="dot"></span><b>${esc(t.whatsappDisplay)}</b></div>`;
+  `<div class="cta"><div>اطلب من المتجر: <b>${esc(t.siteDisplay)}</b></div><div>أو عبر واتساب: <b>${esc(t.whatsappDisplay)}</b></div></div>`;
 
 const priceBlock = (t: TemplateInput, size: number, color: string) => {
   const old = t.oldPrice

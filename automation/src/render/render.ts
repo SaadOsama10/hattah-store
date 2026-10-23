@@ -82,6 +82,10 @@ export function whatsappDisplay(): string {
   return `+${d}`;
 }
 
+export function siteDisplay(): string {
+  return (process.env.SITE_URL ?? "hattah-store.vercel.app").replace(/^https?:\/\//, "").replace(/\/$/, "");
+}
+
 export class Renderer {
   private browser: Browser | null = null;
   lastViolations = 0;
@@ -110,6 +114,7 @@ export class Renderer {
       logo: logoDataUri(),
       fontCss: fontCss(),
       whatsappDisplay: whatsappDisplay(),
+      siteDisplay: siteDisplay(),
       text: req.text,
     };
     const size = SIZES[req.type];
@@ -154,7 +159,7 @@ export class Renderer {
       const violations = await page.evaluate(
         ({ W, H, top, bottom, side }) => {
           const bad: string[] = [];
-          document.querySelectorAll<HTMLElement>(".logo,.fit>span,.wa,.cat,.price,.old,.flag").forEach((el) => {
+          document.querySelectorAll<HTMLElement>(".logo,.fit>span,.cta,.cat,.price,.old,.flag").forEach((el) => {
             const r = el.getBoundingClientRect();
             if (r.left < side - 1 || r.right > W - side + 1 || r.top < top - 1 || r.bottom > H - bottom + 1)
               bad.push(`${el.className || el.tagName} [${Math.round(r.left)},${Math.round(r.top)} → ${Math.round(r.right)},${Math.round(r.bottom)}] "${(el.textContent ?? "").slice(0, 24)}"`);
