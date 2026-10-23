@@ -144,7 +144,8 @@ ${productBrief(p, categoryAr)}
 - caption_tr: ${languages.includes("tr") ? "سطر بالتركية (حتى ٢٠٠ حرف)" : 'اتركه "" لأن التركية غير مطلوبة'}.
 - hashtags: ٤–٦ وسوم خاصة بهذا المنتج (بدون تكرار)، كل وسم يبدأ بـ # وبدون مسافات.
 - image_headline: من ٢ إلى ٦ كلمات بالضبط كحد أقصى ٦، بلهجة شامية دافئة. ${IMAGE_TEXT_BRIEF[angle]}
-- image_subline: من ٤ إلى ١٥ كلمة كحد أقصى ١٥. نص التصميم قصير وبدون هاشتاغات أو أرقام هاتف أو أسعار.
+- image_subline: من ٤ إلى ١٥ كلمة كحد أقصى ١٥. نص التصميم قصير وبدون هاشتاغات أو أرقام هاتف.
+- قواعد صارمة لنص التصميم (العنوان والسطر الفرعي): ممنوع ذكر الأسعار أو العملة (ليرة/TL) أو أي أرقام في العنوان؛ ممنوع تكرار اسم المنتج أو إعادة صياغته في السطر الفرعي (اسم المنتج يظهر على التصميم أصلًا) — قدّم معلومة جديدة عنه؛ استخدم الأرقام اللاتينية (0-9) إن لزم رقم في السطر الفرعي.
 ${recent.length ? `\nنصوص استُخدمت في آخر ٣٠ يومًا — ممنوع تكرار أي عنوان أو جملة منها أو الاقتراب منها في الصياغة:\n${recent.map((r) => "- " + r).join("\n")}` : ""}`;
 
   const res = await client.responses.create({
@@ -195,6 +196,18 @@ export async function generateCaption(
   settings: SocialSettings,
   recentTexts: string[] = [],
 ): Promise<CaptionResult> {
+  const nameTokens = normalizeText(p.name_ar).split(" ").filter((t) => t.length > 2);
+  /** Rules the model was told but may break: prices/digits in text, or a subline that just restates the product name. */
+  const breaksRules = (j: CaptionJson): string | null => {
+    const head = j.image_headline, sub = j.image_subline;
+    if (/[0-9٠-٩]/.test(head)) return "headline contains digits";
+    if (/(ليرة|₺|\bTL\b)/i.test(head + " " + sub)) return "text mentions price/currency";
+    if (/[٠-٩]/.test(sub)) return "subline uses Arabic-Indic digits";
+    const subN = normalizeText(sub);
+    const overlap = nameTokens.filter((t) => subN.includes(t)).length;
+    if (nameTokens.length >= 3 && overlap / nameTokens.length >= 0.6) return "subline restates the product name";
+    return null;
+  };
   const recentSet = new Set(recentTexts.map(normalizeText));
   const isRepeat = (j: CaptionJson) =>
     recentSet.has(normalizeText(j.image_headline)) || recentSet.has(normalizeText(j.image_subline));
@@ -214,9 +227,10 @@ export async function generateCaption(
         if (attempt === 3) throw e;
         continue;
       }
-      if (!isRepeat(json)) break;
-      log(`attempt ${attempt}: image text repeats a recent post, retrying`);
-      if (attempt === 3) throw new Error("model kept repeating a headline used in the last 30 days");
+      const broken = breaksRules(json);
+      if (!isRepeat(json) && !broken) break;
+      log(`attempt ${attempt}: ${broken ?? "image text repeats a recent post"}, retrying`);
+      if (attempt === 3) throw new Error(broken ?? "model kept repeating a headline used in the last 30 days");
     }
   }
   return { caption: assembleCaption(json, settings), design: { headline: json.image_headline.trim(), subline: json.image_subline.trim() } };
