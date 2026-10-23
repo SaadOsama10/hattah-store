@@ -8,7 +8,7 @@
 - `src/lib/supabase/` — `public.ts` (anon)، `service.ts` (service role، سيرفر فقط)، `types.ts`.
 - `src/lib/inventory-period.ts` — حساب فلتر الفترة الزمنية (بالسنتات كأعداد صحيحة).
 - `messages/{ar,en,tr}.json` — الترجمات. واجهة الأدمن عربية فقط (نصوص مباشرة).
-- `supabase/migrations/NNN_*.sql` — الـ migrations مرقّمة (آخر واحد 012). `supabase/schema.sql` المخطط الكامل.
+- `supabase/migrations/NNN_*.sql` — الـ migrations مرقّمة (آخر واحد 013). `supabase/schema.sql` المخطط الكامل.
 - الأسرار في `.env.local` (لا تُطبع ولا تُرفع): `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`.
 
 ## دفتر البضاعة (`/admin/inventory`)
@@ -27,3 +27,6 @@
 - تعديلات **البيانات** (إدخال دفعات/صفوف) لا تحتاج `git push`. تعديلات **الكود** تحتاج commit + push، ثم التأكد من Vercel (Deployments → Ready).
 - لا تعدّل ولا تحذف بيانات موجودة بدون طلب صريح. قبل أي إدخال: افحص عدم وجود تكرار، وطابق المجاميع قبل/بعد.
 - قبل الـ push: `npm run build` بدون أخطاء TypeScript.
+
+## أتمتة السوشيال ميديا (`/automation`)
+سكربتات Node/TS (Playwright + OpenAI + Meta Graph API) تعمل عبر GitHub Actions (`social-generate.yml` يوميًا 03:00 إسطنبول، `social-publish.yml` كل ساعة عند :35). جداول `social_posts` و`social_settings` (migration 013) وbucket عام `social-posts`. واجهة الأدمن: `/admin/social` (+`/settings`). الأعمال الثقيلة (توليد/إعادة توليد/نشر الآن) تُطلق من الواجهة عبر `workflow_dispatch` (`GH_DISPATCH_TOKEN`). `DRY_RUN=true` يمنع أي استدعاء لـ Meta. الإعداد: `automation/SETUP_AR.md`.

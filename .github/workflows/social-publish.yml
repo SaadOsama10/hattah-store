@@ -1,0 +1,56 @@
+name: Social — publish due posts
+
+on:
+  schedule:
+    # Hourly at :35 — right after the default 12:30 / 19:30 / 21:30 slots.
+    - cron: "35 * * * *"
+  workflow_dispatch:
+    inputs:
+      post_id:
+        description: "Publish this post now (social_posts.id); empty = all due"
+        required: false
+        type: string
+      dry_run:
+        description: "DRY_RUN (no Meta calls)"
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: social-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: automation
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
+      META_IG_USER_ID: ${{ secrets.META_IG_USER_ID }}
+      META_ACCESS_TOKEN: ${{ secrets.META_ACCESS_TOKEN }}
+      META_GRAPH_VERSION: ${{ vars.META_GRAPH_VERSION || 'v25.0' }}
+      DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: automation/package-lock.json
+      - run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+      - name: Publish
+        env:
+          IN_POST: ${{ inputs.post_id }}
+        run: |
+          if [ -n "$IN_POST" ]; then
+            npx tsx src/publish.ts --post="$IN_POST"
+          else
+            npx tsx src/publish.ts
+          fi

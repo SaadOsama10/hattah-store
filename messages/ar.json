@@ -130,7 +130,8 @@
     "nav": {
       "dashboard": "لوحة التحكم",
       "categories": "الفئات",
-      "inventory": "دفتر البضاعة"
+      "inventory": "دفتر البضاعة",
+      "social": "السوشيال ميديا"
     },
     "login": {
       "title": "دخول الإدارة",

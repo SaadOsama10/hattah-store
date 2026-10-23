@@ -130,7 +130,8 @@
     "nav": {
       "dashboard": "Kontrol Paneli",
       "categories": "Kategoriler",
-      "inventory": "Envanter"
+      "inventory": "Envanter",
+      "social": "Sosyal Medya"
     },
     "login": {
       "title": "Yönetici Girişi",

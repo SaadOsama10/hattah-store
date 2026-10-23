@@ -1,0 +1,78 @@
+name: Social — generate posts
+
+on:
+  schedule:
+    # 00:00 UTC = 03:00 Istanbul (UTC+3). Creates today's posts.
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "daily | today | tomorrow | regenerate"
+        default: "today"
+        type: string
+      post_id:
+        description: "regenerate: social_posts.id"
+        required: false
+        type: string
+      what:
+        description: "regenerate: image | caption | both | swap"
+        required: false
+        default: "both"
+        type: string
+      dry_run:
+        description: "DRY_RUN (no Meta calls)"
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: social-generate
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: automation
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-6.1-sol' }}
+      WHATSAPP_NUMBER: "905529987112"
+      DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: automation/package-lock.json
+      - run: npm ci
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('automation/package-lock.json') }}
+      - name: Install Chromium
+        run: |
+          if [ "${{ steps.pw-cache.outputs.cache-hit }}" = "true" ]; then
+            npx playwright install-deps chromium
+          else
+            npx playwright install --with-deps chromium
+          fi
+      - name: Generate / regenerate
+        env:
+          IN_MODE: ${{ inputs.mode }}
+          IN_POST: ${{ inputs.post_id }}
+          IN_WHAT: ${{ inputs.what }}
+        run: |
+          MODE="${IN_MODE:-daily}"
+          case "$MODE" in
+            regenerate) npx tsx src/regenerate.ts --post="$IN_POST" --what="${IN_WHAT:-both}" ;;
+            tomorrow)   npx tsx src/generate.ts --tomorrow ;;
+            *)          npx tsx src/generate.ts ;;
+          esac

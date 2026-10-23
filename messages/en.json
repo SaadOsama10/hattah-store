@@ -130,7 +130,8 @@
     "nav": {
       "dashboard": "Dashboard",
       "categories": "Categories",
-      "inventory": "Inventory"
+      "inventory": "Inventory",
+      "social": "Social"
     },
     "login": {
       "title": "Admin Login",
