@@ -44,3 +44,7 @@ next-env.d.ts
 /.claude/
 !.env.example
 backups/
+
+# social automation
+/automation/node_modules
+/automation/.env

@@ -279,3 +279,8 @@ create policy "Public can view product images"
 
 -- No insert/update/delete storage policies for the anon role —
 -- uploads happen only via the service-role key in server actions.
+
+-- ─────────────────────────────────────────────────────────────
+-- Social media automation (migration 013) — see /automation.
+-- ─────────────────────────────────────────────────────────────
+-- (full definition lives in supabase/migrations/013_add_social_posts.sql)

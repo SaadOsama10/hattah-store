@@ -1,0 +1,26 @@
+{
+  "name": "hattah-social-automation",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "tsx src/generate.ts",
+    "publish": "tsx src/publish.ts",
+    "previews": "tsx src/previews.ts",
+    "test-connection": "tsx src/test-connection.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
+    "openai": "^7.43.0",
+    "playwright": "^1.64.1",
+    "sharp": "^0.35.5",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@fontsource/amiri": "^5.3.0",
+    "@fontsource/playfair-display": "^5.3.0",
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}
