@@ -131,6 +131,9 @@ export async function saveSocialSettings(
     .update({
       // `enabled` is deliberately NOT saved here — the kill switch owns it.
       auto_approve: s.auto_approve,
+      ...(s.store_url !== undefined
+        ? { store_url: s.store_url.trim().replace(/^https?:\/\//, "").replace(/\/+$/, "") || "hattah-store.vercel.app" }
+        : {}),
       jitter_minutes: Math.min(30, Math.max(0, Math.round(Number(s.jitter_minutes) || 0))),
       daily_slots: slots,
       caption_languages: s.caption_languages,

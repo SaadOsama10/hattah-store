@@ -31,6 +31,8 @@ export interface SocialSettings {
   hashtags_base: string[];
   excluded_product_ids: string[];
   jitter_minutes: number;
+  /** Printed on images (no protocol). Optional until migration 016 is applied. */
+  store_url?: string;
   consecutive_failures: number;
   last_error: string | null;
   auto_disabled_at: string | null;

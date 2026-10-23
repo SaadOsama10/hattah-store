@@ -67,6 +67,8 @@ export interface RenderRequest {
   oldPrice: number | null;
   photoUrl: string;
   text: Required<DesignText>;
+  /** Store address printed on the image; falls back to SITE_URL / the default. */
+  storeUrl?: string;
   /** Cut the product out of its photo (per-product option). */
   removeBg?: boolean;
 }
@@ -82,8 +84,8 @@ export function whatsappDisplay(): string {
   return `+${d}`;
 }
 
-export function siteDisplay(): string {
-  return (process.env.SITE_URL ?? "hattah-store.vercel.app").replace(/^https?:\/\//, "").replace(/\/$/, "");
+export function siteDisplay(override?: string): string {
+  return (override || process.env.SITE_URL || "hattah-store.vercel.app").replace(/^https?:\/\//, "").replace(/\/$/, "");
 }
 
 export class Renderer {
@@ -114,6 +116,7 @@ export class Renderer {
       logo: logoDataUri(),
       fontCss: fontCss(),
       whatsappDisplay: whatsappDisplay(),
+      siteDisplay: siteDisplay(req.storeUrl),
       text: req.text,
     };
     const size = SIZES[req.type];

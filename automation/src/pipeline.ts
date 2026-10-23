@@ -224,6 +224,7 @@ export async function buildPostAssets(
       // Stories prefer the product's second photo so they don't look like a copy of the feed post.
       photoUrl: sortedImages(product)[post.post_type === "story" && sortedImages(product).length > 1 ? 1 : 0],
       text: { headline: design.headline ?? "", subline: design.subline ?? "" },
+      storeUrl: settings.store_url,
       removeBg: (await loadRemoveBgIds(sb)).has(product.id),
     });
     const day = new Date().toISOString().slice(0, 10);

@@ -20,6 +20,8 @@ export interface SocialSettingsRow {
   hashtags_base: string[];
   excluded_product_ids: string[];
   jitter_minutes: number;
+  /** undefined until migration 016 is applied */
+  store_url?: string;
   consecutive_failures: number;
   last_error: string | null;
   auto_disabled_at: string | null;

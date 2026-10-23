@@ -25,6 +25,7 @@ export function SocialSettingsForm({
   const [s, setS] = useState({
     auto_approve: initial.auto_approve,
     jitter_minutes: initial.jitter_minutes ?? 10,
+    store_url: initial.store_url,
     daily_slots: initial.daily_slots as SocialSlot[],
     caption_languages: initial.caption_languages,
     hashtags_base: initial.hashtags_base,
@@ -107,6 +108,20 @@ export function SocialSettingsForm({
             </button>
           </div>
         ))}
+        {s.store_url !== undefined ? (
+          <label className="flex flex-col gap-1 font-inter text-sm text-cream">
+            عنوان المتجر المطبوع على الصور (بدون https://) — غيّره عند شراء دومين:
+            <input
+              dir="ltr"
+              value={s.store_url}
+              onChange={(e) => setS((p) => ({ ...p, store_url: e.target.value }))}
+              className={field}
+              placeholder="hattah-store.vercel.app"
+            />
+          </label>
+        ) : (
+          <p className="font-inter text-xs text-cream-secondary/70">لتعديل عنوان المتجر المطبوع على الصور شغّل migration 016 أولاً.</p>
+        )}
         <label className="flex items-center gap-3 font-inter text-sm text-cream">
           إزاحة عشوائية لكل موعد (± دقيقة):
           <input

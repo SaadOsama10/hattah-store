@@ -15,6 +15,7 @@ export interface TemplateInput {
   logo: string;
   fontCss: string;
   whatsappDisplay: string;
+  siteDisplay: string;
   text: Required<DesignText>;
 }
 
@@ -103,7 +104,7 @@ function photoBox(
 }
 
 const waLine = (t: TemplateInput) =>
-  `<div class="cta"><div>رابط المتجر بالبايو</div><div>أو عبر واتساب: <b>${esc(t.whatsappDisplay)}</b></div></div>`;
+  `<div class="cta"><div>اطلب من المتجر: <b>${esc(t.siteDisplay)}</b></div><div>أو عبر واتساب: <b>${esc(t.whatsappDisplay)}</b></div></div>`;
 
 const priceBlock = (t: TemplateInput, size: number, color: string) => {
   const old = t.oldPrice
