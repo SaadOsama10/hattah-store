@@ -118,7 +118,9 @@ export async function requestGenerate(day: "today" | "tomorrow") {
   await dispatchWorkflow("social-generate.yml", { mode: day });
 }
 
-export async function saveSocialSettings(s: Omit<SocialSettingsRow, "id">) {
+export async function saveSocialSettings(
+  s: Omit<SocialSettingsRow, "id" | "enabled" | "consecutive_failures" | "last_error" | "auto_disabled_at">
+) {
   await assertAdminSession();
   const slots = s.daily_slots.filter(
     (x) => (x.type === "feed" || x.type === "story") && /^([01]\d|2[0-3]):[0-5]\d$/.test(x.time)
@@ -127,8 +129,9 @@ export async function saveSocialSettings(s: Omit<SocialSettingsRow, "id">) {
   const { error } = await supabase
     .from("social_settings")
     .update({
-      enabled: s.enabled,
+      // `enabled` is deliberately NOT saved here — the kill switch owns it.
       auto_approve: s.auto_approve,
+      jitter_minutes: Math.min(30, Math.max(0, Math.round(Number(s.jitter_minutes) || 0))),
       daily_slots: slots,
       caption_languages: s.caption_languages,
       hashtags_base: s.hashtags_base
@@ -211,4 +214,19 @@ export async function setProductRemoveBg(productId: string, removeBg: boolean) {
     .upsert({ product_id: productId, remove_bg: removeBg, updated_at: new Date().toISOString() });
   if (error) throw new Error(error.message);
   revalidatePath("/[locale]/admin/social", "page");
+}
+
+/** The big kill switch. Turning it back on clears any automatic shut-off warning. */
+export async function setSocialEnabled(enabled: boolean) {
+  await assertAdminSession();
+  const supabase = getServiceSupabaseClient();
+  const patch: Record<string, unknown> = { enabled, updated_at: new Date().toISOString() };
+  if (enabled) {
+    patch.consecutive_failures = 0;
+    patch.last_error = null;
+    patch.auto_disabled_at = null;
+  }
+  const { error } = await supabase.from("social_settings").update(patch).eq("id", 1);
+  if (error) throw new Error(error.message);
+  revalidatePath("/[locale]/admin/social", "layout");
 }

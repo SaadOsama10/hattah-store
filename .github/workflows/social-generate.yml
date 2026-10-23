@@ -32,7 +32,7 @@ concurrency:
 jobs:
   generate:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 60
     defaults:
       run:
         working-directory: automation
@@ -75,6 +75,6 @@ jobs:
           MODE="${IN_MODE:-daily}"
           case "$MODE" in
             regenerate) npx tsx src/regenerate.ts --post="$IN_POST" --what="${IN_WHAT:-both}" ;;
-            tomorrow)   npx tsx src/generate.ts --tomorrow ;;
-            *)          npx tsx src/generate.ts ;;
+            today)      npx tsx src/generate.ts ;;
+            *)          npx tsx src/generate.ts --tomorrow ;;  # daily cron (03:00 Istanbul) + "tomorrow": the whole next day in one run
           esac

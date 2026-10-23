@@ -22,7 +22,7 @@ export async function loadCategories(sb: SupabaseClient): Promise<Map<string, { 
 }
 
 /** Headlines/sublines used on posts in the last 30 days (to avoid repeats). */
-export async function loadRecentTexts(sb: SupabaseClient, excludePostId?: string): Promise<string[]> {
+export async function loadRecentTexts(sb: SupabaseClient, excludePostId?: string, productId?: string): Promise<string[]> {
   const since = new Date(Date.now() - 30 * 86400e3).toISOString();
   const { data } = await sb.from("social_posts").select("id, design").gte("created_at", since).not("design", "is", null);
   const out: string[] = [];
@@ -31,6 +31,22 @@ export async function loadRecentTexts(sb: SupabaseClient, excludePostId?: string
     const d = r.design as { headline?: string; subline?: string };
     if (d?.headline) out.push(d.headline);
     if (d?.subline) out.push(d.subline);
+  }
+  // Whatever a product said last time is never reused, even outside the 30-day window.
+  if (productId) {
+    const { data: own } = await sb
+      .from("social_posts")
+      .select("id, design")
+      .eq("product_id", productId)
+      .not("design", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(4);
+    for (const r of own ?? []) {
+      if (r.id === excludePostId) continue;
+      const d = r.design as { headline?: string; subline?: string };
+      if (d?.headline) out.push(d.headline);
+      if (d?.subline) out.push(d.subline);
+    }
   }
   return out;
 }
@@ -66,12 +82,14 @@ export interface ProductPick {
 /** Picks `count` distinct products, least-recently-posted first (never posted
  * first), avoiding the same category family back-to-back where possible, and
  * varying the angle per product. */
+export const ANGLE_LIST = ANGLES;
+
 export async function pickProducts(
   sb: SupabaseClient,
   settings: SocialSettings,
   cats: Map<string, { label_ar: string; parent_key: string | null }>,
   count: number,
-  opts: { excludeIds?: string[]; previousCategory?: string | null; slotTypes?: ("feed" | "story")[] } = {},
+  opts: { excludeIds?: string[]; previousCategory?: string | null; slotTypes?: ("feed" | "story")[]; rotationDays?: number | "auto" } = {},
 ): Promise<ProductPick[]> {
   const { data: prods, error } = await sb.from("products").select(PRODUCT_SELECT);
   if (error) throw new Error(error.message);
@@ -87,6 +105,21 @@ export async function pickProducts(
     .neq("status", "skipped")
     .order("scheduled_at", { ascending: false });
   const lastPosted = new Map<string, number>();
+  // Feed rotation: a product that appeared in a feed post within the last N days is out
+  // (N = eligible/5, min 3) — relaxed only if that would leave too few candidates.
+  const recentFeed = new Set<string>();
+  const rotationDays = opts.rotationDays === "auto" ? Math.max(3, Math.ceil(eligible.length / 5)) : opts.rotationDays;
+  if (rotationDays) {
+    const since = Date.now() - rotationDays * 86400e3;
+    const { data: feedHist } = await sb
+      .from("social_posts")
+      .select("product_id, scheduled_at")
+      .eq("post_type", "feed")
+      .not("product_id", "is", null)
+      .not("status", "in", "(skipped,failed)")
+      .gte("scheduled_at", new Date(since).toISOString());
+    for (const h of feedHist ?? []) recentFeed.add(h.product_id);
+  }
   const lastAngle = new Map<string, Angle>();
   for (const h of hist ?? []) {
     if (!lastPosted.has(h.product_id)) {
@@ -96,9 +129,12 @@ export async function pickProducts(
   }
 
   // never posted (-Infinity) first, then oldest; shuffle first so ties vary.
-  const pool = shuffle(eligible).sort(
+  const ordered = shuffle(eligible).sort(
     (a, b) => (lastPosted.get(a.id) ?? -Infinity) - (lastPosted.get(b.id) ?? -Infinity),
   );
+  const fresh = ordered.filter((p) => !recentFeed.has(p.id));
+  const pool = fresh.length >= count ? fresh : [...fresh, ...ordered.filter((p) => recentFeed.has(p.id))];
+  if (fresh.length < count) log(`rotation window relaxed: only ${fresh.length} product(s) outside the last ${rotationDays} days`);
 
   const picks: ProductPick[] = [];
   const usedAngles: Angle[] = [];
@@ -143,7 +179,7 @@ export async function buildPostAssets(
   // generating it only if the post has none yet.
   const needText = what.image && !(design.headline && design.subline);
   if (what.caption || needText) {
-    const res = await generateCaption(product, categoryAr, post.angle, settings, await loadRecentTexts(sb, post.id));
+    const res = await generateCaption(product, categoryAr, post.angle, settings, await loadRecentTexts(sb, post.id, product.id));
     design = res.design;
     out.design = design;
     if (post.post_type === "feed" && what.caption) out.caption_full = res.caption;
@@ -158,7 +194,8 @@ export async function buildPostAssets(
       categoryAr,
       price: price.current,
       oldPrice: price.old,
-      photoUrl: sortedImages(product)[0],
+      // Stories prefer the product's second photo so they don't look like a copy of the feed post.
+      photoUrl: sortedImages(product)[post.post_type === "story" && sortedImages(product).length > 1 ? 1 : 0],
       text: { headline: design.headline ?? "", subline: design.subline ?? "" },
       removeBg: (await loadRemoveBgIds(sb)).has(product.id),
     });

@@ -115,6 +115,32 @@ for (const post of due) {
         : { status: "failed", attempts, error: lastError.slice(0, 500) },
     )
     .eq("id", post.id);
+
+  // Circuit breaker: two failed publishes in a row (expired token, Meta error…) switch the
+  // whole system off and leave a red warning in /admin/social.
+  if (ok) {
+    if (settings.consecutive_failures) {
+      await sb.from("social_settings").update({ consecutive_failures: 0 }).eq("id", 1);
+      settings.consecutive_failures = 0;
+    }
+  } else {
+    const failures = (settings.consecutive_failures ?? 0) + 1;
+    settings.consecutive_failures = failures;
+    if (failures >= 2) {
+      await sb
+        .from("social_settings")
+        .update({
+          enabled: false,
+          consecutive_failures: failures,
+          last_error: lastError.slice(0, 500),
+          auto_disabled_at: new Date().toISOString(),
+        })
+        .eq("id", 1);
+      log(`⛔ ${failures} publish failures in a row → automation switched OFF. Last error: ${lastError}`);
+      break;
+    }
+    await sb.from("social_settings").update({ consecutive_failures: failures, last_error: lastError.slice(0, 500) }).eq("id", 1);
+  }
   await sleep(3000);
 }
 log("done");

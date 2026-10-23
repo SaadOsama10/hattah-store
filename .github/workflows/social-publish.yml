@@ -2,8 +2,8 @@ name: Social — publish due posts
 
 on:
   schedule:
-    # Hourly at :35 — right after the default 12:30 / 19:30 / 21:30 slots.
-    - cron: "35 * * * *"
+    # Every 15 minutes: slots carry a random ±10 min offset, so publish whatever is due, in order.
+    - cron: "*/15 * * * *"
   workflow_dispatch:
     inputs:
       post_id:
@@ -23,7 +23,7 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: automation

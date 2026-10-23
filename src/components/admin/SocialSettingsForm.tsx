@@ -23,8 +23,8 @@ export function SocialSettingsForm({
   products: { id: string; name_ar: string }[];
 }) {
   const [s, setS] = useState({
-    enabled: initial.enabled,
     auto_approve: initial.auto_approve,
+    jitter_minutes: initial.jitter_minutes ?? 10,
     daily_slots: initial.daily_slots as SocialSlot[],
     caption_languages: initial.caption_languages,
     hashtags_base: initial.hashtags_base,
@@ -68,12 +68,9 @@ export function SocialSettingsForm({
       </div>
 
       <section className="space-y-3">
-        <Toggle
-          checked={s.enabled}
-          onChange={(v) => setS((p) => ({ ...p, enabled: v }))}
-          label="تفعيل النشر التلقائي"
-          description="عند الإيقاف لا يتم توليد ولا نشر أي شيء."
-        />
+        <p className="rounded-xl border border-cream/15 bg-bg-secondary px-4 py-3 font-inter text-sm text-cream-secondary">
+          تفعيل/إيقاف النظام كله من المفتاح الكبير أعلى صفحة «السوشيال ميديا».
+        </p>
         <Toggle
           checked={s.auto_approve}
           onChange={(v) => setS((p) => ({ ...p, auto_approve: v }))}
@@ -110,6 +107,17 @@ export function SocialSettingsForm({
             </button>
           </div>
         ))}
+        <label className="flex items-center gap-3 font-inter text-sm text-cream">
+          إزاحة عشوائية لكل موعد (± دقيقة):
+          <input
+            type="number"
+            min={0}
+            max={30}
+            value={s.jitter_minutes}
+            onChange={(e) => setS((p) => ({ ...p, jitter_minutes: Number(e.target.value) }))}
+            className={field + " !w-24"}
+          />
+        </label>
         <button
           type="button"
           onClick={() => setS((p) => ({ ...p, daily_slots: [...p.daily_slots, { type: "feed", time: "15:00" }] }))}

@@ -19,6 +19,10 @@ export interface SocialSettingsRow {
   caption_languages: string[];
   hashtags_base: string[];
   excluded_product_ids: string[];
+  jitter_minutes: number;
+  consecutive_failures: number;
+  last_error: string | null;
+  auto_disabled_at: string | null;
 }
 
 export interface SocialPostWithProduct {
