@@ -42,11 +42,11 @@ if (what === "swap") {
 const product = await loadProduct(sb, productId);
 const renderer = new Renderer(sb);
 try {
-  const image = what === "image" || what === "both" || what === "swap";
+  const image = true; // image text comes from the same call as the caption, so always re-render
   const caption = what === "caption" || what === "both" || what === "swap";
   const assets = await buildPostAssets(sb, renderer, settings, cats, { ...post, angle, design }, product, {
     image,
-    caption: caption || (what === "image" && false),
+    caption,
   });
   const patch: Record<string, unknown> = { ...assets, product_id: productId, angle, error: null, attempts: 0 };
   if (post.status === "failed") patch.status = "draft";

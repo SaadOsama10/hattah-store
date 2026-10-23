@@ -135,11 +135,15 @@ function PostCard({
   const [pending, start] = useTransition();
   const [caption, setCaption] = useState(post.caption_full ?? "");
   const [when, setWhen] = useState(toInput(post.scheduled_at));
+  const [headline, setHeadline] = useState(post.design?.headline ?? "");
+  const [subline, setSubline] = useState(post.design?.subline ?? "");
   const [error, setError] = useState<string | null>(null);
   const editable = ["draft", "approved", "failed"].includes(post.status);
   const isStory = post.post_type === "story";
+  const textDirty =
+    headline !== (post.design?.headline ?? "") || subline !== (post.design?.subline ?? "");
   const dirty =
-    caption !== (post.caption_full ?? "") || when !== toInput(post.scheduled_at);
+    caption !== (post.caption_full ?? "") || when !== toInput(post.scheduled_at) || textDirty;
 
   function run(fn: () => Promise<void>, doneMsg?: string) {
     setError(null);
@@ -215,6 +219,26 @@ function PostCard({
         </div>
       </div>
 
+      <div className="space-y-2 px-4 pb-3">
+        <p className="font-inter text-xs text-cream-secondary/70">نص التصميم (يُطبع على الصورة — بعد التعديل احفظ ثم اضغط «إعادة التصميم»)</p>
+        <input
+          value={headline}
+          onChange={(e) => setHeadline(e.target.value)}
+          disabled={!editable}
+          maxLength={60}
+          placeholder="العنوان (حتى 6 كلمات)"
+          className="w-full rounded-lg border border-cream/20 bg-bg-primary px-3 py-1.5 font-inter text-sm text-cream focus:border-terracotta focus:outline-none disabled:opacity-70"
+        />
+        <input
+          value={subline}
+          onChange={(e) => setSubline(e.target.value)}
+          disabled={!editable}
+          maxLength={140}
+          placeholder="السطر الفرعي (حتى 15 كلمة)"
+          className="w-full rounded-lg border border-cream/20 bg-bg-primary px-3 py-1.5 font-inter text-sm text-cream focus:border-terracotta focus:outline-none disabled:opacity-70"
+        />
+      </div>
+
       {!isStory && (
         <div className="px-4 pb-3">
           <textarea
@@ -238,7 +262,11 @@ function PostCard({
               variant="secondary"
               disabled={pending}
               onClick={() =>
-                run(() => updateSocialPost(post.id, { caption_full: isStory ? undefined : caption, scheduled_at: fromInput(when) }), "تم الحفظ")
+                run(() => updateSocialPost(post.id, {
+                    caption_full: isStory ? undefined : caption,
+                    scheduled_at: fromInput(when),
+                    design: textDirty ? { headline, subline } : undefined,
+                  }), textDirty ? "تم الحفظ — اضغط «إعادة التصميم» لتحديث الصورة بالنص الجديد." : "تم الحفظ")
               }
             >
               حفظ التعديلات
@@ -253,7 +281,7 @@ function PostCard({
               اعتماد
             </Button>
           )}
-          <Button size="md" variant="secondary" disabled={pending} onClick={() => run(() => requestRegenerate(post.id, "image"), dispatched)}>
+          <Button size="md" variant="secondary" disabled={pending || dirty} onClick={() => run(() => requestRegenerate(post.id, "image"), dispatched)}>
             إعادة التصميم
           </Button>
           {!isStory && (

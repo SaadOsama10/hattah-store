@@ -66,7 +66,7 @@ export interface RenderRequest {
   price: number;
   oldPrice: number | null;
   photoUrl: string;
-  text: DesignText;
+  text: Required<DesignText>;
   /** Cut the product out of its photo (per-product option). */
   removeBg?: boolean;
 }

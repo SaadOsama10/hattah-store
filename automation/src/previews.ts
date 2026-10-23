@@ -5,6 +5,7 @@ import { Renderer } from "./render/render.js";
 import { ANGLES } from "./types.js";
 import { loadEnv } from "./env.js";
 import { getSupabase } from "./db.js";
+import { placeholderDesign } from "./captions.js";
 import { effectivePrice, categoryLabelAr, sortedImages } from "./products.js";
 
 loadEnv();
@@ -29,10 +30,6 @@ mkdirSync("previews", { recursive: true });
 const r = new Renderer(sb);
 let n = 0;
 let violations = 0;
-const text = {
-  quote: "ما يُصنع باليد يبقى في القلب، وما يُلبس بحب يحكي حكاية أرض.",
-  heritage: "التطريز الفلسطيني لغة بين النساء، كل غرزة فيها ذاكرة وكل لون فيه بيت وقرية.",
-};
 for (const type of ["feed", "story"] as const) {
   for (const [i, angle] of ANGLES.entries()) {
     for (const mode of ["orig", "cut"] as const) {
@@ -47,7 +44,7 @@ for (const type of ["feed", "story"] as const) {
         price: sale ? Math.round(price.current * 0.85) : price.current,
         oldPrice: sale ? price.current : price.old,
         photoUrl: sortedImages(p)[0],
-        text,
+        text: placeholderDesign(p, angle),
         removeBg: mode === "cut",
       });
       violations += r.lastViolations;

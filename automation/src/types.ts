@@ -16,8 +16,10 @@ export interface Slot {
 
 /** Short design copy written by the model together with the caption. */
 export interface DesignText {
-  quote?: string;
-  heritage?: string;
+  /** ≤6 words, the big line on the image. */
+  headline?: string;
+  /** ≤15 words, the supporting line. */
+  subline?: string;
 }
 
 export interface SocialSettings {

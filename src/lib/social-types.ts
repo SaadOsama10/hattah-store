@@ -28,6 +28,7 @@ export interface SocialPostWithProduct {
   angle: "showcase" | "heritage" | "quote" | "offer";
   image_url: string | null;
   caption_full: string | null;
+  design: { headline?: string; subline?: string } | null;
   scheduled_at: string;
   status: SocialPostStatus;
   ig_media_id: string | null;

@@ -58,7 +58,11 @@ export async function listProductOptions(): Promise<{ id: string; name_ar: strin
 /** Direct edits that need no rendering: caption text and schedule. */
 export async function updateSocialPost(
   id: string,
-  fields: { caption_full?: string | null; scheduled_at?: string }
+  fields: {
+    caption_full?: string | null;
+    scheduled_at?: string;
+    design?: { headline: string; subline: string };
+  }
 ) {
   await assertAdminSession();
   const patch: Record<string, unknown> = {};
@@ -69,6 +73,13 @@ export async function updateSocialPost(
     const d = new Date(fields.scheduled_at);
     if (Number.isNaN(d.getTime())) throw new Error("موعد غير صالح");
     patch.scheduled_at = d.toISOString();
+  }
+  if (fields.design) {
+    const headline = fields.design.headline.trim();
+    const subline = fields.design.subline.trim();
+    if (!headline || !subline) throw new Error("العنوان والسطر الفرعي مطلوبان");
+    if (headline.length > 60 || subline.length > 140) throw new Error("النص طويل جدًا");
+    patch.design = { headline, subline };
   }
   const supabase = getServiceSupabaseClient();
   const { error } = await supabase

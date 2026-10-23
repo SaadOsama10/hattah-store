@@ -21,6 +21,20 @@ export async function loadCategories(sb: SupabaseClient): Promise<Map<string, { 
   return new Map((data ?? []).map((c: any) => [c.key, c]));
 }
 
+/** Headlines/sublines used on posts in the last 30 days (to avoid repeats). */
+export async function loadRecentTexts(sb: SupabaseClient, excludePostId?: string): Promise<string[]> {
+  const since = new Date(Date.now() - 30 * 86400e3).toISOString();
+  const { data } = await sb.from("social_posts").select("id, design").gte("created_at", since).not("design", "is", null);
+  const out: string[] = [];
+  for (const r of data ?? []) {
+    if (r.id === excludePostId) continue;
+    const d = r.design as { headline?: string; subline?: string };
+    if (d?.headline) out.push(d.headline);
+    if (d?.subline) out.push(d.subline);
+  }
+  return out;
+}
+
 export async function loadProduct(sb: SupabaseClient, id: string): Promise<ProductRecord> {
   const { data, error } = await sb.from("products").select(PRODUCT_SELECT).eq("id", id).single();
   if (error) throw new Error(`product ${id}: ${error.message}`);
@@ -124,12 +138,13 @@ export async function buildPostAssets(
   const out: Partial<SocialPostRow> = {};
   let design = post.design ?? {};
 
-  // The caption call also writes the on-image copy, so always run it when the
-  // design needs text we don't have yet (even for stories, which get no caption).
-  const needText = what.image && post.angle !== "showcase" && post.angle !== "offer" && !design.quote && !design.heritage;
+  // One model call writes the caption AND the on-image text, so they match.
+  // For image-only re-renders we reuse the stored text (editable in admin),
+  // generating it only if the post has none yet.
+  const needText = what.image && !(design.headline && design.subline);
   if (what.caption || needText) {
-    const res = await generateCaption(product, categoryAr, post.angle, settings);
-    design = { ...design, ...res.design };
+    const res = await generateCaption(product, categoryAr, post.angle, settings, await loadRecentTexts(sb, post.id));
+    design = res.design;
     out.design = design;
     if (post.post_type === "feed" && what.caption) out.caption_full = res.caption;
   }
@@ -144,7 +159,7 @@ export async function buildPostAssets(
       price: price.current,
       oldPrice: price.old,
       photoUrl: sortedImages(product)[0],
-      text: design,
+      text: { headline: design.headline ?? "", subline: design.subline ?? "" },
       removeBg: (await loadRemoveBgIds(sb)).has(product.id),
     });
     const day = new Date().toISOString().slice(0, 10);

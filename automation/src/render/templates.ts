@@ -15,7 +15,7 @@ export interface TemplateInput {
   logo: string;
   fontCss: string;
   whatsappDisplay: string;
-  text: DesignText;
+  text: Required<DesignText>;
 }
 
 const C = {
@@ -75,6 +75,7 @@ body{font-family:'Amiri','Playfair Display',serif;color:${C.oliveDeep}}
 .photo.cut .ground{position:absolute;z-index:1;border-radius:50%;background:radial-gradient(closest-side,rgba(59,71,40,.42),rgba(59,71,40,0));filter:blur(5px)}
 .fit{overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center;width:100%}
 .name{font-weight:700;line-height:1.32}
+.head{font-weight:700;line-height:1.35}
 .cat{font-size:${story ? 34 : 28}px;color:${C.terraDeep};letter-spacing:.02em}
 .price{font-family:'Playfair Display','Amiri',serif;font-weight:700;direction:ltr;white-space:nowrap}
 .old{font-family:'Playfair Display','Amiri',serif;text-decoration:line-through;opacity:.6;direction:ltr}
@@ -112,6 +113,11 @@ const priceBlock = (t: TemplateInput, size: number, color: string) => {
   return `<div style="display:flex;align-items:baseline;justify-content:center;gap:22px;direction:ltr">${old}<span class="price" style="font-size:${size}px;color:${color}">${fmt(t.price)} <span style="font-size:${Math.round(size * 0.52)}px">TL</span></span></div>`;
 };
 
+const head = (t: TemplateInput, size: number, color: string, h: number) =>
+  `<div class="fit head" data-max="${size}" data-min="22" style="height:${h}px;color:${color}"><span>${esc(t.text.headline)}</span></div>`;
+const sub = (t: TemplateInput, size: number, color: string, h: number, lh = 1.6) =>
+  `<div class="fit" data-max="${size}" data-min="20" style="height:${h}px;line-height:${lh};color:${color};font-weight:400"><span>${esc(t.text.subline)}</span></div>`;
+
 /* ───────────── 1. Showcase — arch-framed hero photo ───────────── */
 function showcase(t: TemplateInput): string {
   const story = t.type === "story";
@@ -120,13 +126,14 @@ function showcase(t: TemplateInput): string {
 <div class="canvas">
   <div class="tex" style="background-image:${lattice(C.olive, 0.07)}"></div>
   ${arcs(false)}
-  <div class="z" style="display:flex;flex-direction:column;align-items:center;gap:${story ? 30 : 16}px;flex:1;min-height:0">
+  <div class="z" style="display:flex;flex-direction:column;align-items:center;gap:${story ? 20 : 10}px;flex:1;min-height:0">
     <img class="logo" src="${t.logo}">
-    ${photoBox(t, { w: story ? 760 : 660, h: story ? 760 : 650, radius: `${r}px ${r}px 28px 28px`, border: "10px solid #FBF5E9", extra: "flex:none;" })}
-    <div class="cat">${esc(t.categoryAr)}</div>
-    <div class="fit name" data-max="${story ? 56 : 50}" data-min="26" style="height:${story ? 170 : 128}px;color:${C.oliveDeep}"><span>${esc(t.nameAr)}</span></div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:${story ? 26 : 12}px;margin-top:auto">
-      <div style="background:${C.olive};color:${C.cream};padding:${story ? "8px 52px 12px" : "4px 40px 8px"};border-radius:80px">${priceBlock(t, story ? 60 : 46, C.cream)}</div>
+    ${photoBox(t, { w: story ? 760 : 640, h: story ? 740 : 625, radius: `${r}px ${r}px 28px 28px`, border: "10px solid #FBF5E9", extra: "flex:none;" })}
+    ${head(t, story ? 56 : 48, C.terraDeep, story ? 84 : 68)}
+    <div class="fit name" data-max="${story ? 52 : 46}" data-min="24" style="height:${story ? 130 : 100}px;color:${C.oliveDeep}"><span>${esc(t.nameAr)}</span></div>
+    ${sub(t, story ? 36 : 30, C.olive, story ? 110 : 76)}
+    <div style="display:flex;flex-direction:column;align-items:center;gap:${story ? 22 : 10}px;margin-top:auto">
+      <div style="background:${C.olive};color:${C.cream};padding:${story ? "6px 48px 10px" : "2px 38px 6px"};border-radius:80px">${priceBlock(t, story ? 56 : 42, C.cream)}</div>
       ${flagBar}
       ${waLine(t)}
     </div>
@@ -137,24 +144,23 @@ function showcase(t: TemplateInput): string {
 /* ───────────── 2. Heritage — photo arch + story line ───────────── */
 function heritage(t: TemplateInput): string {
   const story = t.type === "story";
-  const line = t.text.heritage || "كل قطعة تحمل حكاية، ويد صنعتها بحب وصبر حتى تصل إليك.";
   const photo = story
-    ? photoBox(t, { w: 640, h: 480, radius: "320px 320px 26px 26px", border: "10px solid #FBF5E9", extra: "flex:none;" })
+    ? photoBox(t, { w: 640, h: 440, radius: "320px 320px 26px 26px", border: "10px solid #FBF5E9", extra: "flex:none;" })
     : photoBox(t, { w: 400, h: "100%", radius: "200px 200px 26px 26px", border: "10px solid #FBF5E9", extra: "flex:none;" });
   const textCol = `
-    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:${story ? 20 : 18}px;flex:1;min-width:0;height:${story ? "auto" : "100%"};${story ? "width:100%" : ""}">
-      <div style="font-size:${story ? 34 : 26}px;color:${C.terraDeep};letter-spacing:.04em;text-align:center">من تراثنا · ${esc(t.categoryAr)}</div>
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:${story ? 18 : 16}px;flex:1;min-width:0;height:${story ? "auto" : "100%"};${story ? "width:100%" : ""}">
+      ${head(t, story ? 52 : 40, C.terraDeep, story ? 90 : 120)}
       <div class="rule"><span class="diamond"></span></div>
-      <div class="fit" data-max="${story ? 52 : 44}" data-min="24" style="height:${story ? 250 : 400}px;line-height:1.75;color:${C.oliveDeep};font-weight:400"><span>${esc(line)}</span></div>
+      ${sub(t, story ? 48 : 40, C.oliveDeep, story ? 250 : 360, 1.75)}
       <div class="rule"><span class="diamond"></span></div>
-      <div class="fit name" data-max="${story ? 42 : 34}" data-min="22" style="height:${story ? 110 : 120}px;color:${C.olive}"><span>${esc(t.nameAr)}</span></div>
-      ${priceBlock(t, story ? 56 : 42, C.terraDeep)}
+      <div class="fit name" data-max="${story ? 40 : 32}" data-min="20" style="height:${story ? 100 : 110}px;color:${C.olive}"><span>${esc(t.nameAr)}</span></div>
+      ${priceBlock(t, story ? 54 : 40, C.terraDeep)}
     </div>`;
   return `
 <div class="canvas">
   <div class="tex" style="background-image:${lattice(C.olive, 0.06)}"></div>
   ${arcs(false)}
-  <div class="z" style="display:flex;flex-direction:column;align-items:center;gap:${story ? 22 : 16}px;flex:1;min-height:0">
+  <div class="z" style="display:flex;flex-direction:column;align-items:center;gap:${story ? 18 : 16}px;flex:1;min-height:0">
     <img class="logo" src="${t.logo}">
     ${
       story
@@ -169,27 +175,27 @@ function heritage(t: TemplateInput): string {
 /* ───────────── 3. Quote — deep olive, big typographic line ───────────── */
 function quote(t: TemplateInput): string {
   const story = t.type === "story";
-  const q = t.text.quote || "من يدٍ إلى يد، ومن بيتٍ إلى بيت… تبقى الحكاية.";
-  const size = story ? 340 : 300;
+  const size = story ? 330 : 290;
   return `
 <div class="canvas dark">
   <div class="tex" style="background-image:${lattice("#F4EBDA", 0.07)}"></div>
   ${arcs(true)}
   <div class="z" style="display:flex;flex-direction:column;align-items:center;gap:${story ? 28 : 16}px;flex:1;min-height:0">
     <img class="logo" src="${t.logo}">
-    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:${story ? 24 : 12}px;width:100%;min-height:0">
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:${story ? 22 : 10}px;width:100%;min-height:0">
       <div style="font-family:'Playfair Display',serif;font-size:${story ? 160 : 110}px;line-height:.6;color:${C.terra};height:${story ? 80 : 54}px">“</div>
-      <div class="fit" data-max="${story ? 72 : 62}" data-min="30" style="height:${story ? 420 : 280}px;line-height:1.7;color:${C.cream};font-weight:400"><span>${esc(q)}</span></div>
+      <div class="fit head" data-max="${story ? 88 : 72}" data-min="34" style="height:${story ? 300 : 190}px;line-height:1.5;color:${C.cream}"><span>${esc(t.text.headline)}</span></div>
+      ${sub(t, story ? 42 : 34, "#E3C9A0", story ? 180 : 120)}
     </div>
     <div class="rule"><span class="diamond"></span></div>
-    <div style="display:flex;align-items:center;gap:${story ? 36 : 30}px;direction:rtl;width:100%;justify-content:center;margin-top:${story ? 10 : 2}px">
+    <div style="display:flex;align-items:center;gap:${story ? 34 : 30}px;direction:rtl;width:100%;justify-content:center;margin-top:${story ? 10 : 2}px">
       ${photoBox(t, { w: size, h: size, radius: "50%", border: `8px solid ${C.cream}`, extra: "flex:none;", round: true })}
       <div style="display:flex;flex-direction:column;align-items:center;gap:${story ? 18 : 10}px;width:${story ? 470 : 460}px">
         <div class="fit name" data-max="${story ? 44 : 38}" data-min="22" style="height:${story ? 190 : 150}px;color:${C.cream}"><span>${esc(t.nameAr)}</span></div>
         ${priceBlock(t, story ? 52 : 44, "#E3A56E")}
       </div>
     </div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:${story ? 30 : 16}px">${flagBar}${waLine(t)}</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:${story ? 24 : 12}px">${flagBar}${waLine(t)}</div>
   </div>
 </div>`;
 }
@@ -199,22 +205,25 @@ function offer(t: TemplateInput): string {
   const story = t.type === "story";
   const onSale = !!t.oldPrice && t.oldPrice > t.price;
   const pct = onSale ? Math.round((1 - t.price / t.oldPrice!) * 100) : 0;
-  const badge = onSale ? `خصم <bdi dir="ltr" style="font-family:'Playfair Display',serif">${pct}%</bdi>` : "اطلبها الآن";
-  const photoH = story ? 1020 : 770;
+  const photoH = story ? 960 : 770;
   const radius = "0 0 540px 540px / 0 0 120px 120px";
   const hero = t.cutout
     ? photoBox(t, { w: 1080, h: photoH, radius, extra: "position:absolute;top:0;left:0;" })
     : `<div class="photo" style="position:absolute;top:0;left:0;width:1080px;height:${photoH}px;border-radius:${radius};box-shadow:0 24px 50px -24px rgba(59,71,40,.6)"><img src="${t.photo}"></div>`;
+  const badge = onSale
+    ? `<div class="logo" style="position:absolute;top:${story ? 275 : 82}px;right:96px;z-index:3;width:auto;height:auto;border-radius:60px;background:${C.terraDeep};color:${C.cream};font-size:${story ? 40 : 34}px;font-weight:700;padding:6px 32px 10px;box-shadow:0 10px 24px -10px rgba(0,0,0,.5)">خصم <bdi dir="ltr" style="font-family:'Playfair Display',serif">${pct}%</bdi></div>`
+    : "";
   return `
 <div class="canvas" style="padding:0">
   <div class="tex" style="background-image:${lattice(C.olive, 0.05)}"></div>
   ${hero}
   <img class="logo" src="${t.logo}" style="position:absolute;top:${story ? 260 : 70}px;left:96px;z-index:3;border:5px solid #FBF5E9">
-  <div class="logo" style="position:absolute;top:${story ? 275 : 82}px;right:96px;z-index:3;width:auto;height:auto;border-radius:60px;background:${C.terraDeep};color:${C.cream};font-size:${story ? 40 : 34}px;font-weight:700;padding:6px 32px 10px;box-shadow:0 10px 24px -10px rgba(0,0,0,.5)">${badge}</div>
-  <div style="position:absolute;left:0;right:0;top:${photoH}px;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:${story ? 22 : 10}px;padding:${story ? "30px 96px 250px" : "22px 96px 64px"}">
-    <div class="cat">${esc(t.categoryAr)}</div>
-    <div class="fit name" data-max="${story ? 52 : 42}" data-min="24" style="height:${story ? 150 : 100}px;color:${C.oliveDeep}"><span>${esc(t.nameAr)}</span></div>
-    <div style="background:${C.terraDeep};color:${C.cream};padding:${story ? "12px 64px 18px" : "4px 52px 10px"};border-radius:90px;box-shadow:0 14px 30px -14px rgba(160,90,44,.8)">${priceBlock(t, story ? 92 : 66, C.cream)}</div>
+  ${badge}
+  <div style="position:absolute;left:0;right:0;top:${photoH}px;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:${story ? 16 : 6}px;padding:${story ? "26px 96px 250px" : "14px 96px 64px"}">
+    ${head(t, story ? 58 : 48, C.terraDeep, story ? 90 : 70)}
+    <div class="fit name" data-max="${story ? 46 : 38}" data-min="22" style="height:${story ? 130 : 84}px;color:${C.oliveDeep}"><span>${esc(t.nameAr)}</span></div>
+    ${sub(t, story ? 36 : 30, C.olive, story ? 100 : 68)}
+    <div style="background:${C.terraDeep};color:${C.cream};padding:${story ? "10px 60px 14px" : "2px 48px 8px"};border-radius:90px;box-shadow:0 14px 30px -14px rgba(160,90,44,.8)">${priceBlock(t, story ? 84 : 58, C.cream)}</div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:auto">${flagBar}${waLine(t)}</div>
   </div>
 </div>`;
