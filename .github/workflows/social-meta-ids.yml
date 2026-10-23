@@ -32,3 +32,16 @@ jobs:
             exit 1
           fi
           echo "$out" | jq -r '.data[] | "PAGE_ID=\(.id)  PAGE_NAME=\(.name)  IG_USER_ID=\(.instagram_business_account.id // "none")"'
+      - name: Test connection (same checks as the admin button)
+        env:
+          META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
+          META_IG_USER_ID: ${{ secrets.META_IG_USER_ID }}
+        run: |
+          set +x
+          get() {
+            curl -sS -G "https://graph.facebook.com/${META_GRAPH_VERSION}/$1" \
+              --data-urlencode "fields=$2" --data-urlencode "access_token=${META_ACCESS_TOKEN}"
+          }
+          ig="$(get "$META_IG_USER_ID" username)"; page="$(get "$META_PAGE_ID" name)"
+          echo "$ig" | jq -r 'if .error then "IG ERROR: \(.error.message)" else "Instagram: @\(.username)" end'
+          echo "$page" | jq -r 'if .error then "PAGE ERROR: \(.error.message)" else "Page: \(.name)" end'
