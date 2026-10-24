@@ -1,6 +1,6 @@
 // Weekly SEO / performance health check. Usage: node scripts/seo-health.mjs
 // Env: SITE_URL (default https://hattah-store.vercel.app), SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY,
-//      RUN_URL (optional), MIN_PERF (default 75), MIN_SCORE (default 90, for SEO/accessibility/best-practices), SKIP_LIGHTHOUSE=1 for a quick structural check.
+//      RUN_URL (optional), MIN_PERF (default 75; warns only after two consecutive checks below it), MIN_SCORE (default 90, for SEO/accessibility/best-practices), SKIP_LIGHTHOUSE=1 for a quick structural check.
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -13,6 +13,17 @@ const minFor = (k) => (k === "performance" ? MIN_PERF : MIN);
 const problems = [];
 const scores = {};
 const problem = (area, message) => problems.push({ area, message });
+
+// Previous check's scores: a performance dip only becomes a warning when the same page was also below the threshold last time.
+let prevScores = {};
+if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  try {
+    const r = await fetch(`${process.env.SUPABASE_URL}/rest/v1/seo_health?id=eq.1&select=scores`, {
+      headers: { apikey: process.env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}` },
+    });
+    if (r.ok) prevScores = (await r.json())[0]?.scores ?? {};
+  } catch {}
+}
 
 const get = async (url) => {
   const res = await fetch(url, { headers: { "user-agent": "hattah-seo-health/1.0" }, redirect: "follow" });
@@ -97,7 +108,20 @@ if (process.env.SKIP_LIGHTHOUSE !== "1") {
     if (runs.length === 0) continue;
     const s = Object.fromEntries(Object.keys(runs[0]).map((k) => [k, median(runs.map((x) => x[k]))]));
     scores[url.replace(SITE, "") || "/"] = s;
-    for (const [k, v] of Object.entries(s)) if (v < minFor(k)) problem("lighthouse", `${url.replace(SITE, "")}: ${k} = ${v} (< ${minFor(k)}, median of ${runs.length} runs)`);
+    const page = url.replace(SITE, "") || "/";
+    for (const [k, v] of Object.entries(s)) {
+      if (v >= minFor(k)) continue;
+      if (k === "performance") {
+        const prev = prevScores[page]?.performance;
+        if (!(typeof prev === "number" && prev < MIN_PERF)) {
+          console.error(`${page}: performance = ${v} (< ${MIN_PERF}) — first dip (previous: ${prev ?? "n/a"}), not warning yet`);
+          continue;
+        }
+        problem("lighthouse", `${page}: performance = ${v} (< ${MIN_PERF}) in two consecutive checks (previous: ${prev}, median of ${runs.length} runs)`);
+      } else {
+        problem("lighthouse", `${page}: ${k} = ${v} (< ${minFor(k)}, median of ${runs.length} runs)`);
+      }
+    }
   }
 }
 

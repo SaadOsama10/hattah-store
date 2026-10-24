@@ -1,7 +1,7 @@
 name: SEO — weekly health check
 
 # Lighthouse (mobile) on the main pages + sitemap / robots / llms / JSON-LD validation.
-# Results are written to Supabase (seo_health); /admin shows a warning when anything breaks or a performance score < 75 or any other score < 90.
+# Results are written to Supabase (seo_health); /admin shows a warning when anything breaks or a performance score < 75 in two consecutive checks or any other score < 90.
 on:
   schedule:
     - cron: "30 4 * * 1" # Mondays 07:30 Istanbul
