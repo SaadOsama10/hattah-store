@@ -51,7 +51,7 @@ try {
   let assets;
   if (post.post_type === "reel" || what === "to-reel") {
     const { count } = await sb.from("social_posts").select("id", { count: "exact", head: true }).eq("post_type", "reel");
-    assets = await buildReelAssets(sb, reelRenderer, settings, cats, { ...post, angle, design: null }, product, count ?? 0, what === "to-reel");
+    assets = await buildReelAssets(sb, reelRenderer, settings, cats, { ...post, angle, design: null }, product, (count ?? 0) + [...postId].reduce((a, c) => a + c.charCodeAt(0), 0), what === "to-reel"); // varied track per reel
   } else {
     assets = await buildPostAssets(sb, renderer, settings, cats, { ...post, angle, design }, product, {
       image,
