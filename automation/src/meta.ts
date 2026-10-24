@@ -27,22 +27,38 @@ async function graph(method: "GET" | "POST", path: string, params: Record<string
   return json;
 }
 
-export async function publishInstagram(imageUrl: string, caption: string | null, story: boolean): Promise<{ id: string; permalink: string | null }> {
+export type IgMedia =
+  | { kind: "feed"; imageUrl: string; caption: string | null }
+  | { kind: "story"; imageUrl: string }
+  | { kind: "reel"; videoUrl: string; caption: string | null; coverUrl?: string | null };
+
+export async function publishInstagram(media: IgMedia): Promise<{ id: string; permalink: string | null }> {
   const igId = need("META_IG_USER_ID");
   const token = need("META_ACCESS_TOKEN");
-  const params: Record<string, string> = { image_url: imageUrl };
-  if (story) params.media_type = "STORIES";
-  else if (caption) params.caption = caption;
+  const params: Record<string, string> = {};
+  if (media.kind === "reel") {
+    params.media_type = "REELS";
+    params.video_url = media.videoUrl;
+    params.share_to_feed = "true";
+    if (media.caption) params.caption = media.caption;
+    if (media.coverUrl) params.cover_url = media.coverUrl;
+  } else {
+    params.image_url = media.imageUrl;
+    if (media.kind === "story") params.media_type = "STORIES";
+    else if (media.caption) params.caption = media.caption;
+  }
   const container = await graph("POST", `${igId}/media`, params, token);
   log("IG container", container.id);
 
-  // Poll until the container is processed (up to ~2 min).
-  for (let i = 0; i < 24; i++) {
+  // Poll until the container is processed: images ~2 min, videos up to ~10 min.
+  const tries = media.kind === "reel" ? 60 : 24;
+  const wait = media.kind === "reel" ? 10000 : 5000;
+  for (let i = 0; i < tries; i++) {
     const s = await graph("GET", container.id, { fields: "status_code,status" }, token);
     if (s.status_code === "FINISHED") break;
     if (s.status_code === "ERROR" || s.status_code === "EXPIRED") throw new MetaError(`IG container ${s.status_code}: ${s.status ?? ""}`, false);
-    if (i === 23) throw new MetaError("IG container still processing after 2 min", true);
-    await sleep(5000);
+    if (i === tries - 1) throw new MetaError(`IG container still processing after ${Math.round((tries * wait) / 60000)} min`, true);
+    await sleep(wait);
   }
   const pub = await graph("POST", `${igId}/media_publish`, { creation_id: container.id }, token);
   let permalink: string | null = null;

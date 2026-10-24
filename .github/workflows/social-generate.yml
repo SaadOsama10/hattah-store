@@ -70,6 +70,8 @@ jobs:
           else
             npx playwright install --with-deps chromium
           fi
+      - name: Ensure ffmpeg (reels)
+        run: command -v ffmpeg >/dev/null || (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg)
       - name: Generate / regenerate
         env:
           IN_MODE: ${{ inputs.mode }}
@@ -83,3 +85,7 @@ jobs:
             today)      npx tsx src/generate.ts $IN_ARGS ;;
             *)          npx tsx src/generate.ts --tomorrow ;;  # daily cron (03:00 Istanbul) + "tomorrow": the whole next day in one run
           esac
+      - name: Storage cleanup (images 14 days after publishing, orphans)
+        continue-on-error: true
+        if: ${{ github.event_name == 'schedule' || inputs.mode == 'tomorrow' || inputs.mode == 'daily' }}
+        run: npx tsx src/cleanup.ts

@@ -7,7 +7,7 @@ export type SocialPostStatus =
   | "skipped";
 
 export interface SocialSlot {
-  type: "feed" | "story";
+  type: "feed" | "story" | "reel";
   time: string; // "HH:MM" Istanbul
 }
 
@@ -32,9 +32,11 @@ export interface SocialSettingsRow {
 export interface SocialPostWithProduct {
   id: string;
   product_id: string | null;
-  post_type: "feed" | "story";
+  post_type: "feed" | "story" | "reel";
   angle: "showcase" | "heritage" | "quote" | "offer";
   image_url: string | null;
+  /** Reels only: the rendered MP4 until it is published (then removed from storage). */
+  video_url?: string | null;
   caption_full: string | null;
   design: { headline?: string; subline?: string } | null;
   scheduled_at: string;

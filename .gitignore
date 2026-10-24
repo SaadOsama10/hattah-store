@@ -48,3 +48,5 @@ backups/
 # social automation
 /automation/node_modules
 /automation/.env
+automation/previews/*.mp4
+automation/previews/sheet*.png

@@ -25,7 +25,7 @@ const FONT_FILES: [string, string, string, string, string?][] = [
 let fontCssCache: string | null = null;
 /** Fonts are bundled in /automation/fonts and inlined as data URIs — no
  * network (Google Fonts or otherwise) is ever needed at render time. */
-function fontCss(): string {
+export function fontCss(): string {
   if (fontCssCache) return fontCssCache;
   fontCssCache = FONT_FILES.map(([family, file, weight, style, range]) => {
     const b64 = readFileSync(path.join(ROOT, "fonts", file)).toString("base64");
@@ -36,7 +36,7 @@ function fontCss(): string {
 
 let logoCache: string | null = null;
 /** The official logo, embedded untouched (no crop / recolor / redraw). */
-function logoDataUri(): string {
+export function logoDataUri(): string {
   if (!logoCache) {
     logoCache = `data:image/jpeg;base64,${readFileSync(path.join(ROOT, "logo.jpg")).toString("base64")}`;
   }
@@ -76,6 +76,7 @@ export interface RenderRequest {
 export const SIZES: Record<PostType, { width: number; height: number }> = {
   feed: { width: 1080, height: 1350 },
   story: { width: 1080, height: 1920 },
+  reel: { width: 1080, height: 1920 },
 };
 
 export function whatsappDisplay(): string {

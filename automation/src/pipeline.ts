@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { Renderer } from "./render/render.js";
+import { ReelRenderer, REEL_SECONDS } from "./render/reel.js";
+import { pickTrack, trackFile } from "./music.js";
 import { CTA_POOL, ctaIndexOf, generateCaption } from "./captions.js";
 import { SOCIAL_BUCKET } from "./db.js";
 import { effectivePrice, sortedImages } from "./products.js";
@@ -115,7 +117,7 @@ export async function pickProducts(
   settings: SocialSettings,
   cats: Map<string, { label_ar: string; parent_key: string | null }>,
   count: number,
-  opts: { excludeIds?: string[]; previousCategory?: string | null; slotTypes?: ("feed" | "story")[]; rotationDays?: number | "auto" } = {},
+  opts: { excludeIds?: string[]; previousCategory?: string | null; slotTypes?: ("feed" | "story" | "reel")[]; rotationDays?: number | "auto" } = {},
 ): Promise<ProductPick[]> {
   const { data: prods, error } = await sb.from("products").select(PRODUCT_SELECT);
   if (error) throw new Error(error.message);
@@ -132,9 +134,9 @@ export async function pickProducts(
     .order("scheduled_at", { ascending: false });
   const lastPosted = new Map<string, number>();
   // Feed rotation: a product that appeared in a feed post within the last N days is out
-  // (N = eligible/8, min 3) — relaxed only if that would leave too few candidates.
+  // (N = eligible/6, min 3) — relaxed only if that would leave too few candidates.
   const recentFeed = new Set<string>();
-  const rotationDays = opts.rotationDays === "auto" ? Math.max(3, Math.ceil(eligible.length / 8)) : opts.rotationDays;
+  const rotationDays = opts.rotationDays === "auto" ? Math.max(3, Math.ceil(eligible.length / 6)) : opts.rotationDays;
   if (rotationDays) {
     const since = Date.now() - rotationDays * 86400e3;
     const { data: feedHist } = await sb
@@ -235,4 +237,52 @@ export async function buildPostAssets(
     log("image uploaded", out.image_url);
   }
   return out;
+}
+
+/** Renders a reel (MP4 + cover frame), uploads both, and writes the caption and the on-screen hook with one model call.
+ * `musicIndex` rotates through the licensed tracks. */
+export async function buildReelAssets(
+  sb: SupabaseClient,
+  renderer: ReelRenderer,
+  settings: SocialSettings,
+  cats: Map<string, { label_ar: string; parent_key: string | null }>,
+  post: Pick<SocialPostRow, "id" | "angle" | "design"> & { scheduled_at?: string },
+  product: ProductRecord,
+  musicIndex: number,
+): Promise<Partial<SocialPostRow>> {
+  const categoryAr = cats.get(product.category)?.label_ar ?? "";
+  const ctaIndex = await pickCtaIndex(sb, post.scheduled_at ?? null, post.id);
+  const res = await generateCaption(product, categoryAr, post.angle, settings, await loadRecentTexts(sb, post.id, product.id), ctaIndex);
+  const price = effectivePrice(product);
+  const imgs = sortedImages(product);
+  const track = pickTrack(musicIndex);
+  const music = await trackFile(sb, track);
+  const musicStart = (musicIndex * 7) % 20; // excerpts are 40 s, a reel needs ~13 s
+  log(`reel «${product.name_ar}» ♪ ${track.title} (+${musicStart}s)`);
+  const { video, cover } = await renderer.render(
+    {
+      nameAr: product.name_ar,
+      categoryAr,
+      price: price.current,
+      oldPrice: price.old,
+      photoUrl: imgs[0],
+      photoUrl2: imgs[1] ?? null,
+      removeBg: (await loadRemoveBgIds(sb)).has(product.id),
+      text: res.design,
+      storeUrl: settings.store_url,
+    },
+    music,
+    musicStart,
+  );
+  const day = new Date().toISOString().slice(0, 10);
+  const base = `${day}/${post.id}-${Date.now()}`;
+  const up = async (ext: string, body: Buffer, contentType: string) => {
+    const { error } = await sb.storage.from(SOCIAL_BUCKET).upload(`${base}.${ext}`, body, { contentType, upsert: false });
+    if (error) throw new Error(`upload ${ext}: ${error.message}`);
+    return sb.storage.from(SOCIAL_BUCKET).getPublicUrl(`${base}.${ext}`).data.publicUrl;
+  };
+  const video_url = await up("mp4", video, "video/mp4");
+  const image_url = await up("jpg", cover, "image/jpeg");
+  log(`reel uploaded (${(video.length / 1e6).toFixed(1)} MB, ${REEL_SECONDS}s)`, video_url);
+  return { video_url, image_url, caption_full: res.caption, design: res.design };
 }

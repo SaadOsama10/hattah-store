@@ -92,6 +92,7 @@ export function SocialSettingsForm({
             >
               <option value="feed">منشور</option>
               <option value="story">ستوري</option>
+              <option value="reel">ريل</option>
             </select>
             <input
               type="time"

@@ -140,6 +140,8 @@ function PostCard({
   const [error, setError] = useState<string | null>(null);
   const editable = ["draft", "approved", "failed"].includes(post.status);
   const isStory = post.post_type === "story";
+  const isReel = post.post_type === "reel";
+  const kindLabel = isReel ? "ريل" : isStory ? "ستوري" : "منشور";
   const textDirty =
     headline !== (post.design?.headline ?? "") || subline !== (post.design?.subline ?? "");
   const dirty =
@@ -165,12 +167,22 @@ function PostCard({
     <article className="overflow-hidden rounded-2xl border border-cream/15 bg-bg-secondary">
       <div className="flex gap-4 p-4">
         <div className="w-32 shrink-0 sm:w-40">
-          {post.image_url ? (
+          {isReel && post.video_url ? (
+            // eslint-disable-next-line jsx-a11y/media-has-caption
+            <video
+              src={post.video_url}
+              poster={post.image_url ?? undefined}
+              controls
+              playsInline
+              preload="metadata"
+              className="aspect-[9/16] w-full rounded-lg border border-cream/10 bg-black object-cover"
+            />
+          ) : post.image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={post.image_url}
               alt=""
-              className={cn("w-full rounded-lg border border-cream/10 object-cover", isStory ? "aspect-[9/16]" : "aspect-[4/5]")}
+              className={cn("w-full rounded-lg border border-cream/10 object-cover", isStory || isReel ? "aspect-[9/16]" : "aspect-[4/5]")}
             />
           ) : (
             <div className="flex aspect-[4/5] items-center justify-center rounded-lg bg-cream/5 text-xs text-cream-secondary/50">
@@ -184,7 +196,7 @@ function PostCard({
               {STATUS_LABELS[post.status]}
             </span>
             <span className="rounded-full bg-cream/10 px-2.5 py-0.5 font-inter text-xs text-cream-secondary">
-              {isStory ? "ستوري" : "منشور"} · {ANGLE_LABELS[post.angle]}
+              {kindLabel} · {ANGLE_LABELS[post.angle]}
             </span>
           </div>
           <p className="font-inter text-sm font-semibold text-cream">{post.products?.name_ar ?? "— منتج محذوف —"}</p>
@@ -298,9 +310,9 @@ function PostCard({
           <Button
             size="md"
             variant="whatsapp"
-            disabled={pending || dirty || !post.image_url}
+            disabled={pending || dirty || !post.image_url || (isReel && !post.video_url)}
             onClick={() => {
-              if (confirm("نشر هذا المنشور الآن على إنستغرام وفيسبوك؟")) {
+              if (confirm("نشر هذا العنصر الآن؟")) {
                 run(() => requestPublishNow(post.id), dispatched);
               }
             }}

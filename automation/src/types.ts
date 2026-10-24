@@ -1,4 +1,4 @@
-export type PostType = "feed" | "story";
+export type PostType = "feed" | "story" | "reel";
 export type Angle = "showcase" | "heritage" | "quote" | "offer";
 export const ANGLES: Angle[] = ["showcase", "heritage", "quote", "offer"];
 export type PostStatus =
@@ -46,6 +46,8 @@ export interface SocialPostRow {
   post_type: PostType;
   angle: Angle;
   image_url: string | null;
+  /** Rendered MP4 (reels only); deleted from storage right after publishing. */
+  video_url?: string | null;
   caption_full: string | null;
   design: DesignText | null;
   scheduled_at: string;

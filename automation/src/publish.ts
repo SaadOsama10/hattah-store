@@ -3,6 +3,7 @@ import { loadEnv, isDryRun } from "./env.js";
 import { getSupabase } from "./db.js";
 import { publishFacebook, publishInstagram, MetaError } from "./meta.js";
 import { loadSettings } from "./pipeline.js";
+import { removeFromBucket } from "./storage.js";
 import { log, sleep } from "./time.js";
 import type { SocialPostRow } from "./types.js";
 
@@ -49,6 +50,7 @@ if (postArg) {
 }
 log(`${due.length} post(s) due`);
 
+const reel0 = (p: SocialPostRow) => p.post_type === "reel";
 for (const post of due) {
   if (!postArg && Date.now() - new Date(post.scheduled_at).getTime() > MISSED_AFTER_MS) {
     log(`skip ${post.id}: missed its window`);
@@ -57,7 +59,7 @@ for (const post of due) {
   }
 
   if (dry) {
-    log(`[dry] would publish ${post.post_type} ${post.id} → IG${post.post_type === "feed" ? " + FB" : ""}\n  image: ${post.image_url}\n  caption: ${(post.caption_full ?? "").slice(0, 120).replace(/\n/g, " ⏎ ")}…`);
+    log(`[dry] would publish ${post.post_type} ${post.id} → IG${post.post_type === "feed" ? " + FB" : ""}\n  image: ${post.image_url}${post.video_url ? "\n  video: " + post.video_url : ""}\n  caption: ${(post.caption_full ?? "").slice(0, 120).replace(/\n/g, " ⏎ ")}…`);
     continue;
   }
 
@@ -85,8 +87,15 @@ for (const post of due) {
     attempts++;
     try {
       const story = post.post_type === "story";
+      const reel = post.post_type === "reel";
       if (!igId) {
-        const r = await publishInstagram(post.image_url!, post.caption_full, story);
+        const r = await publishInstagram(
+          reel
+            ? { kind: "reel", videoUrl: post.video_url!, caption: post.caption_full, coverUrl: post.image_url }
+            : story
+              ? { kind: "story", imageUrl: post.image_url! }
+              : { kind: "feed", imageUrl: post.image_url!, caption: post.caption_full },
+        );
         igId = r.id;
         permalink = r.permalink;
         // Persist immediately: a later FB failure must never re-post IG.
@@ -94,7 +103,7 @@ for (const post of due) {
         log(`✓ Instagram ${igId}`);
       }
       // Facebook is off by default: Instagram's own auto-share puts the post on the Page (API posts are hidden while the app is unpublished).
-      if (!story && !fbId && settings.publish_to_facebook === true) {
+      if (!story && !reel && !fbId && settings.publish_to_facebook === true) {
         fbId = (await publishFacebook(post.image_url!, post.caption_full ?? "")).id;
         await sb.from("social_posts").update({ fb_post_id: fbId }).eq("id", post.id);
         log(`✓ Facebook ${fbId}`);
@@ -108,6 +117,11 @@ for (const post of due) {
     }
   }
 
+  // A reel's video is only needed until Instagram has it: drop it from storage right away.
+  if (ok && reel0(post) && post.video_url) {
+    await removeFromBucket(sb, post.video_url);
+    await sb.from("social_posts").update({ video_url: null }).eq("id", post.id);
+  }
   await sb
     .from("social_posts")
     .update(

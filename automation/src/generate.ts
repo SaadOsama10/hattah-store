@@ -5,8 +5,9 @@
 import { loadEnv } from "./env.js";
 import { getSupabase } from "./db.js";
 import { Renderer } from "./render/render.js";
+import { ReelRenderer } from "./render/reel.js";
 import { addDays, istanbulDate, log, slotToUtc } from "./time.js";
-import { PRODUCT_SELECT, buildPostAssets, loadCategories, loadSettings, pickProducts, type ProductPick } from "./pipeline.js";
+import { PRODUCT_SELECT, buildPostAssets, buildReelAssets, loadCategories, loadSettings, pickProducts, type ProductPick } from "./pipeline.js";
 import { sortedImages } from "./products.js";
 import { ANGLES, type Angle, type PostType, type ProductRecord } from "./types.js";
 
@@ -37,7 +38,7 @@ const taken = new Set((existing ?? []).filter((e) => e.status !== "skipped").map
 const wanted = onlyArg
   ? onlyArg.split(",").map((x) => {
       const [type, time] = x.split("@");
-      if ((type !== "feed" && type !== "story") || !/^\d\d:\d\d$/.test(time ?? "")) throw new Error(`bad --only entry: ${x}`);
+      if ((type !== "feed" && type !== "story" && type !== "reel") || !/^\d\d:\d\d$/.test(time ?? "")) throw new Error(`bad --only entry: ${x}`);
       return { type: type as PostType, time };
     })
   : settings.daily_slots;
@@ -60,6 +61,7 @@ function jittered(time: string): Date {
 
 // ── product selection ──
 const feedSlots = slots.filter((s) => s.type === "feed");
+const reelSlots = slots.filter((s) => s.type === "reel");
 const storySlots = slots.filter((s) => s.type === "story");
 
 const { data: prev } = await sb
@@ -81,6 +83,18 @@ if (feedPicks.length < feedSlots.length) log(`only ${feedPicks.length} eligible 
 type Job = { slot: (typeof slots)[number]; type: PostType; product: ProductRecord; angle: Angle };
 const jobs: Job[] = feedPicks.map((p, i) => ({ slot: feedSlots[i], type: "feed", product: p.product, angle: p.angle }));
 
+// Reels: products that are NOT among the day's feed posts (nor already used today).
+const reelPicks = reelSlots.length
+  ? await pickProducts(sb, settings, cats, reelSlots.length, {
+      excludeIds: [...feedPicks.map((p) => p.product.id), ...(existing ?? []).map((e) => e.product_id).filter(Boolean)],
+      rotationDays: "auto",
+    })
+  : [];
+if (reelPicks.length < reelSlots.length) log(`only ${reelPicks.length} eligible product(s) for ${reelSlots.length} reel slots`);
+for (const [i, slot] of reelSlots.entries()) {
+  if (reelPicks[i]) jobs.push({ slot, type: "reel", product: reelPicks[i].product, angle: reelPicks[i].angle });
+}
+
 // Stories: a random mix of the day's feed products (always a different angle, and a
 // different photo — so only products with 2+ photos) and other eligible products.
 // A product never appears twice in the day's stories.
@@ -97,7 +111,7 @@ const overlap = [...feedPicks, ...existingFeed]
 const overlapCount = Math.min(overlap.length, MAX_FEED_OVERLAP, storySlots.length);
 const others = storySlots.length - overlapCount
   ? await pickProducts(sb, settings, cats, storySlots.length - overlapCount, {
-      excludeIds: [...feedPicks.map((p) => p.product.id), ...(existing ?? []).map((e) => e.product_id).filter(Boolean)],
+      excludeIds: [...feedPicks.map((p) => p.product.id), ...reelPicks.map((p) => p.product.id), ...(existing ?? []).map((e) => e.product_id).filter(Boolean)],
       rotationDays: "auto",
     })
   : [];
@@ -123,6 +137,10 @@ for (const [i, slot] of storySlots.entries()) {
 
 // ── generate everything; one item failing never blocks the others ──
 const renderer = new Renderer(sb);
+const reelRenderer = new ReelRenderer(sb);
+// Music rotation: continue from however many reels exist already (each reel in this run takes the next track).
+const { count: reelsSoFar } = await sb.from("social_posts").select("id", { count: "exact", head: true }).eq("post_type", "reel");
+let reelOrdinal = reelsSoFar ?? 0;
 const status = settings.auto_approve ? "approved" : "draft";
 let ok = 0;
 let skipped = 0;
@@ -146,13 +164,17 @@ async function runJob(job: Job) {
     skipped++;
     return;
   }
+  const musicIndex = job.type === "reel" ? reelOrdinal++ : 0;
   let lastErr = "";
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
-      const assets = await buildPostAssets(sb, renderer, settings, cats, row, job.product, {
-        image: true,
-        caption: job.type === "feed",
-      });
+      const assets =
+        job.type === "reel"
+          ? await buildReelAssets(sb, reelRenderer, settings, cats, row, job.product, musicIndex)
+          : await buildPostAssets(sb, renderer, settings, cats, row, job.product, {
+              image: true,
+              caption: job.type === "feed",
+            });
       const { error: upErr } = await sb.from("social_posts").update({ ...assets, status }).eq("id", row.id);
       if (upErr) throw new Error(upErr.message);
       log(`✓ ${label}`);
@@ -179,6 +201,7 @@ try {
   );
 } finally {
   await renderer.close();
+  await reelRenderer.close();
 }
 log(`done: ${ok} generated, ${skipped} skipped`);
 // Explicit exit: leftover keep-alive sockets / browser handles must never hang the Actions job.

@@ -2,8 +2,9 @@
 import { loadEnv } from "./env.js";
 import { getSupabase } from "./db.js";
 import { Renderer } from "./render/render.js";
+import { ReelRenderer } from "./render/reel.js";
 import { log } from "./time.js";
-import { buildPostAssets, loadCategories, loadProduct, loadSettings, pickProducts } from "./pipeline.js";
+import { buildReelAssets, buildPostAssets, loadCategories, loadProduct, loadSettings, pickProducts } from "./pipeline.js";
 
 loadEnv();
 const arg = (n: string) => process.argv.find((a) => a.startsWith(`--${n}=`))?.split("=")[1];
@@ -41,13 +42,21 @@ if (what === "swap") {
 
 const product = await loadProduct(sb, productId);
 const renderer = new Renderer(sb);
+const reelRenderer = new ReelRenderer(sb);
 try {
   const image = true; // image text comes from the same call as the caption, so always re-render
   const caption = what === "caption" || what === "both" || what === "swap";
-  const assets = await buildPostAssets(sb, renderer, settings, cats, { ...post, angle, design }, product, {
-    image,
-    caption,
-  });
+  // A reel is re-rendered whole (hook text, caption and video come from one model call).
+  let assets;
+  if (post.post_type === "reel") {
+    const { count } = await sb.from("social_posts").select("id", { count: "exact", head: true }).eq("post_type", "reel");
+    assets = await buildReelAssets(sb, reelRenderer, settings, cats, { ...post, angle, design: null }, product, count ?? 0);
+  } else {
+    assets = await buildPostAssets(sb, renderer, settings, cats, { ...post, angle, design }, product, {
+      image,
+      caption,
+    });
+  }
   const patch: Record<string, unknown> = { ...assets, product_id: productId, angle, error: null, attempts: 0 };
   if (post.status === "failed") patch.status = "draft";
   if (what === "swap") patch.status = "draft";
@@ -56,6 +65,7 @@ try {
   log("regenerated", what);
 } finally {
   await renderer.close();
+  await reelRenderer.close();
 }
 // Explicit exit: leftover keep-alive sockets / browser handles must never hang the Actions job.
 process.exit(0);
