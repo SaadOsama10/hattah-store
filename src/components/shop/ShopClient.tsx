@@ -203,7 +203,7 @@ export function ShopClient({
             {visible.map((product, index) => (
               <ProductCard
                 key={product.id}
-                priority={index < 2}
+                priority={index < 4}
                 id={product.id}
                 slug={product.slug}
                 name={product.name}
