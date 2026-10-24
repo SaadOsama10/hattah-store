@@ -79,5 +79,14 @@
     "bpm": 100.0,
     "offset": 0.035,
     "hf": 0.007
+  },
+  {
+    "file": "ki-337454.mp3",
+    "title": "KI - Instrumental (Pop, Oriental) II",
+    "artist": "Lyrium-2025",
+    "source": "https://pixabay.com/music/world-ki-instrumental-pop-oriental-337454/",
+    "bpm": 94.0,
+    "offset": 0.621,
+    "hf": 0.01
   }
 ]

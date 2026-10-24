@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { Renderer } from "./render/render.js";
 import { ReelRenderer, REEL_SECONDS } from "./render/reel.js";
-import { musicStartFor, pickTrack, trackFile } from "./music.js";
+import { chooseTrack, musicStartFor, trackFile } from "./music.js";
 import { CTA_POOL, ctaIndexOf, generateCaption, resultFromJson, type CaptionJson, type CaptionMode } from "./captions.js";
 import { SOCIAL_BUCKET } from "./db.js";
 import { effectivePrice, sortedImages } from "./products.js";
@@ -295,7 +295,7 @@ export async function buildReelAssets(
       );
   const price = effectivePrice(product);
   const imgs = sortedImages(product);
-  const track = pickTrack(musicIndex);
+  const track = await chooseTrack(sb, post.scheduled_at ?? null, post.id);
   const music = await trackFile(sb, track);
   const musicStart = musicStartFor(track, musicIndex, REEL_SECONDS);
   log(`reel «${product.name_ar}» ♪ ${track.title} (${track.bpm} bpm, +${musicStart.toFixed(2)}s)`);
@@ -324,7 +324,7 @@ export async function buildReelAssets(
   const video_url = await up("mp4", video, "video/mp4");
   const image_url = await up("jpg", cover, "image/jpeg");
   log(`reel uploaded (${(video.length / 1e6).toFixed(1)} MB, ${timing.seconds.toFixed(1)}s)`, video_url);
-  return { video_url, image_url, ...(keepCaption ? {} : { caption_full: res.caption }), design: res.design };
+  return { video_url, image_url, music_track: track.file, ...(keepCaption ? {} : { caption_full: res.caption }), design: res.design };
 }
 
 export interface Renderers {

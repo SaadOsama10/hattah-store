@@ -26,3 +26,4 @@ run `python3 analyze_beats.py out.mp3`, upload `out.mp3` to the `social-music` b
 | Turkish Dance | Loka_music | 101.0 | https://pixabay.com/music/arabic-turkish-dance-602715/ |
 | Arabic Music | JonasBlakewood | 97.5 | https://pixabay.com/music/upbeat-arabic-arabic-music-294013/ |
 | KI - Instrumental (Pop, Oriental) | Lyrium-2025 | 100.0 | https://pixabay.com/music/world-ki-instrumental-pop-oriental-337459/ |
+| KI - Instrumental (Pop, Oriental) II | Lyrium-2025 | 94.0 | https://pixabay.com/music/world-ki-instrumental-pop-oriental-337454/ |

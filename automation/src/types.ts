@@ -48,6 +48,8 @@ export interface SocialPostRow {
   image_url: string | null;
   /** Rendered MP4 (reels only); deleted from storage right after publishing. */
   video_url?: string | null;
+  /** Music file of a reel (automation/music/tracks.json). */
+  music_track?: string | null;
   caption_full: string | null;
   design: DesignText | null;
   scheduled_at: string;
