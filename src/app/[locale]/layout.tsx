@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Sora, Noto_Kufi_Arabic, IBM_Plex_Sans_Arabic, Inter } from "next/font/google";
+import { Sora, Inter } from "next/font/google";
+import localFont from "next/font/local";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -18,11 +19,16 @@ const sora = Sora({
   display: "swap",
 });
 
-const notoKufiArabic = Noto_Kufi_Arabic({
-  subsets: ["arabic"],
-  weight: ["700", "800"],
+// Arabic fonts are self-hosted subsets (Arabic block + basic Latin/digits/punctuation), ~25 KB per weight
+// instead of the full 124 KB Google file. Only the weights painted above the fold are preloaded.
+const notoKufiArabic = localFont({
+  src: [
+    { path: "../fonts/kufi-ar-700.woff2", weight: "700", style: "normal" },
+    { path: "../fonts/kufi-ar-800.woff2", weight: "800", style: "normal" },
+  ],
   variable: "--font-noto-kufi-arabic",
   display: "swap",
+  adjustFontFallback: "Arial",
 });
 
 // Body / UI font — clean and modern. Used via the --font-inter CSS
@@ -35,11 +41,14 @@ const inter = Inter({
   display: "swap",
 });
 
-const ibmPlexSansArabic = IBM_Plex_Sans_Arabic({
-  subsets: ["arabic"],
-  weight: ["400", "600"],
+const ibmPlexSansArabic = localFont({
+  src: [
+    { path: "../fonts/plex-ar-400.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/plex-ar-600.woff2", weight: "600", style: "normal" },
+  ],
   variable: "--font-ibm-plex-sans-arabic",
   display: "swap",
+  adjustFontFallback: "Arial",
 });
 
 export function generateStaticParams() {

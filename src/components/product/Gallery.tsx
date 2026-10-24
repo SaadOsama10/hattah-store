@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { motion, AnimatePresence, type PanInfo } from "framer-motion";
+import { m, AnimatePresence, type PanInfo } from "framer-motion";
 import { ImageOff, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 
@@ -35,7 +35,7 @@ export function Gallery({ images, alt }: { images: string[]; alt: string }) {
       >
         {hasImages ? (
           <AnimatePresence mode="wait" initial={false}>
-            <motion.div
+            <m.div
               key={index}
               drag="x"
               dragConstraints={{ left: 0, right: 0 }}
@@ -61,7 +61,7 @@ export function Gallery({ images, alt }: { images: string[]; alt: string }) {
                   }
                 }}
               />
-            </motion.div>
+            </m.div>
           </AnimatePresence>
         ) : (
           <div className="flex h-full w-full items-center justify-center text-cream/20">

@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
+import { m, useScroll, useTransform } from "framer-motion";
 
 /**
  * A fixed, layered glow sitting behind all page content. Its opacity
@@ -13,7 +13,7 @@ export function AmbientBackground() {
   const intensity = useTransform(scrollYProgress, [0, 0.5, 1], [0.75, 1, 0.85]);
 
   return (
-    <motion.div
+    <m.div
       aria-hidden
       style={{ opacity: intensity }}
       className="pointer-events-none fixed inset-0 -z-10"
@@ -28,6 +28,6 @@ export function AmbientBackground() {
           `,
         }}
       />
-    </motion.div>
+    </m.div>
   );
 }

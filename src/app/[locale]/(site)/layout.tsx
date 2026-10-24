@@ -3,6 +3,7 @@ import { Footer } from "@/components/layout/Footer";
 import { AmbientBackground } from "@/components/ui/AmbientBackground";
 import { CartProvider } from "@/contexts/CartContext";
 import { CartDrawer } from "@/components/cart/CartDrawer";
+import { MotionProvider } from "@/components/ui/MotionProvider";
 import { hasActiveOffers } from "@/lib/supabase/queries";
 
 export const dynamic = "force-dynamic";
@@ -11,6 +12,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const offersActive = await hasActiveOffers();
 
   return (
+    <MotionProvider>
     <CartProvider>
       <AmbientBackground />
       <Header hasOffers={offersActive} />
@@ -18,5 +20,6 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <Footer />
       <CartDrawer />
     </CartProvider>
+    </MotionProvider>
   );
 }

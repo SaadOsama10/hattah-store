@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
 import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -44,7 +44,7 @@ export function CartDrawer() {
     <AnimatePresence>
       {isOpen && (
         <>
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -52,7 +52,7 @@ export function CartDrawer() {
             onClick={closeCart}
             className="fixed inset-0 z-[60] bg-bg-primary/70 backdrop-blur-sm"
           />
-          <motion.div
+          <m.div
             initial={{ x: locale === "ar" ? "-100%" : "100%" }}
             animate={{ x: 0 }}
             exit={{ x: locale === "ar" ? "-100%" : "100%" }}
@@ -208,7 +208,7 @@ export function CartDrawer() {
                 </div>
               </>
             )}
-          </motion.div>
+          </m.div>
         </>
       )}
     </AnimatePresence>

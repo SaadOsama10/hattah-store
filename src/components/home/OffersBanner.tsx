@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { ArrowRight, Tag } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 
@@ -10,7 +10,7 @@ export function OffersBanner() {
 
   return (
     <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8">
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-40px" }}
@@ -37,7 +37,7 @@ export function OffersBanner() {
             />
           </span>
         </Link>
-      </motion.div>
+      </m.div>
     </section>
   );
 }

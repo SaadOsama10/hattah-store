@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { ImageOff, ShoppingBag } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useCart } from "@/contexts/CartContext";
@@ -19,6 +19,7 @@ export function ProductCard({
   categoryLabel,
   hasVariants = false,
   startingFrom = false,
+  priority = false,
 }: {
   id: string;
   // SEO slug for the product URL; falls back to the raw id (which redirects).
@@ -35,6 +36,8 @@ export function ProductCard({
   // added — the quick-add icon just follows the card's Link to the
   // product page instead of silently adding without a selection.
   hasVariants?: boolean;
+  // Above-the-fold cards: no opacity-0 start (the photo is the LCP element) and the image is preloaded.
+  priority?: boolean;
 }) {
   const t = useTranslations("common");
   const tCart = useTranslations("cart");
@@ -59,8 +62,8 @@ export function ProductCard({
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
+    <m.div
+      initial={priority ? false : { opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
@@ -73,7 +76,8 @@ export function ProductCard({
               src={image}
               alt={categoryLabel ? `${name} — ${categoryLabel}` : name}
               fill
-              sizes="(min-width: 1024px) 25vw, (min-width: 640px) 45vw, 90vw"
+              sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+              priority={priority}
               className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
             />
           ) : (
@@ -124,6 +128,6 @@ export function ProductCard({
           )}
         </div>
       </Link>
-    </motion.div>
+    </m.div>
   );
 }

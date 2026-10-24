@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { GrainOverlay } from "@/components/ui/GrainOverlay";
@@ -71,7 +71,7 @@ export function CategoryTiles({
           );
 
           return (
-            <motion.div
+            <m.div
               key={cat.key}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -165,7 +165,7 @@ export function CategoryTiles({
                   )}
                 </div>
               </Link>
-            </motion.div>
+            </m.div>
           );
         })}
       </div>

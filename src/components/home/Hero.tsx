@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { m, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { ChevronDown } from "lucide-react";
 import Image from "next/image";
@@ -40,7 +40,7 @@ export function Hero() {
       {/* Layered background: soft floating blobs + parallax grain texture + slow-drifting decorative line art */}
       <FloatingBlobs />
       <Sparkles />
-      <motion.div
+      <m.div
         style={{ y: patternY }}
         aria-hidden
         className="absolute inset-[-10%] bg-grain opacity-[0.03]"
@@ -51,11 +51,11 @@ export function Hero() {
       />
       <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-bg-primary to-transparent" />
 
-      <motion.div
+      <m.div
         style={{ y: contentY, opacity: contentOpacity }}
         className="relative z-10 flex flex-col items-center px-6 text-center"
       >
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.85, filter: "blur(6px)" }}
           animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
           transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
@@ -71,38 +71,38 @@ export function Hero() {
             priority
             className="relative h-24 w-24 rounded-full object-contain shadow-soft sm:h-32 sm:w-32"
           />
-        </motion.div>
+        </m.div>
 
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1 }}
           className="mb-5"
         >
           <Badge>{t("badge")}</Badge>
-        </motion.div>
+        </m.div>
 
         {/* No opacity-0 start: the H1 is the LCP element and must paint with the first HTML, not after hydration. */}
-        <motion.h1
+        <m.h1
           initial={{ y: 20 }}
           animate={{ y: 0 }}
           transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
           className="font-playfair text-6xl font-extrabold leading-none text-cream sm:text-7xl md:text-8xl"
         >
           {t("brandName")}
-        </motion.h1>
-        <motion.p
+        </m.h1>
+        <m.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 0.5 }}
           className="mt-3 font-inter text-xs font-semibold tracking-[0.5em] text-cream-secondary/60"
         >
           {t("brandNameLatin")}
-        </motion.p>
+        </m.p>
 
         <div className="relative mt-8 flex h-14 items-center justify-center px-4 sm:h-10">
           <AnimatePresence mode="wait">
-            <motion.p
+            <m.p
               key={taglineIndex}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
@@ -111,11 +111,11 @@ export function Hero() {
               className="max-w-md font-inter text-lg text-cream-secondary sm:text-xl"
             >
               {taglines[taglineIndex]}
-            </motion.p>
+            </m.p>
           </AnimatePresence>
         </div>
 
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.8 }}
@@ -124,16 +124,16 @@ export function Hero() {
           <Button href="/shop" variant="primary" size="lg">
             {t("cta")}
           </Button>
-        </motion.div>
-      </motion.div>
+        </m.div>
+      </m.div>
 
-      <motion.div
+      <m.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.4, duration: 1 }}
         className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2"
       >
-        <motion.div
+        <m.div
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           className="flex flex-col items-center gap-2 text-cream-secondary/50"
@@ -142,8 +142,8 @@ export function Hero() {
             {t("scroll")}
           </span>
           <ChevronDown size={16} />
-        </motion.div>
-      </motion.div>
+        </m.div>
+      </m.div>
     </div>
   );
 }

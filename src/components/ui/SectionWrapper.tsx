@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
@@ -15,7 +15,7 @@ export function SectionWrapper({
   delay?: number;
   as?: "section" | "div";
 }) {
-  const Component = motion[as];
+  const Component = m[as];
 
   return (
     <Component

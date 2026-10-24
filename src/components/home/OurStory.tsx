@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { GrainOverlay } from "@/components/ui/GrainOverlay";
 import { TatreezDivider } from "@/components/ui/TatreezDivider";
 import { OliveBranch } from "@/components/ui/OliveBranch";
@@ -21,7 +21,7 @@ export function OurStory() {
       />
       <GrainOverlay opacity="opacity-[0.03]" />
 
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 32 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
@@ -40,7 +40,7 @@ export function OurStory() {
           aria-hidden
           className="pointer-events-none mx-auto mt-10 h-8 w-40 text-olive opacity-40"
         />
-      </motion.div>
+      </m.div>
     </section>
   );
 }

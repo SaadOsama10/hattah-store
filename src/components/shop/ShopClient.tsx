@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Search, SlidersHorizontal } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
@@ -150,7 +150,7 @@ export function ShopClient({
 
         <AnimatePresence>
           {activeParentNode && activeParentNode.children.length > 0 && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
@@ -184,7 +184,7 @@ export function ShopClient({
                   {localizeCategory(child, locale)}
                 </button>
               ))}
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </div>
@@ -200,9 +200,10 @@ export function ShopClient({
       ) : (
         <>
           <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
-            {visible.map((product) => (
+            {visible.map((product, index) => (
               <ProductCard
                 key={product.id}
+                priority={index < 2}
                 id={product.id}
                 slug={product.slug}
                 name={product.name}
