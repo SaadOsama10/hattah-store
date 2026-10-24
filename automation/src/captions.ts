@@ -288,6 +288,15 @@ function clampWords(text: string, max: number): string {
   return cut.join(" ").replace(/[،,؛:]$/, "");
 }
 
+const CURRENCY = /(ليرة|₺|\bTL\b)/i;
+/** On-image text must not mention a price: drop the clause that does when enough words remain (otherwise validation rejects it). */
+function dropPriceClause(text: string, minWords: number): string {
+  if (!CURRENCY.test(text)) return text;
+  const kept = text.split(/(?<=[،,؛:])\s+|\s[–—-]\s/).filter((c) => !CURRENCY.test(c));
+  const out = kept.join(" ").replace(/[،,؛:]\s*$/, "").trim();
+  return out.split(/\s+/).filter(Boolean).length >= minWords ? out : text;
+}
+
 /** Fixes what is safely fixable without the model: whitespace, Arabic-Indic digits in the subline, over-long headline/subline, surplus
  * paragraphs/lines, over-long body, hashtag shape. */
 export function repair(raw: CaptionJson, mode: CaptionMode, withTr: boolean): CaptionJson {
@@ -298,8 +307,8 @@ export function repair(raw: CaptionJson, mode: CaptionMode, withTr: boolean): Ca
     caption_en: clean(raw.caption_en),
     caption_tr: withTr ? clean(raw.caption_tr) : "",
     hashtags: [...new Set(raw.hashtags.map((h) => "#" + clean(h).replace(/^#+/, "").replace(/\s+/g, "_")).filter((h) => h.length > 2))].slice(0, 12),
-    image_headline: clampWords(clean(raw.image_headline), 6),
-    image_subline: clampWords(latinDigits(clean(raw.image_subline)), 15),
+    image_headline: clampWords(dropPriceClause(clean(raw.image_headline), 2), 6),
+    image_subline: clampWords(dropPriceClause(latinDigits(clean(raw.image_subline)), 4), 15),
   };
   if (mode === "design") return { ...c, caption_hook: "", caption_story: [], caption_details: [], caption_en: "", caption_tr: "", hashtags: [] };
   // over-long body: drop trailing detail lines (keep 2), then trailing sentences of the last story paragraph
