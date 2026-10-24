@@ -19,6 +19,10 @@ on:
         required: false
         default: "both"
         type: string
+      extra_args:
+        description: "today/daily: extra generate.ts flags, e.g. --date=2026-10-25 --only=story@10:15 --jitter=0"
+        required: false
+        type: string
       dry_run:
         description: "DRY_RUN (no Meta calls)"
         required: false
@@ -71,10 +75,11 @@ jobs:
           IN_MODE: ${{ inputs.mode }}
           IN_POST: ${{ inputs.post_id }}
           IN_WHAT: ${{ inputs.what }}
+          IN_ARGS: ${{ inputs.extra_args }}
         run: |
           MODE="${IN_MODE:-daily}"
           case "$MODE" in
             regenerate) npx tsx src/regenerate.ts --post="$IN_POST" --what="${IN_WHAT:-both}" ;;
-            today)      npx tsx src/generate.ts ;;
+            today)      npx tsx src/generate.ts $IN_ARGS ;;
             *)          npx tsx src/generate.ts --tomorrow ;;  # daily cron (03:00 Istanbul) + "tomorrow": the whole next day in one run
           esac

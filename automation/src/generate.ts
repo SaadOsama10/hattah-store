@@ -1,16 +1,20 @@
 // Creates all of a day's posts in ONE run.
-// Usage: tsx src/generate.ts [--date=YYYY-MM-DD | --tomorrow]
+// Usage: tsx src/generate.ts [--date=YYYY-MM-DD | --tomorrow] [--only=story@21:15,story@22:15] [--jitter=0]
+//   --only   fill just these slots (type@HH:MM) instead of settings.daily_slots (skips ones already taken)
+//   --jitter override the ± random offset in minutes
 import { loadEnv } from "./env.js";
 import { getSupabase } from "./db.js";
 import { Renderer } from "./render/render.js";
 import { addDays, istanbulDate, log, slotToUtc } from "./time.js";
-import { buildPostAssets, loadCategories, loadSettings, pickProducts, type ProductPick } from "./pipeline.js";
+import { PRODUCT_SELECT, buildPostAssets, loadCategories, loadSettings, pickProducts, type ProductPick } from "./pipeline.js";
 import { sortedImages } from "./products.js";
 import { ANGLES, type Angle, type PostType, type ProductRecord } from "./types.js";
 
 loadEnv();
 const args = process.argv.slice(2);
 const dateArg = args.find((a) => a.startsWith("--date="))?.slice(7);
+const onlyArg = args.find((a) => a.startsWith("--only="))?.slice(7);
+const jitterArg = args.find((a) => a.startsWith("--jitter="))?.slice(9);
 const date = dateArg || (args.includes("--tomorrow") ? addDays(istanbulDate(), 1) : istanbulDate());
 
 const sb = getSupabase();
@@ -26,11 +30,18 @@ const dayStart = slotToUtc(date, "00:00").toISOString();
 const dayEnd = slotToUtc(addDays(date, 1), "00:00").toISOString();
 const { data: existing } = await sb
   .from("social_posts")
-  .select("slot_key, post_type, product_id, status")
+  .select("slot_key, post_type, product_id, status, angle")
   .gte("scheduled_at", dayStart)
   .lt("scheduled_at", dayEnd);
 const taken = new Set((existing ?? []).filter((e) => e.status !== "skipped").map((e) => e.slot_key));
-const slots = settings.daily_slots
+const wanted = onlyArg
+  ? onlyArg.split(",").map((x) => {
+      const [type, time] = x.split("@");
+      if ((type !== "feed" && type !== "story") || !/^\d\d:\d\d$/.test(time ?? "")) throw new Error(`bad --only entry: ${x}`);
+      return { type: type as PostType, time };
+    })
+  : settings.daily_slots;
+const slots = wanted
   .map((s) => ({ ...s, key: `${s.type}|${s.time}` }))
   .filter((s) => !taken.has(s.key))
   .sort((a, b) => a.time.localeCompare(b.time));
@@ -39,7 +50,7 @@ if (!slots.length) process.exit(0);
 
 /** Nominal slot time ± a random offset so posts don't look robotic. */
 function jittered(time: string): Date {
-  const j = Math.max(0, settings.jitter_minutes ?? 10);
+  const j = Math.max(0, jitterArg !== undefined ? Number(jitterArg) : (settings.jitter_minutes ?? 10));
   const offset = Math.round((Math.random() * 2 - 1) * j);
   return new Date(slotToUtc(date, time).getTime() + offset * 60_000);
 }
@@ -72,7 +83,12 @@ const jobs: Job[] = feedPicks.map((p, i) => ({ slot: feedSlots[i], type: "feed",
 // A product never appears twice in the day's stories.
 const MAX_FEED_OVERLAP = 3;
 const usedStoryIds = new Set((existing ?? []).filter((e) => e.post_type === "story" && e.status !== "skipped").map((e) => e.product_id));
-const overlap = feedPicks
+const existingFeed: ProductPick[] = [];
+for (const e of (existing ?? []).filter((x) => x.post_type === "feed" && x.status !== "skipped" && x.product_id)) {
+  const { data: prod } = await sb.from("products").select(PRODUCT_SELECT).eq("id", e.product_id).maybeSingle();
+  if (prod) existingFeed.push({ product: prod as unknown as ProductRecord, angle: e.angle as Angle });
+}
+const overlap = [...feedPicks, ...existingFeed]
   .filter((p) => sortedImages(p.product).length > 1 && !usedStoryIds.has(p.product.id))
   .sort(() => Math.random() - 0.5);
 const overlapCount = Math.min(overlap.length, MAX_FEED_OVERLAP, storySlots.length);
