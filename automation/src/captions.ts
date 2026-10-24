@@ -2,7 +2,7 @@ import OpenAI from "openai";
 import { z } from "zod";
 import type { Angle, DesignText, ProductRecord, SocialSettings } from "./types.js";
 import { effectivePrice } from "./products.js";
-import { whatsappDisplay } from "./render/render.js";
+import { siteDisplay, whatsappDisplay } from "./render/render.js";
 import { isDryRun, need } from "./env.js";
 import { log } from "./time.js";
 
@@ -10,25 +10,28 @@ const wordCount = (v: string) => v.trim().split(/\s+/).filter(Boolean).length;
 export const normalizeText = (v: string) =>
   v.replace(/[\u064B-\u0652\u0640]/g, "").replace(/[^\p{L}\p{N}\s]/gu, "").replace(/\s+/g, " ").trim().toLowerCase();
 
-/** Closing lines for feed captions. No store URL — the link lives in the bio. {WA} = WhatsApp number. */
+/** Closing lines for feed captions (Instagram-only: links in captions aren't clickable, so each also
+ * points to the bio). {URL} = store URL from social_settings, {WA} = WhatsApp number. Each phrasing
+ * must start with text that is unique in the pool (ctaIndexOf matches on it). */
 export const CTA_POOL = [
-  "رابط المتجر بالبايو 🔗 أو اطلب عبر واتساب: {WA}",
-  "تصفّح المتجر من الرابط بالبايو 🛍️ أو راسلنا على واتساب: {WA}",
-  "كل التفاصيل برابط البايو 🔗 وللطلب المباشر واتساب: {WA}",
-  "المتجر كامل بالرابط اللي بالبايو ✨ أو اطلب مباشرة عبر واتساب: {WA}",
-  "اطلبها من رابط البايو 🔗 أو كلّمنا على واتساب: {WA}",
-  "رابط المتجر بالبايو 🛒 وإذا بتحب نرتّب طلبك عالواتساب: {WA}",
-  "زورونا من رابط البايو 🔗 أو أرسلوا لنا على واتساب: {WA}",
-  "شوفوا المجموعة كاملة من رابط البايو 🛍️ أو اطلبوا عبر واتساب: {WA}",
-  "الرابط بالبايو يوصلك للمتجر 🔗 وللاستفسار والطلب واتساب: {WA}",
-  "تلاقوها بالمتجر من رابط البايو ✨ أو اطلبوا مباشرة عبر واتساب: {WA}",
+  "اطلب من المتجر: {URL} (الرابط بالبايو 🔗) أو عبر واتساب: {WA}",
+  "تصفّح المتجر على {URL} أو من رابط البايو 🔗 — وللطلب المباشر واتساب: {WA}",
+  "كل التفاصيل والطلب من {URL} (أو من رابط البايو 🔗) وعبر واتساب: {WA}",
+  "المتجر كامل على {URL} ✨ أو من رابط البايو 🔗، واتساب للطلب: {WA}",
+  "اطلبها الآن من {URL} أو من رابط البايو 🔗 أو كلّمنا على واتساب: {WA}",
+  "زورونا على {URL} 🛍️ أو من رابط البايو 🔗، وللاستفسار واتساب: {WA}",
+  "شوفوا المجموعة كاملة على {URL} أو من رابط البايو 🔗 — واتساب: {WA}",
+  "رابط المتجر {URL} 🛒 أو من البايو 🔗، وإذا بتحب نرتّب طلبك عالواتساب: {WA}",
+  "تلاقوها بالمتجر {URL} ✨ (أو من رابط البايو 🔗) وللطلب المباشر واتساب: {WA}",
+  "للطلب والتفاصيل: {URL} أو من رابط البايو 🔗، أو راسلونا على واتساب: {WA}",
 ];
-export const renderCta = (i: number) => CTA_POOL[i % CTA_POOL.length].replace("{WA}", whatsappDisplay());
+export const renderCta = (i: number, storeUrl?: string) =>
+  CTA_POOL[i % CTA_POOL.length].replace("{URL}", siteDisplay(storeUrl)).replace("{WA}", whatsappDisplay());
 
 /** Index of the pool phrasing used inside an existing caption (or -1). */
 export function ctaIndexOf(caption: string | null): number {
   if (!caption) return -1;
-  return CTA_POOL.findIndex((c) => caption.includes(c.split("{WA}")[0]));
+  return CTA_POOL.findIndex((c) => caption.includes(c.split("{URL}")[0]) && caption.includes(c.split("{URL}")[1].split("{WA}")[0]));
 }
 
 export const BODY_MIN = 600;
@@ -186,7 +189,7 @@ ${productBrief(p, categoryAr)}
 - caption_hook: سطر افتتاحي عاطفي قوي واحد (جملة واحدة، لا يشبه الافتتاحيات العامة)، بلهجة شامية دافئة.
 - caption_story: فقرتان أو ثلاث فقرات قصيرة (٢–٣ جمل لكل فقرة) تحكي القصة والمعنى وراء المنتج: التراث، الحرفة، الرمز، البيت والذاكرة الفلسطينية — اعتمد فقط على ما يدعمه وصف المنتج وما هو معروف عن الحرفة دون ادّعاءات أو معلومات مخترعة.
 - caption_details: ٢–٥ سطور قصيرة نظيفة لتفاصيل المنتج الفعلية من البيانات (الخامة، المقاسات، الألوان، الاستخدام، والسعر إن كان مناسبًا ويوجد خصم حقيقي)، كل سطر يبدأ بإيموجي أنيق مناسب.
-- مجموع طول (hook + story + details + english) يجب أن يكون بين ${BODY_MIN} و${BODY_MAX} حرفًا بالضبط تقريبًا — لا أقل ولا أكثر. لا تضع رقم الواتساب ولا رابط المتجر ولا الهاشتاغات فيها (تُضاف تلقائيًا).
+- مجموع طول (hook + story + details + english) يجب أن يكون بين ${BODY_MIN} و${BODY_MAX} حرفًا بالضبط تقريبًا — لا أقل ولا أكثر. لا تضع رقم الواتساب ولا رابط المتجر ولا الهاشتاغات فيها (تُضاف تلقائيًا في خاتمة المنشور).
 - caption_en: سطر أو سطران بالإنجليزية كملخص قصير (حتى ٢٢٠ حرفًا).
 - caption_tr: ${languages.includes("tr") ? "سطر بالتركية (حتى ٢٠٠ حرف)" : 'اتركه "" لأن التركية غير مطلوبة'}.
 - hashtags: ٤–٦ وسوم خاصة بهذا المنتج (بدون تكرار)، كل وسم يبدأ بـ # وبدون مسافات.
@@ -213,7 +216,9 @@ export interface CaptionResult {
 
 export function assembleCaption(c: CaptionJson, settings: SocialSettings, ctaIndex = 0): string {
   const body = captionBody(c, settings.caption_languages.includes("tr"));
-  const cta = renderCta(ctaIndex);
+  const cta = renderCta(ctaIndex, settings.store_url);
+  // Required: Instagram-only captions must carry the store URL and the WhatsApp number.
+  if (!cta.includes(siteDisplay(settings.store_url)) || !cta.includes(whatsappDisplay())) throw new Error("caption CTA is missing the store URL or WhatsApp number");
 
   const seen = new Set<string>();
   const tags: string[] = [];
