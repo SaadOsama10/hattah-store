@@ -25,10 +25,26 @@ export default async function ShopPage({
   const { category } = await searchParams;
   setRequestLocale(locale);
 
-  const [products, categories] = await Promise.all([
+  const [allProducts, categories] = await Promise.all([
     getAllProducts(),
     getCategories(),
   ]);
+
+  // The client component only needs the card fields; sending every language, description and photo
+  // inflated the page payload (and its parse time) several-fold. name_en stays because it builds the slug.
+  const products = allProducts.map((p) => ({
+    ...p,
+    name_ar: locale === "ar" ? p.name_ar : "",
+    name_tr: locale === "tr" ? p.name_tr : "",
+    name_en: p.name_en,
+    description_ar: "",
+    description_en: "",
+    description_tr: "",
+    image_alt_ar: null,
+    image_alt_en: null,
+    image_alt_tr: null,
+    product_images: [...p.product_images].sort((a, b) => a.sort_order - b.sort_order).slice(0, 1),
+  }));
 
   const validCategory = categories.some((c) => c.key === category)
     ? (category as CategoryKey)
