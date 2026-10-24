@@ -10,7 +10,8 @@ export const maxDuration = 30;
  * (GitHub's own `schedule` trigger is throttled/skipped on quiet repos). It never publishes
  * itself — it only wakes the GitHub workflows when there is work to do:
  *   • approved posts that are due        → social-publish.yml
- *   • tomorrow has no posts after 03:00  → social-generate.yml (mode=tomorrow)
+ *   • tomorrow has no posts after 03:00  → social-generate.yml (mode=daily: text via the OpenAI Batch API)
+ *   • an OpenAI batch is pending         → social-collect.yml (renders when the batch is done; falls back to normal calls at 07:00 Istanbul)
  * Double-publishing is impossible: publish.ts takes an atomic 'publishing' lock per post, and the
  * workflows share a concurrency group, so overlapping triggers (this + GitHub's cron) are safe.
  */
@@ -54,8 +55,19 @@ async function handle(request: Request) {
       .lt("scheduled_at", new Date(tomorrowStart.getTime() + 86400e3).toISOString())
       .neq("status", "skipped");
     if ((planned ?? 0) === 0 && !(await hasActiveRun("social-generate.yml"))) {
-      await dispatchWorkflow("social-generate.yml", { mode: "tomorrow" });
-      actions.push("generate tomorrow");
+      await dispatchWorkflow("social-generate.yml", { mode: "daily" });
+      actions.push("generate tomorrow (batch)");
+    }
+  }
+
+  // 3) a submitted OpenAI batch: check on it every ~12 minutes (not before 10 minutes after submission)
+  const { data: pending } = await supabase.from("social_batches").select("created_at, last_checked_at").eq("status", "submitted").order("created_at").limit(1);
+  if (pending?.length) {
+    const age = now.getTime() - new Date(pending[0].created_at).getTime();
+    const sinceCheck = pending[0].last_checked_at ? now.getTime() - new Date(pending[0].last_checked_at).getTime() : Infinity;
+    if (age > 10 * 60e3 && sinceCheck > 12 * 60e3 && !(await hasActiveRun("social-collect.yml")) && !(await hasActiveRun("social-generate.yml"))) {
+      await dispatchWorkflow("social-collect.yml", {});
+      actions.push("collect batch");
     }
   }
 

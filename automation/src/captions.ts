@@ -6,7 +6,6 @@ import { siteDisplay, whatsappDisplay } from "./render/render.js";
 import { isDryRun, need } from "./env.js";
 import { log } from "./time.js";
 
-const wordCount = (v: string) => v.trim().split(/\s+/).filter(Boolean).length;
 export const normalizeText = (v: string) =>
   v.replace(/[\u064B-\u0652\u0640]/g, "").replace(/[^\p{L}\p{N}\s]/gu, "").replace(/\s+/g, " ").trim().toLowerCase();
 
@@ -37,19 +36,23 @@ export function ctaIndexOf(caption: string | null): number {
 export const BODY_MIN = 600;
 export const BODY_MAX = 1000;
 
+/** What the model returns. Lenient on purpose: size/wording problems are repaired or checked in code (see `repair` / `validate`), not by re-calling the model. */
 const CaptionSchema = z.object({
-  caption_hook: z.string().min(10),
-  caption_story: z.array(z.string().min(20)).min(2).max(3),
-  caption_details: z.array(z.string().min(5)).min(2).max(6),
-  caption_en: z.string().min(10),
+  caption_hook: z.string(),
+  caption_story: z.array(z.string()),
+  caption_details: z.array(z.string()),
+  caption_en: z.string(),
   caption_tr: z.string(),
-  hashtags: z.array(z.string()).min(3).max(12),
-  image_headline: z.string().refine((v) => wordCount(v) >= 2 && wordCount(v) <= 6, "headline must be 2–6 words"),
-  image_subline: z.string().refine((v) => wordCount(v) >= 4 && wordCount(v) <= 15, "subline must be 4–15 words"),
+  hashtags: z.array(z.string()),
+  image_headline: z.string(),
+  image_subline: z.string(),
 });
-type CaptionJson = z.infer<typeof CaptionSchema>;
+export type CaptionJson = z.infer<typeof CaptionSchema>;
 
-const JSON_SCHEMA = {
+/** `full`: caption + on-image text (feed posts, reels). `design`: on-image text only (stories, image-only re-renders) — the caption fields come back empty, which keeps the output tiny. */
+export type CaptionMode = "full" | "design";
+
+export const JSON_SCHEMA = {
   type: "object",
   additionalProperties: false,
   required: ["caption_hook", "caption_story", "caption_details", "caption_en", "caption_tr", "hashtags", "image_headline", "image_subline"],
@@ -76,42 +79,283 @@ export function captionBody(c: CaptionJson, includeTr = false): string {
   ].join("\n\n");
 }
 
-const ANGLE_BRIEF: Record<Angle, string> = {
-  showcase: "عرض المنتج: صِف المنتج وما يميّزه (الخامة، التطريز، الاستخدام) بدفء وبساطة.",
-  heritage: "حكاية الحرفة والتراث: اربط المنتج بالحرفة الفلسطينية (التطريز، الكوفية، المطبخ الفلسطيني…) دون ادّعاء معلومات غير مؤكدة.",
-  quote: "أسلوب اقتباس: ابدأ بجملة قصيرة مؤثرة وإنسانية (ليست شعارًا سياسيًا) ثم اربطها بالمنتج.",
-  offer: "التركيز على السعر والقيمة: اذكر السعر بوضوح، وإن وُجد خصم فاذكره، دون ضغط بيعي.",
-};
+/* ───────────── The prompt: ONE fixed prefix (identical in every call → prompt-cache hits), the variable part last ───────────── */
 
-const SYSTEM = `أنت كاتب محتوى لعلامة "حَطّة" (HATTAH)، متجر في إسطنبول يبيع منتجات تراثية فلسطينية/غزّية: هوديات، تطريز، لوحات، ميداليات، أكلات منزلية.
+const FIXED_INSTRUCTIONS = `أنت كاتب محتوى لعلامة "حَطّة" (HATTAH)، متجر في إسطنبول يبيع منتجات تراثية فلسطينية/غزّية: هوديات، تطريز، لوحات، ميداليات، أكلات منزلية.
 الصوت: دافئ، فخور، أصيل، بلهجة شامية/فلسطينية بيضاء قريبة، إنساني وغير بيعي. افتتاحياتك متنوعة وحيّة ولا تبدأ أبدًا بعبارات عامة مثل «منتج رائع» أو «اكتشف».
 ممنوع: ادّعاءات غير حقيقية (جودة/مواد/توصيل/شحن/كميات/خصومات غير مذكورة في البيانات)، شعارات أو مواقف سياسية، كلمات قد تعرّض الحساب للحظر على Meta (حرب، قتل، مقاومة، ...)، الإيموجي: لا تضع إيموجي في الجمل السردية؛ في سطور التفاصيل فقط إيموجي واحد أنيق في بداية كل سطر.
-اكتب فقط من بيانات المنتج المعطاة، ولا تخترع تفاصيل.
-المخرجات JSON فقط.`;
+اكتب فقط من بيانات المنتج المعطاة، ولا تخترع تفاصيل. المخرجات JSON فقط وفق المخطط.
 
-const IMAGE_TEXT_BRIEF: Record<Angle, string> = {
-  showcase: "image_headline: عنوان جذّاب قصير يصف المنتج أو الإحساس به. image_subline: جملة تعرّف بما يميّزه (خامة/تطريز/استخدام).",
-  heritage: "image_headline: عنوان عن الحرفة أو التراث المرتبط بالمنتج. image_subline: جملة قصيرة عن الحكاية/الحرفة (بدون معلومات غير مؤكدة).",
-  quote: "image_headline: جملة اقتباس قصيرة مؤثرة وإنسانية (ليست شعارًا سياسيًا) تُطبع بخط كبير. image_subline: تكملة قصيرة تربطها بالمنتج.",
-  offer: "image_headline: عنوان قصير يلفت للسعر/الفرصة بدون ضغط بيعي (لا تذكر خصمًا غير موجود في البيانات). image_subline: جملة تذكّر بقيمة المنتج.",
-};
+## زوايا المنشور (الزاوية المطلوبة تُحدَّد في آخر الطلب)
+- showcase — عرض المنتج: صِف المنتج وما يميّزه (الخامة، التطريز، الاستخدام) بدفء وبساطة.
+- heritage — حكاية الحرفة والتراث: اربط المنتج بالحرفة الفلسطينية (التطريز، الكوفية، المطبخ الفلسطيني…) دون ادّعاء معلومات غير مؤكدة.
+- quote — أسلوب اقتباس: ابدأ بجملة قصيرة مؤثرة وإنسانية (ليست شعارًا سياسيًا) ثم اربطها بالمنتج.
+- offer — التركيز على السعر والقيمة: اذكر السعر بوضوح، وإن وُجد خصم فاذكره، دون ضغط بيعي.
 
-function productBrief(p: ProductRecord, categoryAr: string): string {
+## وضع «full» (منشورات وريلز): حقول الكابشن
+- caption_hook: سطر افتتاحي عاطفي قوي واحد (جملة واحدة، لا يشبه الافتتاحيات العامة).
+- caption_story: فقرتان أو ثلاث فقرات قصيرة (٢–٣ جمل لكل فقرة) تحكي القصة والمعنى وراء المنتج: التراث، الحرفة، الرمز، البيت والذاكرة الفلسطينية — اعتمد فقط على ما يدعمه وصف المنتج وما هو معروف عن الحرفة دون ادّعاءات أو معلومات مخترعة.
+- caption_details: ٢–٥ سطور قصيرة نظيفة لتفاصيل المنتج الفعلية من البيانات (الخامة، المقاسات، الألوان، الاستخدام، والسعر إن كان مناسبًا ويوجد خصم حقيقي)، كل سطر يبدأ بإيموجي أنيق مناسب.
+- مجموع طول (hook + story + details + english) بين ${BODY_MIN} و${BODY_MAX} حرفًا بالضبط تقريبًا — لا أقل ولا أكثر. لا تضع رقم الواتساب ولا رابط المتجر ولا الهاشتاغات فيها (تُضاف تلقائيًا في خاتمة المنشور).
+- caption_en: سطر أو سطران بالإنجليزية كملخص قصير (حتى ٢٢٠ حرفًا). caption_tr: سطر بالتركية (حتى ٢٠٠ حرف) فقط إن طُلبت التركية، وإلا "".
+- hashtags: ٤–٦ وسوم خاصة بهذا المنتج (بدون تكرار)، كل وسم يبدأ بـ # وبدون مسافات.
+
+## نص التصميم (يُطلب في الوضعين) — المكتوب على الصورة والفيديو
+- image_headline: من ٢ إلى ٦ كلمات، بلهجة شامية دافئة. image_subline: من ٤ إلى ١٥ كلمة، بدون هاشتاغات أو أرقام هاتف.
+- حسب الزاوية — showcase: عنوان جذّاب قصير يصف المنتج أو الإحساس به، وسطر فرعي بما يميّزه (خامة/تطريز/استخدام). heritage: عنوان عن الحرفة أو التراث المرتبط بالمنتج، وسطر فرعي عن الحكاية (بدون معلومات غير مؤكدة). quote: جملة اقتباس قصيرة مؤثرة وإنسانية (ليست شعارًا سياسيًا) تُطبع بخط كبير، وتكملة قصيرة تربطها بالمنتج. offer: عنوان قصير يلفت للسعر/الفرصة بدون ضغط بيعي (لا تذكر خصمًا غير موجود في البيانات)، وسطر يذكّر بقيمة المنتج.
+- قواعد صارمة للعنوان والسطر الفرعي: ممنوع ذكر الأسعار أو العملة (ليرة/TL) أو أي أرقام في العنوان؛ ممنوع تكرار اسم المنتج أو إعادة صياغته في السطر الفرعي (اسم المنتج يظهر على التصميم أصلًا) — قدّم معلومة جديدة عنه؛ استخدم الأرقام اللاتينية (0-9) إن لزم رقم في السطر الفرعي.
+
+## وضع «design» (ستوريات): املأ image_headline و image_subline فقط، واترك caption_hook و caption_en و caption_tr بنص فارغ "" و caption_story و caption_details و hashtags مصفوفات فارغة [].
+
+## مثالان على مخرجات وضع «full» بجودة مطلوبة
+المثال 1 — منتج: لوحة جدارية مفتاح العودة بمظهر التطريز، الزاوية heritage:
+${JSON.stringify({
+  caption_hook: "في تفاصيل بتعلّقها عالحيط، وبتحسّ كأنك فتحت للذاكرة مطرح بالبيت.",
+  caption_story: [
+    "التتريز الفلسطيني إله لغة من الغرز والألوان، وحضوره جزء من ذاكرتنا وتراثنا. بهاللوحة، تصميم مفتاح العودة بياخد من هاللغة ملامحه، بطباعة بتحاكي تفاصيل التطريز، مش بغرز مطرّزة بالإيد.",
+    "حكاية القطعة بتجمع بين مظهر حرفة بنعتزّ فيها وإطار مصنوع يدويًا بيحتضن تفاصيلها. بتلاقي إلها مطرح بالبيت أو المكتب، وبتقرّب من يومنا ذاكرة فلسطينية بنحب نخليها حاضرة؛ وممكن تكون هدية بتحمل هالمعنى لبيت تاني.",
+  ],
+  caption_details: ["🧵 طباعة عالية الدقة بمظهر التطريز الفلسطيني.", "🖼️ إطار مصنوع يدويًا، جاهز للتعليق.", "🏡 للديكور الداخلي في البيت أو المكتب."],
+  caption_en: "Palestinian Tatreez, reimagined in print. This Key of Return wall art pairs an embroidery-inspired design with a handcrafted frame, ready to hang.",
+  caption_tr: "",
+  hashtags: ["#لوحة_مفتاح_العودة", "#التتريز_الفلسطيني", "#لوحات_تراثية", "#ديكور_فلسطيني"],
+  image_headline: "للتراث مطرح ع حيطاننا",
+  image_subline: "إطار مصنوع يدويًا بيكمّل حضور التفاصيل المستوحاة من التتريز",
+})}
+المثال 2 — منتج: طقم كاسات شاي زجاج بنقشة الكوفية (12 قطعة لـ 6 أشخاص)، الزاوية showcase:
+${JSON.stringify({
+  caption_hook: "في قعدة الشاي، كاسة صغيرة بتقدر تخلّي تراثنا حاضر بين الأهل والضيوف.",
+  caption_story: [
+    "نقشة الكوفية الفلسطينية إلها مكان بذاكرتنا، وبهالطقم بترافق لحظات الضيافة على الطاولة. تفاصيلها بالأسود والذهبي بتجمع دفء الرمز مع أناقة التقديم، من قعدة العيلة لاستقبال الضيوف.",
+    "الزجاج عالي النقاوة والتصميم الانسيابي بيخلّوا لون الشاي الكهرماني واضح، والحواف المذهبة بتكمّل المشهد. ومع الصحون المطابقة، بتصير الضيافة متناسقة بتفاصيلها؛ خيار للبيت أو هدية لعرس وبداية بيت جديد.",
+  ],
+  caption_details: ["☕ 12 قطعة لـ 6 أشخاص: 6 كاسات و6 صحون مطابقة.", "✨ زجاج عالي النقاوة بألوان الأسود والذهبي.", "🔸 نقشة كوفية بطباعة حرارية عالية الدقة وحواف مذهبة.", "🫧 غسيل يدوي فقط بماء فاتر وإسفنجة ناعمة؛ غير مناسب لغسالة الصحون."],
+  caption_en: "Palestinian keffiyeh motifs, clear glass and gold rims bring heritage to tea time. A 12-piece set for six, with matching saucers.",
+  caption_tr: "",
+  hashtags: ["#طقم_شاي", "#كاسات_شاي", "#نقشة_الكوفية", "#ضيافة_فلسطينية"],
+  image_headline: "للشاي قعدة بطعم الدار",
+  image_subline: "زجاج عالي النقاوة يُبرز لون الشاي، وحواف مذهبة تكمّل الضيافة",
+})}`;
+
+/** Only what the prompt uses: Arabic name/description (+ English name for the English line); Turkish only when requested; options as short labels. */
+function productBrief(p: ProductRecord, categoryAr: string, languages: string[]): string {
   const price = effectivePrice(p);
-  return JSON.stringify(
-    {
-      name: { ar: p.name_ar, en: p.name_en, tr: p.name_tr },
-      description: { ar: p.description_ar, en: p.description_en, tr: p.description_tr },
-      category: categoryAr,
-      price_tl: price.current,
-      original_price_tl: price.old,
-      quantity_options: p.product_quantities.map((q) => ({ ar: q.label_ar, en: q.label_en, price_tl: q.price })),
-      sizes: p.product_sizes.map((s) => s.label),
-      colors: p.product_colors.map((c) => ({ ar: c.label_ar, en: c.label_en })),
+  const tr = languages.includes("tr");
+  const brief: Record<string, unknown> = {
+    name_ar: p.name_ar,
+    name_en: p.name_en,
+    ...(tr ? { name_tr: p.name_tr } : {}),
+    description_ar: p.description_ar,
+    category: categoryAr,
+    price_tl: price.current,
+    ...(price.old != null ? { original_price_tl: price.old } : {}),
+  };
+  if (p.product_quantities.length) brief.quantity_options = p.product_quantities.map((q) => `${q.label_ar} — ${q.price} TL`);
+  if (p.product_sizes.length) brief.sizes = p.product_sizes.map((s) => s.label);
+  if (p.product_colors.length) brief.colors = p.product_colors.map((c) => c.label_ar);
+  return JSON.stringify(brief);
+}
+
+export interface PromptInput {
+  product: ProductRecord;
+  categoryAr: string;
+  angle: Angle;
+  languages: string[];
+  mode: CaptionMode;
+  /** The last ~10 headlines for this product/angle — hints only; duplicates are checked in code. */
+  avoid?: string[];
+  /** Why the previous attempt was rejected (real failures only). */
+  hint?: string;
+}
+
+/** The variable tail of the prompt — everything before it (FIXED_INSTRUCTIONS) is identical across calls so it is served from the prompt cache. */
+export function variablePart(i: PromptInput): string {
+  const tr = i.languages.includes("tr");
+  return [
+    `الوضع: ${i.mode}`,
+    `الزاوية: ${i.angle}`,
+    `التركية: ${tr ? "مطلوبة" : 'غير مطلوبة (caption_tr = "")'}`,
+    `بيانات المنتج: ${productBrief(i.product, i.categoryAr, i.languages)}`,
+    i.avoid?.length ? `عناوين استُخدمت سابقًا لهذا المنتج/الزاوية — لا تكرّرها ولا تقترب منها:\n${i.avoid.map((r) => "- " + r).join("\n")}` : "",
+    i.hint ? `تنبيه من المحاولة السابقة: ${i.hint}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+let reasoningOk: boolean | null = null;
+const REASONING_EFFORT = () => process.env.OPENAI_REASONING_EFFORT || "low";
+export const MAX_OUTPUT: Record<CaptionMode, number> = { full: 4500, design: 1500 };
+
+/** Body of one Responses API request (also used as the body of a Batch API line). Fixed prefix first, cache key shared by every call. */
+export function requestBody(i: PromptInput, opts: { reasoning?: boolean } = {}): Record<string, unknown> {
+  const reasoning = opts.reasoning ?? reasoningOk !== false;
+  return {
+    model: process.env.OPENAI_MODEL || "gpt-6.1-sol",
+    input: [
+      { role: "system", content: FIXED_INSTRUCTIONS },
+      { role: "user", content: variablePart(i) },
+    ],
+    text: { format: { type: "json_schema", name: "hattah_caption", schema: JSON_SCHEMA, strict: true } },
+    prompt_cache_key: "hattah-caption-v2",
+    max_output_tokens: MAX_OUTPUT[i.mode],
+    ...(reasoning ? { reasoning: { effort: REASONING_EFFORT() } } : {}),
+  };
+}
+
+/* ───────────── usage + cost accounting ───────────── */
+export interface UsageRecord {
+  label: string;
+  input: number;
+  cached: number;
+  output: number;
+  reasoning: number;
+  cost: number;
+  batch: boolean;
+}
+export const usageLog: UsageRecord[] = [];
+// USD per 1M tokens (gpt-6.1-sol list price); override with OPENAI_PRICE_IN / OPENAI_PRICE_CACHED / OPENAI_PRICE_OUT.
+const PRICE = () => ({
+  in: Number(process.env.OPENAI_PRICE_IN ?? 2),
+  cached: Number(process.env.OPENAI_PRICE_CACHED ?? 0.1),
+  out: Number(process.env.OPENAI_PRICE_OUT ?? 10),
+});
+export function recordUsage(label: string, usage: any, batch = false): UsageRecord {
+  const input = usage?.input_tokens ?? 0;
+  const cached = usage?.input_tokens_details?.cached_tokens ?? 0;
+  const output = usage?.output_tokens ?? 0;
+  const reasoning = usage?.output_tokens_details?.reasoning_tokens ?? 0;
+  const pr = PRICE();
+  const cost = ((input - cached) * pr.in + cached * pr.cached + output * pr.out) / 1e6 * (batch ? 0.5 : 1);
+  const rec = { label, input, cached, output, reasoning, cost, batch };
+  usageLog.push(rec);
+  log(`openai ${label}: in ${input} (cached ${cached}) out ${output} (reasoning ${reasoning}) ≈ $${cost.toFixed(5)}${batch ? " [batch -50%]" : ""}`);
+  return rec;
+}
+
+/** One normal (synchronous) call. Drops `reasoning` once if the model rejects it. */
+export async function callModel(i: PromptInput, label: string): Promise<CaptionJson> {
+  const client = new OpenAI({ apiKey: need("OPENAI_API_KEY"), timeout: 180_000, maxRetries: 1 });
+  let res;
+  try {
+    res = await client.responses.create(requestBody(i) as any);
+  } catch (e) {
+    const msg = (e as Error).message ?? "";
+    if (reasoningOk !== false && /reasoning/i.test(msg) && /(unsupported|not supported|unknown|invalid)/i.test(msg)) {
+      log("model rejects reasoning.effort → continuing without it:", msg.slice(0, 120));
+      reasoningOk = false;
+      res = await client.responses.create(requestBody(i, { reasoning: false }) as any);
+    } else throw e;
+  }
+  if (reasoningOk === null) reasoningOk = true;
+  recordUsage(label, (res as any).usage);
+  if ((res as any).status === "incomplete") throw new Error(`model output cut off (${(res as any).incomplete_details?.reason ?? "incomplete"})`);
+  return CaptionSchema.parse(JSON.parse((res as any).output_text));
+}
+
+/** Whether the configured model accepts `reasoning.effort` (probed once with a tiny call; used before building a batch). */
+export async function supportsReasoning(): Promise<boolean> {
+  if (reasoningOk !== null) return reasoningOk;
+  const client = new OpenAI({ apiKey: need("OPENAI_API_KEY"), timeout: 60_000, maxRetries: 1 });
+  try {
+    await client.responses.create({ model: process.env.OPENAI_MODEL || "gpt-6.1-sol", input: "ok", reasoning: { effort: REASONING_EFFORT() }, max_output_tokens: 64 } as any);
+    reasoningOk = true;
+  } catch (e) {
+    log("reasoning.effort probe failed:", (e as Error).message.slice(0, 120));
+    reasoningOk = false;
+  }
+  return reasoningOk;
+}
+export const parseModelText = (text: string): CaptionJson => CaptionSchema.parse(JSON.parse(text));
+
+/* ───────────── repair (in code) and validation (only real failures cost another call) ───────────── */
+
+const ARABIC_DIGITS = "٠١٢٣٤٥٦٧٨٩";
+const latinDigits = (s: string) => s.replace(/[٠-٩]/g, (d) => String(ARABIC_DIGITS.indexOf(d)));
+const clean = (s: string) => s.replace(/\s+/g, " ").trim();
+
+/** Cuts text to `max` words, preferring the last clause boundary inside the limit and never ending on a connector. */
+function clampWords(text: string, max: number): string {
+  const ws = text.split(/\s+/).filter(Boolean);
+  if (ws.length <= max) return text;
+  let cut = ws.slice(0, max);
+  let boundary = -1;
+  cut.forEach((w, i) => {
+    if (/[،,.؛:!؟?]$/.test(w)) boundary = i;
+  });
+  if (boundary >= Math.floor(max / 2)) cut = cut.slice(0, boundary + 1);
+  while (cut.length > 2 && /^(و|في|من|إلى|على|عن|مع|لـ?|ب|ك|أو|إن|أن)$/.test(cut[cut.length - 1].replace(/[،,.؛:!؟?]$/, ""))) cut.pop();
+  return cut.join(" ").replace(/[،,؛:]$/, "");
+}
+
+/** Fixes what is safely fixable without the model: whitespace, Arabic-Indic digits in the subline, over-long headline/subline, surplus
+ * paragraphs/lines, over-long body, hashtag shape. */
+export function repair(raw: CaptionJson, mode: CaptionMode, withTr: boolean): CaptionJson {
+  const c: CaptionJson = {
+    caption_hook: clean(raw.caption_hook),
+    caption_story: raw.caption_story.map(clean).filter(Boolean).slice(0, 3),
+    caption_details: raw.caption_details.map(clean).filter(Boolean).slice(0, 5),
+    caption_en: clean(raw.caption_en),
+    caption_tr: withTr ? clean(raw.caption_tr) : "",
+    hashtags: [...new Set(raw.hashtags.map((h) => "#" + clean(h).replace(/^#+/, "").replace(/\s+/g, "_")).filter((h) => h.length > 2))].slice(0, 12),
+    image_headline: clampWords(clean(raw.image_headline), 6),
+    image_subline: clampWords(latinDigits(clean(raw.image_subline)), 15),
+  };
+  if (mode === "design") return { ...c, caption_hook: "", caption_story: [], caption_details: [], caption_en: "", caption_tr: "", hashtags: [] };
+  // over-long body: drop trailing detail lines (keep 2), then trailing sentences of the last story paragraph
+  const over = () => captionBody(c, withTr).length > BODY_MAX;
+  while (over() && c.caption_details.length > 2) c.caption_details.pop();
+  while (over() && c.caption_story.length) {
+    const last = c.caption_story[c.caption_story.length - 1];
+    const sentences = last.split(/(?<=[.!؟?])\s+/);
+    if (sentences.length > 1) c.caption_story[c.caption_story.length - 1] = sentences.slice(0, -1).join(" ");
+    else if (c.caption_story.length > 2) c.caption_story.pop();
+    else break;
+  }
+  return c;
+}
+
+/** Real failures only (these are the only reasons to call the model again). */
+export function validate(c: CaptionJson, mode: CaptionMode, p: ProductRecord, withTr: boolean): string | null {
+  const wc = (v: string) => v.trim().split(/\s+/).filter(Boolean).length;
+  const head = c.image_headline, sub = c.image_subline;
+  if (wc(head) < 2) return "headline must be 2–6 words";
+  if (wc(sub) < 4) return "subline must be 4–15 words";
+  if (/[0-9٠-٩]/.test(head)) return "headline contains digits";
+  if (/(ليرة|₺|\bTL\b)/i.test(head + " " + sub)) return "text mentions price/currency";
+  const nameTokens = normalizeText(p.name_ar).split(" ").filter((t) => t.length > 2);
+  const subN = normalizeText(sub);
+  if (nameTokens.length >= 3 && nameTokens.filter((t) => subN.includes(t)).length / nameTokens.length >= 0.6) return "subline restates the product name";
+  if (mode === "full") {
+    if (c.caption_hook.length < 10 || c.caption_story.length < 2 || c.caption_details.length < 2 || c.caption_en.length < 10) return "caption is missing required parts";
+    const len = captionBody(c, withTr).length;
+    if (len < BODY_MIN) return `caption too short (${len} chars, need ${BODY_MIN}–${BODY_MAX})`;
+  }
+  return null;
+}
+
+/** Normalised-text duplicate check against the last 30 days: exact match or ≥ 80 % word overlap. */
+export function makeDuplicateChecker(recentTexts: Iterable<string>) {
+  const seen = [...recentTexts].map((t) => normalizeText(t)).filter(Boolean);
+  const exact = new Set(seen);
+  const sets = seen.map((t) => new Set(t.split(" ")));
+  const near = (t: string) => {
+    const a = new Set(t.split(" "));
+    return sets.some((b) => {
+      let inter = 0;
+      for (const w of a) if (b.has(w)) inter++;
+      return a.size >= 3 && inter / (a.size + b.size - inter) >= 0.8;
+    });
+  };
+  return {
+    isRepeat: (c: CaptionJson) => [c.image_headline, c.image_subline].map(normalizeText).some((t) => exact.has(t) || near(t)),
+    add: (c: CaptionJson) => {
+      for (const t of [c.image_headline, c.image_subline].map(normalizeText)) {
+        exact.add(t);
+        sets.push(new Set(t.split(" ")));
+      }
     },
-    null,
-    1,
-  );
+  };
 }
 
 // Placeholder image text used until an OpenAI key is configured, so previews
@@ -177,38 +421,6 @@ export function placeholderDesign(p: ProductRecord, angle: Angle, salt = 0): Req
   return { headline: j.image_headline, subline: j.image_subline };
 }
 
-async function callModel(p: ProductRecord, categoryAr: string, angle: Angle, languages: string[], recent: string[], hint = ""): Promise<CaptionJson> {
-  const client = new OpenAI({ apiKey: need("OPENAI_API_KEY"), timeout: 180_000, maxRetries: 1 });
-  const model = process.env.OPENAI_MODEL || "gpt-6.1-sol";
-  const user = `زاوية المنشور: ${angle} — ${ANGLE_BRIEF[angle]}
-
-بيانات المنتج:
-${productBrief(p, categoryAr)}
-
-المطلوب (JSON):
-- caption_hook: سطر افتتاحي عاطفي قوي واحد (جملة واحدة، لا يشبه الافتتاحيات العامة)، بلهجة شامية دافئة.
-- caption_story: فقرتان أو ثلاث فقرات قصيرة (٢–٣ جمل لكل فقرة) تحكي القصة والمعنى وراء المنتج: التراث، الحرفة، الرمز، البيت والذاكرة الفلسطينية — اعتمد فقط على ما يدعمه وصف المنتج وما هو معروف عن الحرفة دون ادّعاءات أو معلومات مخترعة.
-- caption_details: ٢–٥ سطور قصيرة نظيفة لتفاصيل المنتج الفعلية من البيانات (الخامة، المقاسات، الألوان، الاستخدام، والسعر إن كان مناسبًا ويوجد خصم حقيقي)، كل سطر يبدأ بإيموجي أنيق مناسب.
-- مجموع طول (hook + story + details + english) يجب أن يكون بين ${BODY_MIN} و${BODY_MAX} حرفًا بالضبط تقريبًا — لا أقل ولا أكثر. لا تضع رقم الواتساب ولا رابط المتجر ولا الهاشتاغات فيها (تُضاف تلقائيًا في خاتمة المنشور).
-- caption_en: سطر أو سطران بالإنجليزية كملخص قصير (حتى ٢٢٠ حرفًا).
-- caption_tr: ${languages.includes("tr") ? "سطر بالتركية (حتى ٢٠٠ حرف)" : 'اتركه "" لأن التركية غير مطلوبة'}.
-- hashtags: ٤–٦ وسوم خاصة بهذا المنتج (بدون تكرار)، كل وسم يبدأ بـ # وبدون مسافات.
-- image_headline: من ٢ إلى ٦ كلمات بالضبط كحد أقصى ٦، بلهجة شامية دافئة. ${IMAGE_TEXT_BRIEF[angle]}
-- image_subline: من ٤ إلى ١٥ كلمة كحد أقصى ١٥. نص التصميم قصير وبدون هاشتاغات أو أرقام هاتف.
-- قواعد صارمة لنص التصميم (العنوان والسطر الفرعي): ممنوع ذكر الأسعار أو العملة (ليرة/TL) أو أي أرقام في العنوان؛ ممنوع تكرار اسم المنتج أو إعادة صياغته في السطر الفرعي (اسم المنتج يظهر على التصميم أصلًا) — قدّم معلومة جديدة عنه؛ استخدم الأرقام اللاتينية (0-9) إن لزم رقم في السطر الفرعي.
-${hint ? `\nتنبيه من المحاولة السابقة: ${hint}\n` : ""}${recent.length ? `\nنصوص استُخدمت في آخر ٣٠ يومًا — ممنوع تكرار أي عنوان أو جملة منها أو الاقتراب منها في الصياغة:\n${recent.map((r) => "- " + r).join("\n")}` : ""}`;
-
-  const res = await client.responses.create({
-    model,
-    input: [
-      { role: "system", content: SYSTEM },
-      { role: "user", content: user },
-    ],
-    text: { format: { type: "json_schema", name: "hattah_caption", schema: JSON_SCHEMA as any, strict: true } },
-  });
-  return CaptionSchema.parse(JSON.parse(res.output_text));
-}
-
 export interface CaptionResult {
   caption: string;
   design: Required<DesignText>;
@@ -239,56 +451,71 @@ export function assembleCaption(c: CaptionJson, settings: SocialSettings, ctaInd
   return text;
 }
 
-/** Generates caption + on-image copy. Validates the JSON and retries once. */
+
+export function resultFromJson(c: CaptionJson, settings: SocialSettings, ctaIndex: number, mode: CaptionMode): CaptionResult {
+  return {
+    caption: mode === "full" ? assembleCaption(c, settings, ctaIndex) : "",
+    design: { headline: c.image_headline.trim(), subline: c.image_subline.trim() },
+  };
+}
+
+/** Repair + validate + duplicate check for one model answer (shared by the sync path and the batch collector). `null` reason = accepted. */
+export function checkCaptionJson(
+  raw: CaptionJson,
+  mode: CaptionMode,
+  p: ProductRecord,
+  settings: SocialSettings,
+  dup: ReturnType<typeof makeDuplicateChecker>,
+): { json: CaptionJson; reason: null } | { json: null; reason: string } {
+  const withTr = settings.caption_languages.includes("tr");
+  const json = repair(raw, mode, withTr);
+  const reason = validate(json, mode, p, withTr) ?? (dup.isRepeat(json) ? "نص التصميم يكرر نصًا حديثًا (عنوان أو سطر فرعي)" : null);
+  return reason ? { json: null, reason } : { json, reason: null };
+}
+
+export interface GenerateContext {
+  mode: CaptionMode;
+  /** The last ~10 headlines for this product/angle (prompt hints). */
+  avoid: string[];
+  /** Last 30 days of headlines/sublines — checked in code only, never sent. */
+  recent: Iterable<string>;
+  label?: string;
+}
+
+/** Generates the on-image text (and for `full` mode the caption). Retries only for real failures (cut-off, too short, digits/price in the headline, repeated text). */
 export async function generateCaption(
   p: ProductRecord,
   categoryAr: string,
   angle: Angle,
   settings: SocialSettings,
-  recentTexts: string[] = [],
+  ctx: GenerateContext,
   ctaIndex = 0,
 ): Promise<CaptionResult> {
-  const nameTokens = normalizeText(p.name_ar).split(" ").filter((t) => t.length > 2);
-  /** Rules the model was told but may break: prices/digits in text, or a subline that just restates the product name. */
-  const breaksRules = (j: CaptionJson): string | null => {
-    const len = captionBody(j, settings.caption_languages.includes("tr")).length;
-    if (len < BODY_MIN) return `caption too short (${len} chars, need ${BODY_MIN}–${BODY_MAX})`;
-    if (len > BODY_MAX) return `caption too long (${len} chars, need ${BODY_MIN}–${BODY_MAX})`;
-    const head = j.image_headline, sub = j.image_subline;
-    if (/[0-9٠-٩]/.test(head)) return "headline contains digits";
-    if (/(ليرة|₺|\bTL\b)/i.test(head + " " + sub)) return "text mentions price/currency";
-    if (/[٠-٩]/.test(sub)) return "subline uses Arabic-Indic digits";
-    const subN = normalizeText(sub);
-    const overlap = nameTokens.filter((t) => subN.includes(t)).length;
-    if (nameTokens.length >= 3 && overlap / nameTokens.length >= 0.6) return "subline restates the product name";
-    return null;
-  };
-  const recentSet = new Set(recentTexts.map(normalizeText));
-  const isRepeat = (j: CaptionJson) =>
-    recentSet.has(normalizeText(j.image_headline)) || recentSet.has(normalizeText(j.image_subline));
-  let json: CaptionJson;
+  const dup = makeDuplicateChecker(ctx.recent);
   if (isDryRun() && !process.env.OPENAI_API_KEY) {
     log("DRY_RUN without OPENAI_API_KEY → using placeholder text");
-    json = stub(p, angle);
-  } else {
-    // One retry for invalid JSON / limits, and up to 3 tries to avoid repeating
-    // a headline or subline used in the last 30 days.
-    json = null as unknown as CaptionJson;
-    let hint = "";
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      try {
-        json = await callModel(p, categoryAr, angle, settings.caption_languages, recentTexts, hint);
-      } catch (e) {
-        log(`caption attempt ${attempt} failed:`, (e as Error).message);
-        if (attempt === 3) throw e;
-        continue;
-      }
-      const broken = breaksRules(json);
-      if (!isRepeat(json) && !broken) break;
-      hint = broken ?? "نص التصميم يكرر نصًا حديثًا";
-      log(`attempt ${attempt}: ${hint}, retrying`);
-      if (attempt === 3) throw new Error(broken ?? "model kept repeating a headline used in the last 30 days");
-    }
+    return resultFromJson(repair(stub(p, angle), ctx.mode, false), settings, ctaIndex, ctx.mode);
   }
-  return { caption: assembleCaption(json, settings, ctaIndex), design: { headline: json.image_headline.trim(), subline: json.image_subline.trim() } };
+  let hint = "";
+  let lastReason = "";
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    let raw: CaptionJson;
+    try {
+      raw = await callModel(
+        { product: p, categoryAr, angle, languages: settings.caption_languages, mode: ctx.mode, avoid: ctx.avoid, hint },
+        `${ctx.label ?? p.name_ar.slice(0, 24)} [${ctx.mode}${attempt > 1 ? ` retry ${attempt - 1}` : ""}]`,
+      );
+    } catch (e) {
+      lastReason = (e as Error).message;
+      log(`caption attempt ${attempt} failed:`, lastReason);
+      if (attempt === 3) throw e;
+      continue;
+    }
+    const checked = checkCaptionJson(raw, ctx.mode, p, settings, dup);
+    if (checked.json) return resultFromJson(checked.json, settings, ctaIndex, ctx.mode);
+    hint = checked.reason;
+    lastReason = checked.reason;
+    log(`attempt ${attempt}: ${checked.reason}, retrying`);
+  }
+  throw new Error(lastReason || "caption generation failed");
 }

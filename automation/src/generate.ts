@@ -2,20 +2,24 @@
 // Usage: tsx src/generate.ts [--date=YYYY-MM-DD | --tomorrow] [--only=story@21:15,story@22:15] [--jitter=0]
 //   --only   fill just these slots (type@HH:MM) instead of settings.daily_slots (skips ones already taken)
 //   --jitter override the ± random offset in minutes
+//   --batch  daily mode: submit all text requests as one OpenAI Batch job (-50 %) and let collect.ts finish the rendering
 import { loadEnv } from "./env.js";
 import { getSupabase } from "./db.js";
 import { Renderer } from "./render/render.js";
 import { ReelRenderer } from "./render/reel.js";
 import { addDays, istanbulDate, log, slotToUtc } from "./time.js";
-import { PRODUCT_SELECT, buildPostAssets, buildReelAssets, loadCategories, loadSettings, pickProducts, type ProductPick } from "./pipeline.js";
+import { PRODUCT_SELECT, completePost, loadAvoidHints, loadCategories, loadSettings, pickProducts, type ProductPick } from "./pipeline.js";
+import { submitBatch } from "./batch.js";
+import { usageLog, type CaptionJson, type CaptionMode } from "./captions.js";
 import { sortedImages } from "./products.js";
-import { ANGLES, type Angle, type PostType, type ProductRecord } from "./types.js";
+import { ANGLES, type Angle, type PostType, type ProductRecord, type SocialPostRow } from "./types.js";
 
 loadEnv();
 const args = process.argv.slice(2);
 const dateArg = args.find((a) => a.startsWith("--date="))?.slice(7);
 const onlyArg = args.find((a) => a.startsWith("--only="))?.slice(7);
 const jitterArg = args.find((a) => a.startsWith("--jitter="))?.slice(9);
+const batchMode = args.includes("--batch") && !!process.env.OPENAI_API_KEY;
 const date = dateArg || (args.includes("--tomorrow") ? addDays(istanbulDate(), 1) : istanbulDate());
 
 const sb = getSupabase();
@@ -141,12 +145,10 @@ const reelRenderer = new ReelRenderer(sb);
 // Music rotation: continue from however many reels exist already (each reel in this run takes the next track).
 const { count: reelsSoFar } = await sb.from("social_posts").select("id", { count: "exact", head: true }).eq("post_type", "reel");
 let reelOrdinal = reelsSoFar ?? 0;
-const status = settings.auto_approve ? "approved" : "draft";
 let ok = 0;
 let skipped = 0;
 
-async function runJob(job: Job) {
-  const label = `${job.type} ${job.slot.time} «${job.product.name_ar}» (${job.angle})`;
+async function insertJob(job: Job): Promise<SocialPostRow | null> {
   const { data: row, error } = await sb
     .from("social_posts")
     .insert({
@@ -160,49 +162,79 @@ async function runJob(job: Job) {
     .select()
     .single();
   if (error) {
-    log(`✗ SKIPPED ${label}: insert failed — ${error.message}`);
+    log(`✗ SKIPPED ${job.type} ${job.slot.time}: insert failed — ${error.message}`);
     skipped++;
-    return;
+    return null;
   }
+  return row as SocialPostRow;
+}
+const labelOf = (job: Job) => `${job.type} ${job.slot.time} «${job.product.name_ar}» (${job.angle})`;
+
+async function build(job: Job, row: SocialPostRow, precomputed?: CaptionJson) {
   const musicIndex = job.type === "reel" ? reelOrdinal++ : 0;
-  let lastErr = "";
-  for (let attempt = 1; attempt <= 2; attempt++) {
-    try {
-      const assets =
-        job.type === "reel"
-          ? await buildReelAssets(sb, reelRenderer, settings, cats, row, job.product, musicIndex)
-          : await buildPostAssets(sb, renderer, settings, cats, row, job.product, {
-              image: true,
-              caption: job.type === "feed",
-            });
-      const { error: upErr } = await sb.from("social_posts").update({ ...assets, status }).eq("id", row.id);
-      if (upErr) throw new Error(upErr.message);
-      log(`✓ ${label}`);
-      ok++;
-      return;
-    } catch (e) {
-      lastErr = (e as Error).message;
-      log(`… ${label} attempt ${attempt}/2 failed: ${lastErr}`);
-    }
-  }
-  // Skip this slot only; the error stays visible in the admin history.
-  await sb.from("social_posts").update({ status: "skipped", error: `generation failed: ${lastErr}`.slice(0, 500) }).eq("id", row.id);
-  log(`✗ SKIPPED ${label}`);
-  skipped++;
+  if (await completePost(sb, { renderer, reelRenderer }, settings, cats, row, job.product, { label: labelOf(job), musicIndex, precomputed })) ok++;
+  else skipped++;
+}
+
+async function pool<T>(items: T[], n: number, fn: (x: T) => Promise<void>) {
+  const queue = [...items];
+  await Promise.all(
+    Array.from({ length: n }, async () => {
+      for (let x = queue.shift(); x; x = queue.shift()) await fn(x);
+    }),
+  );
 }
 
 try {
-  // 4 workers: the 18 items of a day finish in a few minutes (OpenAI calls: 8 captions + 10 on-image texts).
-  const queue = [...jobs];
-  await Promise.all(
-    Array.from({ length: 4 }, async () => {
-      for (let job = queue.shift(); job; job = queue.shift()) await runJob(job);
-    }),
-  );
+  if (batchMode) {
+    // Daily 03:00 run: insert every slot, send ALL the text requests as ONE Batch API job (-50 %), and stop.
+    // collect.ts renders the images/reels once the batch is done (fallback to normal calls at 07:00 Istanbul).
+    const rows: { job: Job; row: SocialPostRow }[] = [];
+    for (const job of jobs) {
+      const row = await insertJob(job);
+      if (row) rows.push({ job, row });
+    }
+    try {
+      const items = await Promise.all(
+        rows.map(async ({ job, row }) => ({
+          customId: row.id,
+          postId: row.id,
+          productId: job.product.id,
+          mode: (job.type === "story" ? "design" : "full") as CaptionMode,
+          angle: job.angle,
+          input: {
+            product: job.product,
+            categoryAr: cats.get(job.product.category)?.label_ar ?? "",
+            angle: job.angle,
+            languages: settings.caption_languages,
+            mode: (job.type === "story" ? "design" : "full") as CaptionMode,
+            avoid: await loadAvoidHints(sb, job.product.id, job.angle, row.id),
+          },
+        })),
+      );
+      const batchId = await submitBatch(items);
+      const { error } = await sb.from("social_batches").insert({
+        openai_batch_id: batchId,
+        target_date: date,
+        items: Object.fromEntries(items.map((i) => [i.customId, { mode: i.mode, product_id: i.productId, angle: i.angle }])),
+      });
+      if (error) throw new Error(`social_batches insert: ${error.message}`);
+      log(`batch ${batchId} submitted: ${items.length} request(s) for ${date} — collect.ts will render when it finishes`);
+    } catch (e) {
+      log(`batch submit failed (${(e as Error).message}) → generating now with normal API calls`);
+      await pool(rows, 4, ({ job, row }) => build(job, row));
+    }
+  } else {
+    await pool(jobs, 4, async (job) => {
+      const row = await insertJob(job);
+      if (row) await build(job, row);
+    });
+  }
 } finally {
   await renderer.close();
   await reelRenderer.close();
 }
-log(`done: ${ok} generated, ${skipped} skipped`);
+log(`done: ${ok} generated, ${skipped} skipped${batchMode ? " (batch mode: items waiting for the batch are not counted)" : ""}`);
+if (usageLog.length) log(`OpenAI this run: ${usageLog.length} call(s) ≈ $${usageLog.reduce((a, u) => a + u.cost, 0).toFixed(4)}`);
 // Explicit exit: leftover keep-alive sockets / browser handles must never hang the Actions job.
 process.exit(0);

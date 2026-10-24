@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { Renderer } from "./render/render.js";
 import { ReelRenderer, REEL_SECONDS } from "./render/reel.js";
 import { musicStartFor, pickTrack, trackFile } from "./music.js";
-import { CTA_POOL, ctaIndexOf, generateCaption } from "./captions.js";
+import { CTA_POOL, ctaIndexOf, generateCaption, resultFromJson, type CaptionJson, type CaptionMode } from "./captions.js";
 import { SOCIAL_BUCKET } from "./db.js";
 import { effectivePrice, sortedImages } from "./products.js";
 import { ANGLES, type Angle, type ProductRecord, type SocialPostRow, type SocialSettings } from "./types.js";
@@ -51,6 +51,22 @@ export async function loadRecentTexts(sb: SupabaseClient, excludePostId?: string
     }
   }
   return out;
+}
+
+/** The last ~10 headlines used for this product and/or this angle — shown to the model as "don't repeat" hints (the real duplicate check runs in code). */
+export async function loadAvoidHints(sb: SupabaseClient, productId: string, angle: string, excludePostId?: string): Promise<string[]> {
+  const out: string[] = [];
+  const push = (rows: any[] | null) => {
+    for (const r of rows ?? []) {
+      const h = (r.design as { headline?: string } | null)?.headline?.trim();
+      if (r.id !== excludePostId && h && !out.includes(h)) out.push(h);
+    }
+  };
+  const { data: own } = await sb.from("social_posts").select("id, design").eq("product_id", productId).not("design", "is", null).order("created_at", { ascending: false }).limit(6);
+  push(own);
+  const { data: same } = await sb.from("social_posts").select("id, design").eq("angle", angle).not("design", "is", null).order("created_at", { ascending: false }).limit(8);
+  push(same);
+  return out.slice(0, 10);
 }
 
 /** In-process reservations so parallel jobs of one run never pick the same phrasing. */
@@ -197,6 +213,7 @@ export async function buildPostAssets(
   post: Pick<SocialPostRow, "id" | "post_type" | "angle" | "design">,
   product: ProductRecord,
   what: { image: boolean; caption: boolean },
+  precomputed?: CaptionJson,
 ): Promise<Partial<SocialPostRow>> {
   const categoryAr = cats.get(product.category)?.label_ar ?? "";
   const out: Partial<SocialPostRow> = {};
@@ -207,11 +224,22 @@ export async function buildPostAssets(
   // generating it only if the post has none yet.
   const needText = what.image && !(design.headline && design.subline);
   if (what.caption || needText) {
-    const ctaIndex = await pickCtaIndex(sb, (post as { scheduled_at?: string }).scheduled_at ?? null, post.id);
-    const res = await generateCaption(product, categoryAr, post.angle, settings, await loadRecentTexts(sb, post.id, product.id), ctaIndex);
+    // Feed captions need the full output; everything else (stories, image-only re-renders) only needs the on-image text.
+    const mode: CaptionMode = post.post_type === "feed" && what.caption ? "full" : "design";
+    const ctaIndex = mode === "full" ? await pickCtaIndex(sb, (post as { scheduled_at?: string }).scheduled_at ?? null, post.id) : 0;
+    const res = precomputed
+      ? resultFromJson(precomputed, settings, ctaIndex, mode)
+      : await generateCaption(
+          product,
+          categoryAr,
+          post.angle,
+          settings,
+          { mode, avoid: await loadAvoidHints(sb, product.id, post.angle, post.id), recent: await loadRecentTexts(sb, post.id, product.id), label: `${post.post_type} ${product.name_ar.slice(0, 18)}` },
+          ctaIndex,
+        );
     design = res.design;
     out.design = design;
-    if (post.post_type === "feed" && what.caption) out.caption_full = res.caption;
+    if (mode === "full") out.caption_full = res.caption;
   }
 
   if (what.image) {
@@ -250,10 +278,21 @@ export async function buildReelAssets(
   product: ProductRecord,
   musicIndex: number,
   keepCaption = false,
+  precomputed?: CaptionJson,
 ): Promise<Partial<SocialPostRow>> {
   const categoryAr = cats.get(product.category)?.label_ar ?? "";
   const ctaIndex = await pickCtaIndex(sb, post.scheduled_at ?? null, post.id);
-  const res = await generateCaption(product, categoryAr, post.angle, settings, await loadRecentTexts(sb, post.id, product.id), ctaIndex);
+  const mode: CaptionMode = keepCaption ? "design" : "full"; // to-reel keeps the feed caption, only the on-screen text is new
+  const res = precomputed
+    ? resultFromJson(precomputed, settings, ctaIndex, mode)
+    : await generateCaption(
+        product,
+        categoryAr,
+        post.angle,
+        settings,
+        { mode, avoid: await loadAvoidHints(sb, product.id, post.angle, post.id), recent: await loadRecentTexts(sb, post.id, product.id), label: `reel ${product.name_ar.slice(0, 18)}` },
+        ctaIndex,
+      );
   const price = effectivePrice(product);
   const imgs = sortedImages(product);
   const track = pickTrack(musicIndex);
@@ -286,4 +325,43 @@ export async function buildReelAssets(
   const image_url = await up("jpg", cover, "image/jpeg");
   log(`reel uploaded (${(video.length / 1e6).toFixed(1)} MB, ${timing.seconds.toFixed(1)}s)`, video_url);
   return { video_url, image_url, ...(keepCaption ? {} : { caption_full: res.caption }), design: res.design };
+}
+
+export interface Renderers {
+  renderer: Renderer;
+  reelRenderer: ReelRenderer;
+}
+
+/** Builds everything a freshly inserted post row still needs (text, image or reel), saves it and sets its status.
+ * Two attempts; a slot that cannot be built is marked `skipped` with the error (visible in the admin history).
+ * `precomputed` = the model answer already obtained through the Batch API. */
+export async function completePost(
+  sb: SupabaseClient,
+  r: Renderers,
+  settings: SocialSettings,
+  cats: Map<string, { label_ar: string; parent_key: string | null }>,
+  row: SocialPostRow,
+  product: ProductRecord,
+  o: { label: string; musicIndex?: number; precomputed?: CaptionJson },
+): Promise<boolean> {
+  const status = settings.auto_approve ? "approved" : "draft";
+  let lastErr = "";
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const assets =
+        row.post_type === "reel"
+          ? await buildReelAssets(sb, r.reelRenderer, settings, cats, row, product, o.musicIndex ?? 0, false, attempt === 1 ? o.precomputed : undefined)
+          : await buildPostAssets(sb, r.renderer, settings, cats, row, product, { image: true, caption: row.post_type === "feed" }, attempt === 1 ? o.precomputed : undefined);
+      const { error } = await sb.from("social_posts").update({ ...assets, status }).eq("id", row.id);
+      if (error) throw new Error(error.message);
+      log(`✓ ${o.label}`);
+      return true;
+    } catch (e) {
+      lastErr = (e as Error).message;
+      log(`… ${o.label} attempt ${attempt}/2 failed: ${lastErr}`);
+    }
+  }
+  await sb.from("social_posts").update({ status: "skipped", error: `generation failed: ${lastErr}`.slice(0, 500) }).eq("id", row.id);
+  log(`✗ SKIPPED ${o.label}`);
+  return false;
 }

@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "daily | today | tomorrow | regenerate"
+        description: "daily (batch) | today | tomorrow (immediate) | regenerate"
         default: "today"
         type: string
       post_id:
@@ -90,7 +90,8 @@ jobs:
           case "$MODE" in
             regenerate) npx tsx src/regenerate.ts --post="$IN_POST" --what="${IN_WHAT:-both}" ;;
             today)      npx tsx src/generate.ts $IN_ARGS ;;
-            *)          npx tsx src/generate.ts --tomorrow ;;  # daily cron (03:00 Istanbul) + "tomorrow": the whole next day in one run
+            tomorrow)   npx tsx src/generate.ts --tomorrow ;;            # admin button: immediate, normal API calls
+            *)          npx tsx src/generate.ts --tomorrow --batch ;;    # daily cron (03:00 Istanbul): text via the OpenAI Batch API (-50 %), collect.ts renders
           esac
       - name: Storage cleanup (images 14 days after publishing, orphans)
         continue-on-error: true

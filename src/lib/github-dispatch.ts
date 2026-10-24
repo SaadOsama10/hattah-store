@@ -4,7 +4,7 @@ import "server-only";
  * which can't run on Vercel, so heavy work (generate / regenerate / publish
  * now) is delegated to the repo's workflows. */
 export async function dispatchWorkflow(
-  workflow: "social-generate.yml" | "social-publish.yml" | "seo-descriptions.yml" | "seo-health.yml",
+  workflow: "social-generate.yml" | "social-collect.yml" | "social-publish.yml" | "seo-descriptions.yml" | "seo-health.yml",
   inputs: Record<string, string>
 ): Promise<void> {
   const token = process.env.GH_DISPATCH_TOKEN;
@@ -28,7 +28,7 @@ export async function dispatchWorkflow(
 }
 
 /** True when the workflow already has a queued or running run (so a tick doesn't pile up duplicates). */
-export async function hasActiveRun(workflow: "social-generate.yml" | "social-publish.yml"): Promise<boolean> {
+export async function hasActiveRun(workflow: "social-generate.yml" | "social-collect.yml" | "social-publish.yml"): Promise<boolean> {
   const token = process.env.GH_DISPATCH_TOKEN;
   const repo = process.env.GH_REPO || "SaadOsama10/hattah-store";
   if (!token) return false;

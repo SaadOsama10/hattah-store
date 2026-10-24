@@ -1,0 +1,45 @@
+name: Social — OpenAI cost bench (no DB writes, no publishing)
+
+# Measures tokens/cost of one day's text generation: baseline (old prompts), new (optimised, normal API), batch (Batch API).
+on:
+  workflow_dispatch:
+    inputs:
+      variant:
+        description: "baseline | new | batch"
+        default: "new"
+        type: string
+
+concurrency:
+  group: social-openai-bench
+  cancel-in-progress: false
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    defaults:
+      run:
+        working-directory: automation
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_MODEL: ${{ secrets.OPENAI_MODEL || vars.OPENAI_MODEL || 'gpt-6.1-sol' }}
+      WHATSAPP_NUMBER: "905529987112"
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: automation/package-lock.json
+      - run: npm ci
+      - name: Bench
+        env:
+          VARIANT: ${{ inputs.variant }}
+        run: npx tsx src/bench/bench-openai.ts "$VARIANT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bench-${{ inputs.variant }}
+          path: automation/previews/bench-*.json
