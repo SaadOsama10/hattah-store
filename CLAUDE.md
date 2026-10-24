@@ -8,7 +8,7 @@
 - `src/lib/supabase/` — `public.ts` (anon)، `service.ts` (service role، سيرفر فقط)، `types.ts`.
 - `src/lib/inventory-period.ts` — حساب فلتر الفترة الزمنية (بالسنتات كأعداد صحيحة).
 - `messages/{ar,en,tr}.json` — الترجمات. واجهة الأدمن عربية فقط (نصوص مباشرة).
-- `supabase/migrations/NNN_*.sql` — الـ migrations مرقّمة (آخر واحد 020). `supabase/schema.sql` المخطط الكامل.
+- `supabase/migrations/NNN_*.sql` — الـ migrations مرقّمة (آخر واحد 021). `supabase/schema.sql` المخطط الكامل.
 - الأسرار في `.env.local` (لا تُطبع ولا تُرفع): `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`.
 
 ## دفتر البضاعة (`/admin/inventory`)
@@ -30,4 +30,11 @@
 - قبل الـ push: `npm run build` بدون أخطاء TypeScript.
 
 ## أتمتة السوشيال ميديا (`/automation`)
-سكربتات Node/TS (Playwright + OpenAI + Meta Graph API) تعمل عبر GitHub Actions (`social-generate.yml` يوميًا 03:00 إسطنبول، `social-publish.yml` كل ساعة عند :35). جداول `social_posts` و`social_settings` (migration 013، الجدول الزمني في 020: 8 منشورات + 10 ستوريات يوميًا) وbucket عام `social-posts`. واجهة الأدمن: `/admin/social` (+`/settings`). الأعمال الثقيلة (توليد/إعادة توليد/نشر الآن) تُطلق من الواجهة عبر `workflow_dispatch` (`GH_DISPATCH_TOKEN`). `DRY_RUN=true` يمنع أي استدعاء لـ Meta. الإعداد: `automation/SETUP_AR.md`.
+سكربتات Node/TS (Playwright + OpenAI + Meta Graph API) تعمل عبر GitHub Actions (`social-generate.yml` يوميًا 03:00 إسطنبول، `social-publish.yml` كل ساعة عند :35). جداول `social_posts` و`social_settings` (migration 013، الجدول الزمني في 021: 6 منشورات + 2 ريلز + 8 ستوريات يوميًا) وbucket عام `social-posts`. واجهة الأدمن: `/admin/social` (+`/settings`). الأعمال الثقيلة (توليد/إعادة توليد/نشر الآن) تُطلق من الواجهة عبر `workflow_dispatch` (`GH_DISPATCH_TOKEN`). `DRY_RUN=true` يمنع أي استدعاء لـ Meta. الإعداد: `automation/SETUP_AR.md`.
+
+### الريلز (من 26/10)
+- `post_type = 'reel'`، العمود `video_url` (يُحذف من التخزين فور النشر). المُصيِّر: `automation/src/render/reel.ts` (Playwright يلتقط إطارات `seek(t)` + ffmpeg، 1080×1920، 13ث، 30fps). كابشن الريل وهوكه من نفس نداء OpenAI. منتج الريل لا يتكرر مع منشورات نفس اليوم.
+- الموسيقى: مقاطع Pixabay (رخصة تجارية بلا إسناد) في bucket **خاص** `social-music` (لا تُرفع للريبو العام). القائمة والتراخيص: `automation/music/tracks.json` و`LICENSES.md`. تدوير حسب عدد الريلز.
+- النشر: `meta.ts` (`media_type=REELS`, `share_to_feed=true`, polling حتى 10 دقائق). التحقق دون نشر: `gh workflow run social-publish.yml -f check_reel=<post_id>`. تحويل منشور إلى ريل بنفس الكابشن: `social-generate.yml -f mode=regenerate -f post_id=… -f what=to-reel`. توليد خانات محددة: `-f mode=today -f extra_args="--date=… --only=reel@13:00 --jitter=0"`.
+- التنظيف (`automation/src/cleanup.ts`، يعمل بعد التوليد اليومي): صور المنشورات/الستوريات بعد 14 يومًا من موعدها، ومجلدات الأيام اليتيمة بعد 16 يومًا. ffmpeg غير مثبّت على runner → خطوة تثبيته في `social-generate.yml`.
+- الريبو **عام** ⇒ دقائق GitHub Actions مجانية وغير محدودة؛ لو صار خاصًا راجع استهلاك `social-publish.yml` (كل 15 دقيقة) وانقل النشر بالكامل إلى مسار Vercel الذي يستدعيه pg_cron.
