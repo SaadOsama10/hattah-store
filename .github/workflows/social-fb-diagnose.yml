@@ -1,0 +1,38 @@
+name: Social — diagnose Facebook Page visibility (read-only)
+
+# Prints Page publish state, restrictions and per-post privacy/visibility.
+# Read-only; the token is never echoed.
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      META_ACCESS_TOKEN: ${{ secrets.META_ACCESS_TOKEN }}
+      META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
+      META_GRAPH_VERSION: ${{ vars.META_GRAPH_VERSION || 'v25.0' }}
+    steps:
+      - name: Page state and posts
+        run: |
+          set +x
+          get() {
+            curl -sS -G "https://graph.facebook.com/${META_GRAPH_VERSION}/$1" \
+              --data-urlencode "fields=$2" --data-urlencode "access_token=${3:-$META_ACCESS_TOKEN}"
+          }
+          echo "== Page =="
+          get "$META_PAGE_ID" "name,is_published,is_unclaimed,verification_status,fan_count,followers_count,country_page_likes,location{country,city},access_token" \
+            | tee /tmp/page.json | jq 'del(.access_token)'
+          PT="$(jq -r '.access_token // empty' /tmp/page.json)"
+          [ -n "$PT" ] && echo "::add-mask::$PT"
+          echo "== Restrictions =="
+          curl -sS -G "https://graph.facebook.com/${META_GRAPH_VERSION}/${META_PAGE_ID}" \
+            --data-urlencode "fields=is_webhooks_subscribed,age_restrictions,country_restrictions,page_token_restrictions" \
+            --data-urlencode "access_token=${PT:-$META_ACCESS_TOKEN}" | jq .
+          echo "== Recent posts (page token) =="
+          curl -sS -G "https://graph.facebook.com/${META_GRAPH_VERSION}/${META_PAGE_ID}/posts" \
+            --data-urlencode "fields=id,created_time,is_published,is_hidden,privacy,status_type,permalink_url" \
+            --data-urlencode "limit=25" \
+            --data-urlencode "access_token=${PT:-$META_ACCESS_TOKEN}" \
+            | jq -r '.error // (.data[] | "\(.created_time) pub=\(.is_published) hidden=\(.is_hidden) priv=\(.privacy.value // "?") \(.permalink_url)")'
