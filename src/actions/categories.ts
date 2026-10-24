@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { assertAdminSession } from "@/lib/admin-auth";
 import { getServiceSupabaseClient } from "@/lib/supabase/service";
 
@@ -114,6 +114,7 @@ export async function createCategory(formData: FormData) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/", "layout");
+  revalidateTag("products");
   return { key };
 }
 
@@ -157,6 +158,7 @@ export async function updateCategory(key: string, formData: FormData) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/", "layout");
+  revalidateTag("products");
 }
 
 export async function deleteCategory(key: string): Promise<{
@@ -196,5 +198,6 @@ export async function deleteCategory(key: string): Promise<{
   if (error) throw new Error(error.message);
 
   revalidatePath("/", "layout");
+  revalidateTag("products");
   return { success: true, productCount: 0, subcategoryCount: 0 };
 }

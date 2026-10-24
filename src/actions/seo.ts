@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { assertAdminSession } from "@/lib/admin-auth";
 import { getServiceSupabaseClient } from "@/lib/supabase/service";
 import { dispatchWorkflow } from "@/lib/github-dispatch";
@@ -67,6 +67,7 @@ export async function decideDescriptionDraft(id: string, approve: boolean, edite
     .update({ status: approve ? "approved" : "rejected", decided_at: new Date().toISOString() })
     .eq("id", id);
   revalidatePath("/", "layout");
+  revalidateTag("products");
 }
 
 export async function requestDescriptionSuggestions() {

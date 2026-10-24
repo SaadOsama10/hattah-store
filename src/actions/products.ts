@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { assertAdminSession } from "@/lib/admin-auth";
 import sharp from "sharp";
 import { VARIANT_WIDTHS, variantPath } from "@/lib/image-variants";
@@ -309,6 +309,7 @@ export async function createProduct(formData: FormData) {
   );
 
   revalidatePath("/", "layout");
+  revalidateTag("products");
   return { id: product.id as string };
 }
 
@@ -385,6 +386,7 @@ export async function updateProduct(
   );
 
   revalidatePath("/", "layout");
+  revalidateTag("products");
   return { id: productId };
 }
 
@@ -413,6 +415,7 @@ export async function deleteProduct(productId: string) {
   }
 
   revalidatePath("/", "layout");
+  revalidateTag("products");
 }
 
 /** Original paths plus their generated WebP variants (so deleting a photo leaves no orphans). */

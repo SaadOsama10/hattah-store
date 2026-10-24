@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { getPublicSupabaseClient } from "@/lib/supabase/public";
 import { buildCategoryTree, getDescendantKeys } from "@/lib/categories";
 import { isProductOnSale } from "@/lib/supabase/types";
@@ -6,7 +7,7 @@ import type { CategoryKey, CategoryRow, ProductRow } from "@/lib/supabase/types"
 const PRODUCT_SELECT =
   "*, product_images(id, product_id, image_url, sort_order), product_sizes(id, product_id, label, sort_order), product_colors(id, product_id, label_ar, label_en, label_tr, sort_order), product_quantities(id, product_id, label_ar, label_en, label_tr, price, sort_order)";
 
-export async function getAllProducts(): Promise<ProductRow[]> {
+async function fetchAllProducts(): Promise<ProductRow[]> {
   const supabase = getPublicSupabaseClient();
   const { data, error } = await supabase
     .from("products")
@@ -16,6 +17,13 @@ export async function getAllProducts(): Promise<ProductRow[]> {
   if (error) throw new Error(error.message);
   return (data ?? []) as unknown as ProductRow[];
 }
+
+// Cached for the shop listing (the product query took ~1 s per request). Every admin product/category
+// write calls revalidateTag("products"), so edits show immediately; the 60 s TTL is only a safety net.
+export const getAllProducts = unstable_cache(fetchAllProducts, ["all-products"], {
+  tags: ["products"],
+  revalidate: 60,
+});
 
 /** Every product currently on sale, across all categories — narrowed in
  * SQL to rows that even have a sale_price set, then filtered in JS with
