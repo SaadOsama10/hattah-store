@@ -32,9 +32,9 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="mb-5 font-inter text-xs uppercase tracking-[0.2em] text-terracotta">
+            <h2 className="mb-5 font-inter text-xs uppercase tracking-[0.2em] text-terracotta">
               {t("footer.quickLinks")}
-            </h4>
+            </h2>
             <ul className="space-y-3 font-inter text-sm text-cream-secondary/80">
               <li>
                 <Link href="/" className="transition-colors hover:text-cream">
@@ -75,9 +75,9 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="mb-5 font-inter text-xs uppercase tracking-[0.2em] text-terracotta">
+            <h2 className="mb-5 font-inter text-xs uppercase tracking-[0.2em] text-terracotta">
               {t("footer.followUs")}
-            </h4>
+            </h2>
             <div className="flex gap-4">
               <a
                 href={INSTAGRAM_URL}
@@ -101,9 +101,9 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="mb-5 font-inter text-xs uppercase tracking-[0.2em] text-terracotta">
+            <h2 className="mb-5 font-inter text-xs uppercase tracking-[0.2em] text-terracotta">
               {t("footer.contactUs")}
-            </h4>
+            </h2>
             <a
               href={whatsappHref}
               target="_blank"

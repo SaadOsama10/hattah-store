@@ -13,14 +13,14 @@ import "../globals.css";
 // Sora (Latin) or Noto Kufi Arabic (Arabic) — see globals.css.
 const sora = Sora({
   subsets: ["latin"],
-  weight: ["600", "700", "800"],
+  weight: ["700", "800"],
   variable: "--font-sora",
   display: "swap",
 });
 
 const notoKufiArabic = Noto_Kufi_Arabic({
   subsets: ["arabic"],
-  weight: ["600", "700", "800", "900"],
+  weight: ["700", "800"],
   variable: "--font-noto-kufi-arabic",
   display: "swap",
 });
@@ -30,14 +30,14 @@ const notoKufiArabic = Noto_Kufi_Arabic({
 // (Arabic).
 const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "600"],
   variable: "--font-inter-latin",
   display: "swap",
 });
 
 const ibmPlexSansArabic = IBM_Plex_Sans_Arabic({
   subsets: ["arabic"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "600"],
   variable: "--font-ibm-plex-sans-arabic",
   display: "swap",
 });
@@ -93,7 +93,9 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} dir={dir} suppressHydrationWarning>
       <body
-        className={`${sora.variable} ${notoKufiArabic.variable} ${inter.variable} ${ibmPlexSansArabic.variable} bg-bg-primary text-cream antialiased font-inter`}
+        // Only the active locale's font families are applied, so /en and /tr never download (or preload)
+        // the Arabic fonts and /ar never downloads the Latin ones.
+        className={`${isArabic ? `${notoKufiArabic.variable} ${ibmPlexSansArabic.variable}` : `${sora.variable} ${inter.variable}`} bg-bg-primary text-cream antialiased font-inter`}
         style={
           {
             "--font-display-current": isArabic

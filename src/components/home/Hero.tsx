@@ -82,9 +82,10 @@ export function Hero() {
           <Badge>{t("badge")}</Badge>
         </motion.div>
 
+        {/* No opacity-0 start: the H1 is the LCP element and must paint with the first HTML, not after hydration. */}
         <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ y: 20 }}
+          animate={{ y: 0 }}
           transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
           className="font-playfair text-6xl font-extrabold leading-none text-cream sm:text-7xl md:text-8xl"
         >
