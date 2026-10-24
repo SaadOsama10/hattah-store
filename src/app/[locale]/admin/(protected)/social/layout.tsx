@@ -1,10 +1,10 @@
 import { SocialKillSwitch } from "@/components/admin/SocialKillSwitch";
-import { getSocialSettings } from "@/actions/social";
+import { getLatePosts, getSocialSettings } from "@/actions/social";
 
 export const dynamic = "force-dynamic";
 
 export default async function SocialLayout({ children }: { children: React.ReactNode }) {
-  const settings = await getSocialSettings();
+  const [settings, late] = await Promise.all([getSocialSettings(), getLatePosts()]);
   return (
     <div className="space-y-8">
       <SocialKillSwitch
@@ -13,6 +13,7 @@ export default async function SocialLayout({ children }: { children: React.React
         autoDisabledAt={settings.auto_disabled_at}
         lastError={settings.last_error}
         failures={settings.consecutive_failures}
+        late={late}
       />
       {children}
     </div>

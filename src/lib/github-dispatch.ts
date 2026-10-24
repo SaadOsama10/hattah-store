@@ -26,3 +26,21 @@ export async function dispatchWorkflow(
     throw new Error(`GitHub ${res.status}: ${(await res.text()).slice(0, 200)}`);
   }
 }
+
+/** True when the workflow already has a queued or running run (so a tick doesn't pile up duplicates). */
+export async function hasActiveRun(workflow: "social-generate.yml" | "social-publish.yml"): Promise<boolean> {
+  const token = process.env.GH_DISPATCH_TOKEN;
+  const repo = process.env.GH_REPO || "SaadOsama10/hattah-store";
+  if (!token) return false;
+  for (const status of ["in_progress", "queued"]) {
+    const res = await fetch(
+      `https://api.github.com/repos/${repo}/actions/workflows/${workflow}/runs?status=${status}&per_page=1`,
+      {
+        headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" },
+        cache: "no-store",
+      }
+    );
+    if (res.ok && ((await res.json()).total_count ?? 0) > 0) return true;
+  }
+  return false;
+}

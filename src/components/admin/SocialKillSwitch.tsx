@@ -14,12 +14,14 @@ export function SocialKillSwitch({
   autoDisabledAt,
   lastError,
   failures,
+  late = [],
 }: {
   enabled: boolean;
   autoApprove: boolean;
   autoDisabledAt: string | null;
   lastError: string | null;
   failures: number;
+  late?: { id: string; minutes: number; name: string }[];
 }) {
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -41,6 +43,24 @@ export function SocialKillSwitch({
 
   return (
     <div dir="rtl" className="space-y-3">
+      {late.length > 0 && (
+        <div className="flex items-start gap-3 rounded-2xl border-2 border-amber-500 bg-amber-500/10 p-4">
+          <AlertTriangle className="mt-0.5 shrink-0 text-amber-500" size={22} />
+          <div className="space-y-1 font-inter text-sm text-cream">
+            <p className="font-bold text-amber-600">
+              {late.length} {late.length === 1 ? "منشور متأخر" : "منشورات متأخرة"} أكثر من 20 دقيقة عن موعدها ولم تُنشر بعد
+            </p>
+            <ul className="text-cream-secondary">
+              {late.slice(0, 5).map((p) => (
+                <li key={p.id}>
+                  {p.name || "—"} — متأخر {p.minutes} دقيقة
+                </li>
+              ))}
+            </ul>
+            <p className="text-cream-secondary">قد يكون المشغّل متأخرًا. جرّب «انشر الآن» على المنشور، أو راجع GitHub Actions.</p>
+          </div>
+        </div>
+      )}
       {autoDisabledAt && !enabled && (
         <div className="flex items-start gap-3 rounded-2xl border-2 border-terracotta-deep bg-terracotta-deep/10 p-4">
           <AlertTriangle className="mt-0.5 shrink-0 text-terracotta-deep" size={22} />

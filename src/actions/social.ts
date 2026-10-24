@@ -233,3 +233,25 @@ export async function setSocialEnabled(enabled: boolean) {
   if (error) throw new Error(error.message);
   revalidatePath("/[locale]/admin/social", "layout");
 }
+
+/** Posts that should already be live (approved, >20 min past their time) but aren't — shown as a yellow warning. */
+export async function getLatePosts(): Promise<{ id: string; minutes: number; name: string }[]> {
+  await assertAdminSession();
+  const supabase = getServiceSupabaseClient();
+  const { data: settings } = await supabase.from("social_settings").select("enabled, auto_approve").eq("id", 1).single();
+  if (!settings?.enabled) return [];
+  const cutoff = new Date(Date.now() - 20 * 60_000).toISOString();
+  const floor = new Date(Date.now() - 12 * 3600e3).toISOString();
+  const { data } = await supabase
+    .from("social_posts")
+    .select("id, scheduled_at, products(name_ar)")
+    .in("status", settings.auto_approve ? ["approved", "draft"] : ["approved"])
+    .lt("scheduled_at", cutoff)
+    .gte("scheduled_at", floor)
+    .order("scheduled_at");
+  return (data ?? []).map((r) => ({
+    id: r.id as string,
+    minutes: Math.round((Date.now() - new Date(r.scheduled_at as string).getTime()) / 60_000),
+    name: ((r.products as unknown as { name_ar: string } | null)?.name_ar ?? "").slice(0, 40),
+  }));
+}
