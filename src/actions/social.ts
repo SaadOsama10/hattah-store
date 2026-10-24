@@ -134,6 +134,7 @@ export async function saveSocialSettings(
       ...(s.store_url !== undefined
         ? { store_url: s.store_url.trim().replace(/^https?:\/\//, "").replace(/\/+$/, "") || "hattah-store.vercel.app" }
         : {}),
+      ...(s.publish_to_facebook !== undefined ? { publish_to_facebook: !!s.publish_to_facebook } : {}),
       jitter_minutes: Math.min(30, Math.max(0, Math.round(Number(s.jitter_minutes) || 0))),
       daily_slots: slots,
       caption_languages: s.caption_languages,

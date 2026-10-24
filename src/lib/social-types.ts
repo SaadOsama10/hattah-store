@@ -22,6 +22,8 @@ export interface SocialSettingsRow {
   jitter_minutes: number;
   /** undefined until migration 016 is applied */
   store_url?: string;
+  /** undefined until migration 018 is applied; false = Instagram only (Instagram auto-shares to the Page) */
+  publish_to_facebook?: boolean;
   consecutive_failures: number;
   last_error: string | null;
   auto_disabled_at: string | null;

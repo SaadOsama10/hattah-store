@@ -93,7 +93,8 @@ for (const post of due) {
         await sb.from("social_posts").update({ ig_media_id: igId, ig_permalink: permalink }).eq("id", post.id);
         log(`✓ Instagram ${igId}`);
       }
-      if (!story && !fbId) {
+      // Facebook is off by default: Instagram's own auto-share puts the post on the Page (API posts are hidden while the app is unpublished).
+      if (!story && !fbId && settings.publish_to_facebook === true) {
         fbId = (await publishFacebook(post.image_url!, post.caption_full ?? "")).id;
         await sb.from("social_posts").update({ fb_post_id: fbId }).eq("id", post.id);
         log(`✓ Facebook ${fbId}`);

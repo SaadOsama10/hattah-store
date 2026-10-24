@@ -26,6 +26,7 @@ export function SocialSettingsForm({
     auto_approve: initial.auto_approve,
     jitter_minutes: initial.jitter_minutes ?? 10,
     store_url: initial.store_url,
+    publish_to_facebook: initial.publish_to_facebook,
     daily_slots: initial.daily_slots as SocialSlot[],
     caption_languages: initial.caption_languages,
     hashtags_base: initial.hashtags_base,
@@ -121,6 +122,18 @@ export function SocialSettingsForm({
           </label>
         ) : (
           <p className="font-inter text-xs text-cream-secondary/70">لتعديل عنوان المتجر المطبوع على الصور شغّل migration 016 أولاً.</p>
+        )}
+        {s.publish_to_facebook !== undefined ? (
+          <label className="flex items-center gap-3 font-inter text-sm text-cream">
+            <input
+              type="checkbox"
+              checked={s.publish_to_facebook}
+              onChange={(e) => setS((p) => ({ ...p, publish_to_facebook: e.target.checked }))}
+            />
+            النشر المباشر على فيسبوك عبر الـ API (اتركه مغلقًا: إنستغرام ينشر على الصفحة تلقائيًا)
+          </label>
+        ) : (
+          <p className="font-inter text-xs text-cream-secondary/70">لتفعيل خيار النشر على فيسبوك شغّل migration 018 (النشر على فيسبوك متوقف حاليًا).</p>
         )}
         <label className="flex items-center gap-3 font-inter text-sm text-cream">
           إزاحة عشوائية لكل موعد (± دقيقة):

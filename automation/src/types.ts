@@ -33,6 +33,8 @@ export interface SocialSettings {
   jitter_minutes: number;
   /** Printed on images (no protocol). Optional until migration 016 is applied. */
   store_url?: string;
+  /** Direct Facebook API publishing; undefined/false until enabled (migration 018). */
+  publish_to_facebook?: boolean;
   consecutive_failures: number;
   last_error: string | null;
   auto_disabled_at: string | null;
