@@ -2,22 +2,27 @@
 
 All tracks are royalty-free instrumentals from **Pixabay Music**, released under the
 [Pixabay Content License](https://pixabay.com/service/license-summary/) (downloaded 2026-10-25):
-free for commercial use, **no attribution required**, no copyrighted/Content-ID-registered material.
+free for commercial use, **no attribution required**, no copyrighted/Content-ID-registered material, no vocals.
 Pixabay forbids redistributing the files as standalone downloads, so the audio is **not stored in this
-(public) repository**. Only a 40-second excerpt (from 0:10) of each track lives in the **private**
-Supabase Storage bucket `social-music`; the render step downloads it with the service role key.
+(public) repository**. Only a 45-second excerpt of each track lives in the **private** Supabase Storage
+bucket `social-music`; the render step downloads it with the service role key.
 
-`tracks.json` lists every track (title, artist, source page). To add a track: download it from Pixabay,
-cut an excerpt (`ffmpeg -ss 10 -t 40 -i in.mp3 -ac 2 -ar 44100 -b:a 160k out.mp3`), upload it to the
-`social-music` bucket, and add it to `tracks.json` with its source URL.
+Selection: upbeat, positive, ~97–122 BPM, soft oriental colour, no vocals; the heavier/"kick-forward"
+candidates were rejected. (The previous slow oud tracks were removed on 2026-10-25.)
 
-| Track | Artist | Source |
-|---|---|---|
-| Oud Whisper Reverie | djovan | https://pixabay.com/music/world-oud-whisper-reverie-453951/ |
-| Oud Agadir Antiquity | djovan | https://pixabay.com/music/world-oud-agadir-antiquity-453954/ |
-| Desert Veil | djovan | https://pixabay.com/music/world-desert-veil-453959/ |
-| Silent Riad Courtyard | djovan | https://pixabay.com/music/world-silent-riad-courtyard-453950/ |
-| Rebab Essaouira Echo | djovan | https://pixabay.com/music/world-rebab-essaouira-echo-453953/ |
-| Sand Serenade | djovan | https://pixabay.com/music/world-sand-serenade-453952/ |
-| Echoes of the Oasis | djovan | https://pixabay.com/music/world-echoes-of-the-oasis-422858/ |
-| Sands of Time | djovan | https://pixabay.com/music/world-sands-of-time-422862/ |
+`tracks.json` holds, per track: title, artist, source page, **bpm** and **offset** (seconds to the first
+beat of the excerpt) — produced by `analyze_beats.py` (numpy only) and used to cut the reels on the beat.
+To add a track: download it from Pixabay, `ffmpeg -ss <start> -t 45 -i in.mp3 -vn -ac 2 -ar 44100 -b:a 160k out.mp3`,
+run `python3 analyze_beats.py out.mp3`, upload `out.mp3` to the `social-music` bucket and add it to `tracks.json`.
+
+| Track | Artist | BPM | Source |
+|---|---|---|---|
+| Forty Thieves (instrumental dance, Arabian) | melodyayresgriffiths | 122.0 | https://pixabay.com/music/upbeat-forty-thieves-instrumental-dance-arabian-aladdin-persian-138348/ |
+| Arabic Dance | Tunetank | 120.0 | https://pixabay.com/music/pop-arabic-dance-347242/ |
+| Turkish Istanbul Music | StudioKolomna | 115.0 | https://pixabay.com/music/world-turkish-istanbul-music-114324/ |
+| Egyptian Egypt Desert Music | HitsLab | 106.5 | https://pixabay.com/music/world-egyptian-egypt-desert-music-502005/ |
+| The Oriental Way (Pop, Oriental, Instrumental) | Lyrium-2025 | 105.0 | https://pixabay.com/music/instrumental-the-oriental-way-pop-oriental-instrumental-566606/ |
+| Istanbul Turkish Turkey | lNPLUSMUSIC | 105.0 | https://pixabay.com/music/world-istanbul-turkish-turkey-615062/ |
+| Turkish Dance | Loka_music | 101.0 | https://pixabay.com/music/arabic-turkish-dance-602715/ |
+| Arabic Music | JonasBlakewood | 97.5 | https://pixabay.com/music/upbeat-arabic-arabic-music-294013/ |
+| KI - Instrumental (Pop, Oriental) | Lyrium-2025 | 100.0 | https://pixabay.com/music/world-ki-instrumental-pop-oriental-337459/ |

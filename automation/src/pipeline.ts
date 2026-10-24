@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { Renderer } from "./render/render.js";
 import { ReelRenderer, REEL_SECONDS } from "./render/reel.js";
-import { pickTrack, trackFile } from "./music.js";
+import { musicStartFor, pickTrack, trackFile } from "./music.js";
 import { CTA_POOL, ctaIndexOf, generateCaption } from "./captions.js";
 import { SOCIAL_BUCKET } from "./db.js";
 import { effectivePrice, sortedImages } from "./products.js";
@@ -258,22 +258,22 @@ export async function buildReelAssets(
   const imgs = sortedImages(product);
   const track = pickTrack(musicIndex);
   const music = await trackFile(sb, track);
-  const musicStart = (musicIndex * 7) % 20; // excerpts are 40 s, a reel needs ~13 s
-  log(`reel «${product.name_ar}» ♪ ${track.title} (+${musicStart}s)`);
-  const { video, cover } = await renderer.render(
+  const musicStart = musicStartFor(track, musicIndex, REEL_SECONDS);
+  log(`reel «${product.name_ar}» ♪ ${track.title} (${track.bpm} bpm, +${musicStart.toFixed(2)}s)`);
+  const { video, cover, timing } = await renderer.render(
     {
       nameAr: product.name_ar,
       categoryAr,
       price: price.current,
       oldPrice: price.old,
-      photoUrl: imgs[0],
-      photoUrl2: imgs[1] ?? null,
+      photoUrls: imgs,
       removeBg: (await loadRemoveBgIds(sb)).has(product.id),
       text: res.design,
       storeUrl: settings.store_url,
     },
     music,
     musicStart,
+    track.bpm,
   );
   const day = new Date().toISOString().slice(0, 10);
   const base = `${day}/${post.id}-${Date.now()}`;
@@ -284,6 +284,6 @@ export async function buildReelAssets(
   };
   const video_url = await up("mp4", video, "video/mp4");
   const image_url = await up("jpg", cover, "image/jpeg");
-  log(`reel uploaded (${(video.length / 1e6).toFixed(1)} MB, ${REEL_SECONDS}s)`, video_url);
+  log(`reel uploaded (${(video.length / 1e6).toFixed(1)} MB, ${timing.seconds.toFixed(1)}s)`, video_url);
   return { video_url, image_url, ...(keepCaption ? {} : { caption_full: res.caption }), design: res.design };
 }

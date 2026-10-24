@@ -12,6 +12,20 @@ export interface Track {
   title: string;
   artist: string;
   source: string;
+  /** Tempo and the time (s) of the first beat inside the excerpt — from music/analyze_beats.py. */
+  bpm: number;
+  offset: number;
+}
+
+export const EXCERPT_SECONDS = 45;
+
+/** Start offset (s) inside the excerpt so that a beat lands exactly on t=0 of the reel; `index` varies the section. */
+export function musicStartFor(track: Track, index: number, seconds: number): number {
+  const period = 60 / track.bpm;
+  const room = EXCERPT_SECONDS - seconds - 1.5 - track.offset;
+  const beats = Math.max(0, Math.floor(room / period));
+  const k = (Math.abs(index) * 7 + 3) % (beats + 1);
+  return track.offset + k * period;
 }
 
 export const tracks = (): Track[] => JSON.parse(readFileSync(path.join(ROOT, "music", "tracks.json"), "utf8"));

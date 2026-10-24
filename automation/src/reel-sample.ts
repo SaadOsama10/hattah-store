@@ -6,7 +6,7 @@ import { getSupabase } from "./db.js";
 import { ReelRenderer } from "./render/reel.js";
 import { placeholderDesign } from "./captions.js";
 import { effectivePrice, sortedImages } from "./products.js";
-import { pickTrack, trackFile } from "./music.js";
+import { musicStartFor, pickTrack, trackFile } from "./music.js";
 import { ANGLES } from "./types.js";
 
 loadEnv();
@@ -24,14 +24,15 @@ try {
   for (const [i, p] of picks.entries()) {
     const imgs = sortedImages(p);
     const price = effectivePrice(p);
-    const track = pickTrack(i * 3);
+    const track = pickTrack(i * 3 + 1);
     const music = await trackFile(sb, track);
     const text = placeholderDesign(p, ANGLES[i % 4], i);
     console.log(`reel ${i + 1}: «${p.name_ar}» | ${text.headline} | ♪ ${track.title}`);
     const { video, cover } = await r.render(
-      { nameAr: p.name_ar, categoryAr: catMap.get(p.category) ?? "", price: price.current, oldPrice: price.old, photoUrl: imgs[0], photoUrl2: imgs[1], text },
+      { nameAr: p.name_ar, categoryAr: catMap.get(p.category) ?? "", price: price.current, oldPrice: price.old, photoUrls: imgs, text },
       music,
-      i * 4,
+      musicStartFor(track, i, 15),
+      track.bpm,
     );
     writeFileSync(`previews/reel-${i + 1}.mp4`, video);
     writeFileSync(`previews/reel-${i + 1}.jpg`, cover);

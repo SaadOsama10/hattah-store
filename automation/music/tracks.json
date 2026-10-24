@@ -1,10 +1,83 @@
 [
-  {"file":"oud-whisper-reverie.mp3","title":"Oud Whisper Reverie","artist":"djovan","source":"https://pixabay.com/music/world-oud-whisper-reverie-453951/"},
-  {"file":"oud-agadir-antiquity.mp3","title":"Oud Agadir Antiquity","artist":"djovan","source":"https://pixabay.com/music/world-oud-agadir-antiquity-453954/"},
-  {"file":"desert-veil.mp3","title":"Desert Veil","artist":"djovan","source":"https://pixabay.com/music/world-desert-veil-453959/"},
-  {"file":"silent-riad-courtyard.mp3","title":"Silent Riad Courtyard","artist":"djovan","source":"https://pixabay.com/music/world-silent-riad-courtyard-453950/"},
-  {"file":"rebab-essaouira-echo.mp3","title":"Rebab Essaouira Echo","artist":"djovan","source":"https://pixabay.com/music/world-rebab-essaouira-echo-453953/"},
-  {"file":"sand-serenade.mp3","title":"Sand Serenade","artist":"djovan","source":"https://pixabay.com/music/world-sand-serenade-453952/"},
-  {"file":"echoes-of-the-oasis.mp3","title":"Echoes of the Oasis","artist":"djovan","source":"https://pixabay.com/music/world-echoes-of-the-oasis-422858/"},
-  {"file":"sands-of-time.mp3","title":"Sands of Time","artist":"djovan","source":"https://pixabay.com/music/world-sands-of-time-422862/"}
+  {
+    "file": "forty-thieves.mp3",
+    "title": "Forty Thieves (instrumental dance, Arabian)",
+    "artist": "melodyayresgriffiths",
+    "source": "https://pixabay.com/music/upbeat-forty-thieves-instrumental-dance-arabian-aladdin-persian-138348/",
+    "bpm": 122.0,
+    "offset": 0.058,
+    "hf": 0.019
+  },
+  {
+    "file": "arabic-dance.mp3",
+    "title": "Arabic Dance",
+    "artist": "Tunetank",
+    "source": "https://pixabay.com/music/pop-arabic-dance-347242/",
+    "bpm": 120.0,
+    "offset": 0.238,
+    "hf": 0.012
+  },
+  {
+    "file": "turkish-istanbul-114324.mp3",
+    "title": "Turkish Istanbul Music",
+    "artist": "StudioKolomna",
+    "source": "https://pixabay.com/music/world-turkish-istanbul-music-114324/",
+    "bpm": 115.0,
+    "offset": 0.163,
+    "hf": 0.006
+  },
+  {
+    "file": "egyptian-desert.mp3",
+    "title": "Egyptian Egypt Desert Music",
+    "artist": "HitsLab",
+    "source": "https://pixabay.com/music/world-egyptian-egypt-desert-music-502005/",
+    "bpm": 106.5,
+    "offset": 0.546,
+    "hf": 0.001
+  },
+  {
+    "file": "oriental-way.mp3",
+    "title": "The Oriental Way (Pop, Oriental, Instrumental)",
+    "artist": "Lyrium-2025",
+    "source": "https://pixabay.com/music/instrumental-the-oriental-way-pop-oriental-instrumental-566606/",
+    "bpm": 105.0,
+    "offset": 0.551,
+    "hf": 0.015
+  },
+  {
+    "file": "istanbul-615062.mp3",
+    "title": "Istanbul Turkish Turkey",
+    "artist": "lNPLUSMUSIC",
+    "source": "https://pixabay.com/music/world-istanbul-turkish-turkey-615062/",
+    "bpm": 105.0,
+    "offset": 0.128,
+    "hf": 0.005
+  },
+  {
+    "file": "turkish-dance.mp3",
+    "title": "Turkish Dance",
+    "artist": "Loka_music",
+    "source": "https://pixabay.com/music/arabic-turkish-dance-602715/",
+    "bpm": 101.0,
+    "offset": 0.389,
+    "hf": 0.01
+  },
+  {
+    "file": "arabic-music-294013.mp3",
+    "title": "Arabic Music",
+    "artist": "JonasBlakewood",
+    "source": "https://pixabay.com/music/upbeat-arabic-arabic-music-294013/",
+    "bpm": 97.5,
+    "offset": 0.476,
+    "hf": 0.004
+  },
+  {
+    "file": "ki-337459.mp3",
+    "title": "KI - Instrumental (Pop, Oriental)",
+    "artist": "Lyrium-2025",
+    "source": "https://pixabay.com/music/world-ki-instrumental-pop-oriental-337459/",
+    "bpm": 100.0,
+    "offset": 0.035,
+    "hf": 0.007
+  }
 ]
