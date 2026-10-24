@@ -38,3 +38,9 @@
 - النشر: `meta.ts` (`media_type=REELS`, `share_to_feed=true`, polling حتى 10 دقائق). التحقق دون نشر: `gh workflow run social-publish.yml -f check_reel=<post_id>`. تحويل منشور إلى ريل بنفس الكابشن: `social-generate.yml -f mode=regenerate -f post_id=… -f what=to-reel`. توليد خانات محددة: `-f mode=today -f extra_args="--date=… --only=reel@13:00 --jitter=0"`.
 - التنظيف (`automation/src/cleanup.ts`، يعمل بعد التوليد اليومي): صور المنشورات/الستوريات بعد 14 يومًا من موعدها، ومجلدات الأيام اليتيمة بعد 16 يومًا. ffmpeg غير مثبّت على runner → خطوة تثبيته في `social-generate.yml`.
 - الريبو **عام** ⇒ دقائق GitHub Actions مجانية وغير محدودة؛ لو صار خاصًا راجع استهلاك `social-publish.yml` (كل 15 دقيقة) وانقل النشر بالكامل إلى مسار Vercel الذي يستدعيه pg_cron.
+
+### تكلفة OpenAI (من 25/10)
+- التعليمات الثابتة (`FIXED_INSTRUCTIONS` في `captions.ts`) أولًا وبيانات المنتج آخرًا ⇒ prompt caching (~2000 توكن مخبّأ). الستوريات بوضع `design` (عنوان + سطر فرعي فقط). لا قائمة 30 يومًا في الـ prompt: التكرار يُفحص بالكود، وتُرسل آخر 10 عناوين فقط. إصلاح التقليم/الأرقام/عدد الكلمات بالكود؛ الإعادة للفشل الحقيقي فقط. `reasoning.effort=low`.
+- التوليد اليومي 03:00 عبر OpenAI Batch API (`generate.ts --batch` ⇒ جدول `social_batches` ⇒ `collect.ts` عبر `social-collect.yml` يُطلقه مسار Vercel)، ومسار احتياطي بالاستدعاءات العادية عند 07:00 إسطنبول أو فشل الإرسال. أزرار الأدمن (إعادة/تبديل/«توليد الغد») فورية وعادية.
+- المفتاح `hattah-social-v2` (Restricted: Responses/Files/Batch Write + Models Read) في سر `OPENAI_API_KEY`؛ القديم `hattah-social` مُلغى.
+- القياس: `gh workflow run social-openai-bench.yml -f variant=baseline|new|batch` (لا يكتب في قاعدة البيانات). النتائج ليوم كامل: قبل 0.214$، بعد (عادي) 0.083$، Batch 0.036$.
