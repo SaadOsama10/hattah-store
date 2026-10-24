@@ -1,13 +1,15 @@
 // Weekly SEO / performance health check. Usage: node scripts/seo-health.mjs
 // Env: SITE_URL (default https://hattah-store.vercel.app), SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY,
-//      RUN_URL (optional), MIN_SCORE (default 85), SKIP_LIGHTHOUSE=1 for a quick structural check.
+//      RUN_URL (optional), MIN_PERF (default 75), MIN_SCORE (default 90, for SEO/accessibility/best-practices), SKIP_LIGHTHOUSE=1 for a quick structural check.
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
 const SITE = (process.env.SITE_URL || "https://hattah-store.vercel.app").replace(/\/+$/, "");
-const MIN = Number(process.env.MIN_SCORE || 85);
+const MIN_PERF = Number(process.env.MIN_PERF || 75); // runner performance scores fluctuate 76-89 on identical code
+const MIN = Number(process.env.MIN_SCORE || 90);
+const minFor = (k) => (k === "performance" ? MIN_PERF : MIN);
 const problems = [];
 const scores = {};
 const problem = (area, message) => problems.push({ area, message });
@@ -95,7 +97,7 @@ if (process.env.SKIP_LIGHTHOUSE !== "1") {
     if (runs.length === 0) continue;
     const s = Object.fromEntries(Object.keys(runs[0]).map((k) => [k, median(runs.map((x) => x[k]))]));
     scores[url.replace(SITE, "") || "/"] = s;
-    for (const [k, v] of Object.entries(s)) if (v < MIN) problem("lighthouse", `${url.replace(SITE, "")}: ${k} = ${v} (< ${MIN}, median of ${runs.length} runs)`);
+    for (const [k, v] of Object.entries(s)) if (v < minFor(k)) problem("lighthouse", `${url.replace(SITE, "")}: ${k} = ${v} (< ${minFor(k)}, median of ${runs.length} runs)`);
   }
 }
 
