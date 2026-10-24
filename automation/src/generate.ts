@@ -52,7 +52,10 @@ if (!slots.length) process.exit(0);
 function jittered(time: string): Date {
   const j = Math.max(0, jitterArg !== undefined ? Number(jitterArg) : (settings.jitter_minutes ?? 10));
   const offset = Math.round((Math.random() * 2 - 1) * j);
-  return new Date(slotToUtc(date, time).getTime() + offset * 60_000);
+  // Never before 09:00 and never past 23:59 (Istanbul), whatever the jitter.
+  const lo = slotToUtc(date, "09:00").getTime();
+  const hi = slotToUtc(date, "23:59").getTime();
+  return new Date(Math.min(hi, Math.max(lo, slotToUtc(date, time).getTime() + offset * 60_000)));
 }
 
 // ── product selection ──
@@ -167,10 +170,10 @@ async function runJob(job: Job) {
 }
 
 try {
-  // A small worker pool keeps the whole day under a few minutes.
+  // 4 workers: the 18 items of a day finish in a few minutes (OpenAI calls: 8 captions + 10 on-image texts).
   const queue = [...jobs];
   await Promise.all(
-    Array.from({ length: 3 }, async () => {
+    Array.from({ length: 4 }, async () => {
       for (let job = queue.shift(); job; job = queue.shift()) await runJob(job);
     }),
   );

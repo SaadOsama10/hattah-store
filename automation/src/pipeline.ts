@@ -132,9 +132,9 @@ export async function pickProducts(
     .order("scheduled_at", { ascending: false });
   const lastPosted = new Map<string, number>();
   // Feed rotation: a product that appeared in a feed post within the last N days is out
-  // (N = eligible/5, min 3) — relaxed only if that would leave too few candidates.
+  // (N = eligible/8, min 3) — relaxed only if that would leave too few candidates.
   const recentFeed = new Set<string>();
-  const rotationDays = opts.rotationDays === "auto" ? Math.max(3, Math.ceil(eligible.length / 5)) : opts.rotationDays;
+  const rotationDays = opts.rotationDays === "auto" ? Math.max(3, Math.ceil(eligible.length / 8)) : opts.rotationDays;
   if (rotationDays) {
     const since = Date.now() - rotationDays * 86400e3;
     const { data: feedHist } = await sb
