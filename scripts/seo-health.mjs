@@ -78,17 +78,24 @@ if (nf.status !== 404) problem("seo", `unknown URLs return ${nf.status} instead 
 if (process.env.SKIP_LIGHTHOUSE !== "1") {
   const pages = [`${SITE}/ar`, `${SITE}/en`, `${SITE}/tr`, `${SITE}/ar/shop`, productUrl].filter(Boolean);
   const dir = mkdtempSync(path.join(tmpdir(), "lh-"));
+  const RUNS = 3; // a single Lighthouse run fluctuates ±10 points; the median of 3 avoids false warnings
+  const median = (xs) => [...xs].sort((x, y) => x - y)[Math.floor(xs.length / 2)];
   for (const [i, url] of pages.entries()) {
-    const out = path.join(dir, `r${i}.json`);
-    try {
-      execFileSync("npx", ["--yes", "lighthouse@12", url, "--quiet", "--chrome-flags=--headless=new --no-sandbox", "--only-categories=performance,seo,accessibility,best-practices", "--output=json", `--output-path=${out}`], { stdio: "ignore", timeout: 240000 });
-      const c = JSON.parse(readFileSync(out, "utf8")).categories;
-      const s = Object.fromEntries(Object.entries(c).map(([k, v]) => [k, Math.round(v.score * 100)]));
-      scores[url.replace(SITE, "") || "/"] = s;
-      for (const [k, v] of Object.entries(s)) if (v < MIN) problem("lighthouse", `${url.replace(SITE, "")}: ${k} = ${v} (< ${MIN})`);
-    } catch (e) {
-      problem("lighthouse", `Lighthouse failed for ${url}: ${String(e.message).slice(0, 120)}`);
+    const runs = [];
+    for (let r = 0; r < RUNS; r++) {
+      const out = path.join(dir, `r${i}_${r}.json`);
+      try {
+        execFileSync("npx", ["--yes", "lighthouse@12", url, "--quiet", "--chrome-flags=--headless=new --no-sandbox", "--only-categories=performance,seo,accessibility,best-practices", "--output=json", `--output-path=${out}`], { stdio: "ignore", timeout: 240000 });
+        const c = JSON.parse(readFileSync(out, "utf8")).categories;
+        runs.push(Object.fromEntries(Object.entries(c).map(([k, v]) => [k, Math.round(v.score * 100)])));
+      } catch (e) {
+        if (r === RUNS - 1 && runs.length === 0) problem("lighthouse", `Lighthouse failed for ${url}: ${String(e.message).slice(0, 120)}`);
+      }
     }
+    if (runs.length === 0) continue;
+    const s = Object.fromEntries(Object.keys(runs[0]).map((k) => [k, median(runs.map((x) => x[k]))]));
+    scores[url.replace(SITE, "") || "/"] = s;
+    for (const [k, v] of Object.entries(s)) if (v < MIN) problem("lighthouse", `${url.replace(SITE, "")}: ${k} = ${v} (< ${MIN}, median of ${runs.length} runs)`);
   }
 }
 
