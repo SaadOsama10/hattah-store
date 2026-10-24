@@ -131,7 +131,8 @@
       "dashboard": "Dashboard",
       "categories": "Categories",
       "inventory": "Inventory",
-      "social": "Social"
+      "social": "Social",
+      "seo": "SEO"
     },
     "login": {
       "title": "Admin Login",

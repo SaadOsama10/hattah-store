@@ -1,0 +1,26 @@
+name: SEO — weekly health check
+
+# Lighthouse (mobile) on the main pages + sitemap / robots / llms / JSON-LD validation.
+# Results are written to Supabase (seo_health); /admin shows a warning when anything breaks or a score < 85.
+on:
+  schedule:
+    - cron: "30 4 * * 1" # Mondays 07:30 Istanbul
+  workflow_dispatch:
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run checks
+        env:
+          SITE_URL: https://hattah-store.vercel.app
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          MIN_SCORE: "85"
+        run: node scripts/seo-health.mjs

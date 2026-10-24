@@ -1,0 +1,36 @@
+name: SEO — suggest product descriptions
+
+# Creates DRAFT descriptions for products whose text is short; nothing is replaced until approved in /admin/seo.
+on:
+  workflow_dispatch:
+    inputs:
+      min:
+        description: "Minimum description length (chars)"
+        default: "250"
+        type: string
+
+jobs:
+  suggest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: automation
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_MODEL: ${{ secrets.OPENAI_MODEL || 'gpt-6.1-sol' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: automation/package-lock.json
+      - run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+      - env:
+          MIN: ${{ inputs.min }}
+        run: npx tsx src/descriptions.ts --min="${MIN:-250}"

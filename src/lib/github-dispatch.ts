@@ -4,7 +4,7 @@ import "server-only";
  * which can't run on Vercel, so heavy work (generate / regenerate / publish
  * now) is delegated to the repo's workflows. */
 export async function dispatchWorkflow(
-  workflow: "social-generate.yml" | "social-publish.yml",
+  workflow: "social-generate.yml" | "social-publish.yml" | "seo-descriptions.yml" | "seo-health.yml",
   inputs: Record<string, string>
 ): Promise<void> {
   const token = process.env.GH_DISPATCH_TOKEN;
