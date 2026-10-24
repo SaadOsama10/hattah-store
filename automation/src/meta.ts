@@ -96,3 +96,20 @@ export async function testConnection() {
   out.page = page.name;
   return out;
 }
+
+/** Creates a REELS container for the video and waits for FINISHED — nothing is published. Validates the file against Meta's rules. */
+export async function checkReelContainer(videoUrl: string, coverUrl: string | null): Promise<string> {
+  const igId = need("META_IG_USER_ID");
+  const token = need("META_ACCESS_TOKEN");
+  const params: Record<string, string> = { media_type: "REELS", video_url: videoUrl, share_to_feed: "true", caption: "container check (not published)" };
+  if (coverUrl) params.cover_url = coverUrl;
+  const container = await graph("POST", `${igId}/media`, params, token);
+  for (let i = 0; i < 60; i++) {
+    const s = await graph("GET", container.id, { fields: "status_code,status" }, token);
+    log(`container ${container.id}: ${s.status_code} ${s.status ?? ""}`);
+    if (s.status_code === "FINISHED") return container.id;
+    if (s.status_code === "ERROR" || s.status_code === "EXPIRED") throw new MetaError(`IG container ${s.status_code}: ${s.status ?? ""}`, false);
+    await sleep(10000);
+  }
+  throw new MetaError("container still processing after 10 min", true);
+}

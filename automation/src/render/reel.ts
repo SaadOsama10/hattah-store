@@ -53,7 +53,7 @@ export function reelHtml(req: ReelRequest, a: Assets): string {
   const site = esc(siteDisplay(req.storeUrl));
   const wa = esc(whatsappDisplay());
   const photo1 = a.cutout ? `<img id="p1" class="cutimg" src="${a.cutout}">` : `<img id="p1" class="ph" src="${a.photo}">`;
-  const price = `<div class="pricepill" id="pill" style="top:1480px;opacity:0">${
+  const price = `<div class="pricepill" id="pill" style="top:1485px;opacity:0">${
     req.oldPrice ? `<span class="old">${fmt(req.oldPrice)} TL</span>` : ""
   }<span class="price">${fmt(req.price)} <small>TL</small></span></div>`;
   return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><style>
@@ -96,14 +96,14 @@ body{font-family:'Amiri','Playfair Display',serif;color:${C.oliveDeep}}
 
 <div class="scene" id="s1">
   <div class="frame${a.cutout ? " cut" : ""}" id="f1" style="left:160px;top:450px;width:760px;height:900px;border-radius:380px 380px 28px 28px;opacity:0">${photo1}</div>
-  <div class="fit head" id="head" data-max="68" data-min="34" style="top:1390px;height:200px"><span>${words(req.text.headline)}</span></div>
+  <div class="fit head" id="head" data-max="80" data-min="38" style="top:1385px;height:215px"><span>${words(req.text.headline)}</span></div>
   <div class="flag" id="flag1" style="top:1620px;opacity:0"></div>
 </div>
 
 <div class="scene" id="s2">
   <div class="frame" id="f2" style="left:140px;top:450px;width:800px;height:720px;border-radius:44px;opacity:0"><img id="p2" class="ph" src="${a.photo2}"></div>
-  <div class="fit name" id="name" data-max="56" data-min="28" style="top:1196px;height:140px;opacity:0"><span>${esc(req.nameAr)}</span></div>
-  <div class="fit subl" id="subl" data-max="38" data-min="24" style="top:1340px;height:116px;opacity:0"><span>${esc(req.text.subline)}</span></div>
+  <div class="fit name" id="name" data-max="62" data-min="30" style="top:1190px;height:150px;opacity:0"><span>${esc(req.nameAr)}</span></div>
+  <div class="fit subl" id="subl" data-max="42" data-min="26" style="top:1345px;height:120px;opacity:0"><span>${esc(req.text.subline)}</span></div>
   ${price}
 </div>
 
@@ -112,10 +112,10 @@ body{font-family:'Amiri','Playfair Display',serif;color:${C.oliveDeep}}
   <img class="logo" id="logo3" src="${logoDataUri()}" style="left:380px;top:430px;width:320px;height:320px;opacity:0;border:6px solid #FBF5E9">
   <div class="t" id="tag" style="top:790px;font-size:50px;color:#E3C9A0;font-weight:700">تراث فلسطيني بين يديك</div>
   <div class="rule" id="rule" style="top:900px;opacity:0"><span class="diamond"></span></div>
-  <div class="t" id="c1" style="top:960px;font-size:46px">اطلب من المتجر</div>
-  <div class="t url" id="c2" style="top:1030px;font-size:64px;color:${C.cream}">${site}</div>
-  <div class="t" id="c3" style="top:1190px;font-size:46px">أو عبر واتساب</div>
-  <div class="t url" id="c4" style="top:1260px;font-size:64px;color:#E3A56E">${wa}</div>
+  <div class="t" id="c1" style="top:960px;font-size:52px">اطلب من المتجر</div>
+  <div class="t url" id="c2" style="top:1035px;font-size:72px;color:${C.cream}">${site}</div>
+  <div class="t" id="c3" style="top:1200px;font-size:52px">أو عبر واتساب</div>
+  <div class="t url" id="c4" style="top:1275px;font-size:72px;color:#E3A56E">${wa}</div>
   <div class="flag" id="flag3" style="top:1420px;opacity:0"></div>
 </div>
 </div>
@@ -125,7 +125,7 @@ const eo=p=>1-Math.pow(1-p,3);
 const eb=p=>{const c=1.70158,d=c+1;return 1+d*Math.pow(p-1,3)+c*Math.pow(p-1,2)};
 const $=id=>document.getElementById(id);
 $('flag1').innerHTML=$('flag3').innerHTML='<i style="background:#111"></i><i style="background:#2E7D4F"></i><i style="background:#C8323B"></i>';
-const S1=[0,4.9],S2=[4.5,9.8],S3=[9.4,${REEL_SECONDS}];
+const S1=[0,4.9],S2=[4.5,9.8],S3=[9.3,${REEL_SECONDS}];
 const sceneOp=(t,s,last)=>Math.min(clamp((t-s[0])/.5),last?1:1-clamp((t-(s[1]-.5))/.5));
 function enter(el,t,t0,dur,kind){const p=clamp((t-t0)/dur);const e=eo(p);el.style.opacity=e;
   if(kind==='pop'){el.style.transform='translateX(-50%) scale('+(.55+.45*eb(p))+')'}
@@ -142,7 +142,7 @@ window.seek=function(t){
   const z2=1.18-.16*clamp(l/(S2[1]-S2[0]));$('p2').style.transform='scale('+z2+') translate('+(14*l)+'px,'+(8*l)+'px)';
   enter($('name'),t,S2[0]+.55,.6,'rise');enter($('subl'),t,S2[0]+.95,.6,'rise');
   enter($('pill'),t,S2[0]+1.5,.7,'pop');
-  const b=S3[0]+.2;enter($('logo3'),t,b,.7,'rise');enter($('tag'),t,b+.45,.6,'rise');
+  const b=S3[0]-.1;enter($('logo3'),t,b,.7,'rise');enter($('tag'),t,b+.45,.6,'rise');
   $('rule').style.opacity=eo(clamp((t-(b+.8))/.5));
   enter($('c1'),t,b+1.0,.5,'rise');enter($('c2'),t,b+1.3,.6,'rise');enter($('c3'),t,b+1.8,.5,'rise');enter($('c4'),t,b+2.1,.6,'rise');
   $('flag3').style.opacity=eo(clamp((t-(b+2.6))/.5));

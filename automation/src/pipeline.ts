@@ -249,6 +249,7 @@ export async function buildReelAssets(
   post: Pick<SocialPostRow, "id" | "angle" | "design"> & { scheduled_at?: string },
   product: ProductRecord,
   musicIndex: number,
+  keepCaption = false,
 ): Promise<Partial<SocialPostRow>> {
   const categoryAr = cats.get(product.category)?.label_ar ?? "";
   const ctaIndex = await pickCtaIndex(sb, post.scheduled_at ?? null, post.id);
@@ -284,5 +285,5 @@ export async function buildReelAssets(
   const video_url = await up("mp4", video, "video/mp4");
   const image_url = await up("jpg", cover, "image/jpeg");
   log(`reel uploaded (${(video.length / 1e6).toFixed(1)} MB, ${REEL_SECONDS}s)`, video_url);
-  return { video_url, image_url, caption_full: res.caption, design: res.design };
+  return { video_url, image_url, ...(keepCaption ? {} : { caption_full: res.caption }), design: res.design };
 }

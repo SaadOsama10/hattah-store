@@ -10,6 +10,10 @@ on:
         description: "Publish this post now (social_posts.id); empty = all due"
         required: false
         type: string
+      check_reel:
+        description: "Validate this reel (social_posts.id) against Instagram WITHOUT publishing"
+        required: false
+        type: string
       dry_run:
         description: "DRY_RUN (no Meta calls)"
         required: false
@@ -48,8 +52,11 @@ jobs:
       - name: Publish
         env:
           IN_POST: ${{ inputs.post_id }}
+          IN_CHECK: ${{ inputs.check_reel }}
         run: |
-          if [ -n "$IN_POST" ]; then
+          if [ -n "$IN_CHECK" ]; then
+            npx tsx src/reel-check.ts "$IN_CHECK"
+          elif [ -n "$IN_POST" ]; then
             npx tsx src/publish.ts --post="$IN_POST"
           else
             npx tsx src/publish.ts
