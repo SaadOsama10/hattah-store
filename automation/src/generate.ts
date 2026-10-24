@@ -5,6 +5,7 @@ import { getSupabase } from "./db.js";
 import { Renderer } from "./render/render.js";
 import { addDays, istanbulDate, log, slotToUtc } from "./time.js";
 import { buildPostAssets, loadCategories, loadSettings, pickProducts, type ProductPick } from "./pipeline.js";
+import { sortedImages } from "./products.js";
 import { ANGLES, type Angle, type PostType, type ProductRecord } from "./types.js";
 
 loadEnv();
@@ -66,19 +67,39 @@ if (feedPicks.length < feedSlots.length) log(`only ${feedPicks.length} eligible 
 type Job = { slot: (typeof slots)[number]; type: PostType; product: ProductRecord; angle: Angle };
 const jobs: Job[] = feedPicks.map((p, i) => ({ slot: feedSlots[i], type: "feed", product: p.product, angle: p.angle }));
 
-// Stories reuse one of the day's feed products (random), always with a different angle than its feed post.
-const pool = [...feedPicks].sort(() => Math.random() - 0.5);
-let fallback: ProductPick[] | null = null;
-for (const [i, slot] of storySlots.entries()) {
-  const base = pool[i % Math.max(pool.length, 1)];
-  if (base) {
+// Stories: a random mix of the day's feed products (always a different angle, and a
+// different photo — so only products with 2+ photos) and other eligible products.
+// A product never appears twice in the day's stories.
+const MAX_FEED_OVERLAP = 3;
+const usedStoryIds = new Set((existing ?? []).filter((e) => e.post_type === "story" && e.status !== "skipped").map((e) => e.product_id));
+const overlap = feedPicks
+  .filter((p) => sortedImages(p.product).length > 1 && !usedStoryIds.has(p.product.id))
+  .sort(() => Math.random() - 0.5);
+const overlapCount = Math.min(overlap.length, MAX_FEED_OVERLAP, storySlots.length);
+const others = storySlots.length - overlapCount
+  ? await pickProducts(sb, settings, cats, storySlots.length - overlapCount, {
+      excludeIds: [...feedPicks.map((p) => p.product.id), ...(existing ?? []).map((e) => e.product_id).filter(Boolean)],
+      rotationDays: "auto",
+    })
+  : [];
+const storyPicks: ProductPick[] = [
+  ...overlap.slice(0, overlapCount).map((base) => {
     const options = ANGLES.filter((a) => a !== base.angle);
-    jobs.push({ slot, type: "story", product: base.product, angle: options[Math.floor(Math.random() * options.length)] });
-  } else {
-    fallback ??= await pickProducts(sb, settings, cats, storySlots.length, { rotationDays: "auto" });
-    const f = fallback[i];
-    if (f) jobs.push({ slot, type: "story", product: f.product, angle: f.angle });
-  }
+    return { product: base.product, angle: options[Math.floor(Math.random() * options.length)] };
+  }),
+  ...others,
+];
+// Not enough fresh products → top up with remaining feed products (still never a duplicate).
+for (const base of overlap.slice(overlapCount)) {
+  if (storyPicks.length >= storySlots.length) break;
+  const options = ANGLES.filter((a) => a !== base.angle);
+  storyPicks.push({ product: base.product, angle: options[Math.floor(Math.random() * options.length)] });
+}
+if (storyPicks.length < storySlots.length) log(`only ${storyPicks.length} eligible product(s) for ${storySlots.length} story slots`);
+const shuffledStories = storyPicks.sort(() => Math.random() - 0.5);
+for (const [i, slot] of storySlots.entries()) {
+  const pick = shuffledStories[i];
+  if (pick) jobs.push({ slot, type: "story", product: pick.product, angle: pick.angle });
 }
 
 // ── generate everything; one item failing never blocks the others ──
