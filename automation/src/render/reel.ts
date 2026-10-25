@@ -6,6 +6,7 @@ import { chromium, type Browser } from "playwright";
 import { getCutoutDataUri } from "./cutout.js";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { fetchPhotoDataUri, fontCss, logoDataUri, siteDisplay, whatsappDisplay } from "./render.js";
+import { ffmpegBin } from "../ffmpeg.js";
 import { log } from "../time.js";
 
 export const REEL_W = 1080;
@@ -294,7 +295,7 @@ export class ReelRenderer {
       const tmp = mkdtempSync(path.join(tmpdir(), "reel-"));
       const outFile = path.join(tmp, "reel.mp4");
       const ff = spawn(
-        "ffmpeg",
+        ffmpegBin(),
         [
           "-v", "error", "-y",
           "-f", "image2pipe", "-framerate", String(REEL_FPS), "-c:v", "mjpeg", "-i", "-",

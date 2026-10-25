@@ -70,15 +70,14 @@ jobs:
           else
             npx playwright install --with-deps chromium
           fi
-      - name: Ensure ffmpeg (reels)
-        timeout-minutes: 6
-        env:
-          DEBIAN_FRONTEND: noninteractive
-          NEEDRESTART_MODE: a
+      - name: Ensure ffmpeg (bundled static build; apt only as a time-boxed fallback)
+        timeout-minutes: 4
+        continue-on-error: true
         run: |
+          BIN="$(node -p "require('ffmpeg-static') || ''" 2>/dev/null || true)"
+          if [ -n "$BIN" ] && [ -x "$BIN" ]; then echo "ffmpeg-static: $BIN"; exit 0; fi
           command -v ffmpeg >/dev/null && exit 0
-          sudo -E apt-get update -qq -o Acquire::Retries=3
-          sudo -E apt-get install -y -qq -o Acquire::Retries=3 -o Dpkg::Lock::Timeout=120 ffmpeg
+          sudo -E timeout 150 apt-get install -y -qq ffmpeg
       - name: Generate / regenerate
         env:
           IN_MODE: ${{ inputs.mode }}

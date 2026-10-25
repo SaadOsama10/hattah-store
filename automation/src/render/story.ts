@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { buildHtml } from "./templates.js";
 import { SIZES, layoutTemplate, type RenderRequest, type Renderer } from "./render.js";
+import { ffmpegBin } from "../ffmpeg.js";
 import { log } from "../time.js";
 
 export const STORY_SECONDS = 7;
@@ -73,7 +74,7 @@ export async function renderStoryVideo(
     const tmp = mkdtempSync(path.join(tmpdir(), "story-"));
     const outFile = path.join(tmp, "story.mp4");
     const ff = spawn(
-      "ffmpeg",
+      ffmpegBin(),
       [
         "-v", "error", "-y",
         "-f", "image2pipe", "-framerate", String(STORY_FPS), "-c:v", "mjpeg", "-i", "-",
