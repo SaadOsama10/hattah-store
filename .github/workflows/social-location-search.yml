@@ -28,3 +28,24 @@ jobs:
               --data-urlencode "q=${Q}" --data-urlencode "fields=id,name,location,link" --data-urlencode "limit=10" \
               --data-urlencode "access_token=${META_ACCESS_TOKEN}" | jq -c 'if .error then {error:.error.message,code:.error.code} else (.data // [])[] | {id,name,city:.location.city,country:.location.country} end'
           done
+
+  test-ids:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      META_ACCESS_TOKEN: ${{ secrets.META_ACCESS_TOKEN }}
+      META_IG_USER_ID: ${{ secrets.META_IG_USER_ID }}
+      META_GRAPH_VERSION: ${{ vars.META_GRAPH_VERSION || 'v25.0' }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+    steps:
+      - name: Try candidate location ids (creates an unpublished image container for each — nothing is posted)
+        run: |
+          set +x
+          IMG="${SUPABASE_URL}/storage/v1/object/public/social-posts/2026-10-24/6fb62b57-6843-48f0-a6db-584c451640e6-1792875049512.jpg"
+          # any existing public image works; fall back to the Supabase logo-sized asset if this path is gone
+          for id in 212903416 106050279435240; do
+            echo "== location_id $id"
+            curl -sS -X POST "https://graph.facebook.com/${META_GRAPH_VERSION}/${META_IG_USER_ID}/media" \
+              --data-urlencode "image_url=${IMG}" --data-urlencode "location_id=${id}" --data-urlencode "access_token=${META_ACCESS_TOKEN}" \
+              | jq -c 'if .error then {error:.error.message,code:.error.code,sub:.error.error_subcode} else {ok:true,container:.id} end'
+          done
