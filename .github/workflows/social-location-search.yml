@@ -29,6 +29,22 @@ jobs:
               --data-urlencode "access_token=${META_ACCESS_TOKEN}" | jq -c 'if .error then {error:.error.message,code:.error.code} else (.data // [])[] | {id,name,city:.location.city,country:.location.country} end'
           done
 
+  lookup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      META_ACCESS_TOKEN: ${{ secrets.META_ACCESS_TOKEN }}
+      META_GRAPH_VERSION: ${{ vars.META_GRAPH_VERSION || 'v25.0' }}
+    steps:
+      - name: Look up candidate pages (id, name, category, location)
+        run: |
+          set +x
+          for v in PakIstanbulOfficial istanbulturkiye travelistanbull turkeyistanbulholiday istanbul.turkey.city 100075995919686 istanbultourism2015 visitistanbul IstanbulTurkey Istanbul istanbul; do
+            echo "== $v"
+            curl -sS -G "https://graph.facebook.com/${META_GRAPH_VERSION}/${v}" --data-urlencode "fields=id,name,category,location" --data-urlencode "access_token=${META_ACCESS_TOKEN}" \
+              | jq -c 'if .error then {error:.error.message} else {id,name,category,loc:(.location|tostring)} end'
+          done
+
   test-ids:
     runs-on: ubuntu-latest
     timeout-minutes: 5
