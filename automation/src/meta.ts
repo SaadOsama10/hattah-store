@@ -156,3 +156,20 @@ export async function checkReelContainer(videoUrl: string, coverUrl: string | nu
   }
   throw new MetaError("container still processing after 10 min", true);
 }
+
+/** Creates the child containers and the carousel container (never publishes) — validates slides and caption against Instagram. */
+export async function checkCarouselContainer(slides: string[], caption: string | null, locationId?: string | null): Promise<string> {
+  const igId = need("META_IG_USER_ID");
+  const token = need("META_ACCESS_TOKEN");
+  const children: string[] = [];
+  for (const url of slides) {
+    const child = await graph("POST", `${igId}/media`, { image_url: url, is_carousel_item: "true" }, token);
+    await waitFinished(child.id, token, 24, 5000);
+    children.push(child.id);
+  }
+  const params: Record<string, string> = { media_type: "CAROUSEL", children: children.join(","), caption: caption ?? "container check (not published)" };
+  if (locationId) params.location_id = locationId;
+  const parent = await createContainer(igId, params, token);
+  await waitFinished(parent.id, token, 24, 5000);
+  return parent.id;
+}
