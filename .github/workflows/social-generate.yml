@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "daily (batch) | today | tomorrow (immediate) | regenerate"
+        description: "daily (batch) | today | tomorrow (immediate) | fixup | regenerate"
         default: "today"
         type: string
       post_id:
@@ -90,6 +90,7 @@ jobs:
           case "$MODE" in
             regenerate) npx tsx src/regenerate.ts --post="$IN_POST" --what="${IN_WHAT:-both}" ;;
             today)      npx tsx src/generate.ts $IN_ARGS ;;
+            fixup)      npx tsx src/caption-fixup.ts $IN_ARGS ;;
             tomorrow)   npx tsx src/generate.ts --tomorrow ;;            # admin button: immediate, normal API calls
             *)          npx tsx src/generate.ts --tomorrow --batch ;;    # daily cron (03:00 Istanbul): text via the OpenAI Batch API (-50 %), collect.ts renders
           esac
