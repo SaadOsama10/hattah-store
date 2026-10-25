@@ -59,7 +59,7 @@ jobs:
           set +x
           IMG="${SUPABASE_URL}/storage/v1/object/public/social-posts/2026-10-24/15188141-7111-4e53-86c9-a6f865a84b66-1792811980826.jpg"
           # any existing public image works; fall back to the Supabase logo-sized asset if this path is gone
-          for id in 212903416 106050279435240; do
+          for id in 106012156106461 212903416; do
             echo "== location_id $id"
             curl -sS -X POST "https://graph.facebook.com/${META_GRAPH_VERSION}/${META_IG_USER_ID}/media" \
               --data-urlencode "image_url=${IMG}" --data-urlencode "location_id=${id}" --data-urlencode "access_token=${META_ACCESS_TOKEN}" \
