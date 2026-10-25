@@ -1,0 +1,30 @@
+name: Social — find the Istanbul location id (one-off helper)
+
+# Searches Facebook places named "Istanbul" and prints id/name/location (the token is never echoed).
+on:
+  workflow_dispatch:
+    inputs:
+      query:
+        description: "Place search text"
+        default: "Istanbul"
+        type: string
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      META_ACCESS_TOKEN: ${{ secrets.META_ACCESS_TOKEN }}
+      META_GRAPH_VERSION: ${{ vars.META_GRAPH_VERSION || 'v25.0' }}
+      Q: ${{ inputs.query }}
+    steps:
+      - name: pages/search
+        run: |
+          set +x
+          for ep in "pages/search" "search"; do
+            echo "== $ep"
+            extra=(); [ "$ep" = "search" ] && extra=(--data-urlencode "type=place" --data-urlencode "center=41.0082,28.9784" --data-urlencode "distance=20000")
+            curl -sS -G "https://graph.facebook.com/${META_GRAPH_VERSION}/$ep" "${extra[@]}" \
+              --data-urlencode "q=${Q}" --data-urlencode "fields=id,name,location,link" --data-urlencode "limit=10" \
+              --data-urlencode "access_token=${META_ACCESS_TOKEN}" | jq -c 'if .error then {error:.error.message,code:.error.code} else (.data // [])[] | {id,name,city:.location.city,country:.location.country} end'
+          done
