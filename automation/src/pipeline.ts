@@ -4,6 +4,8 @@ import { ReelRenderer, REEL_SECONDS } from "./render/reel.js";
 import { chooseTrack, musicStartFor, trackFile } from "./music.js";
 import { STORY_SECONDS, renderStoryVideo } from "./render/story.js";
 import { CTA_POOL, ctaIndexOf, generateCaption, resultFromJson, type CaptionJson, type CaptionMode } from "./captions.js";
+import { buildTagSet, countRecentUse, parseTags } from "./hashtags.js";
+import { renderDetailsSlide, renderPhotoSlide } from "./render/carousel.js";
 import { SOCIAL_BUCKET } from "./db.js";
 import { effectivePrice, sortedImages } from "./products.js";
 import { ANGLES, type Angle, type ProductRecord, type SocialPostRow, type SocialSettings } from "./types.js";
@@ -70,6 +72,32 @@ export async function loadAvoidHints(sb: SupabaseClient, productId: string, angl
   return out.slice(0, 10);
 }
 
+/** Hashtag line for one post: 3 big + 4 medium + 3 niche (ar/tr/en), least-recently-used first, never the exact set of another post the same Istanbul day. */
+export function makeTagPicker(sb: SupabaseClient, scheduledAt: string | null, postId: string) {
+  return async (productTags: string[]): Promise<string[]> => {
+    const at = new Date(scheduledAt ?? Date.now());
+    const day = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul" }).format(at);
+    const start = new Date(`${day}T00:00:00+03:00`);
+    const { data: today } = await sb
+      .from("social_posts")
+      .select("id, caption_full")
+      .gte("scheduled_at", start.toISOString())
+      .lt("scheduled_at", new Date(start.getTime() + 86400e3).toISOString())
+      .not("caption_full", "is", null)
+      .neq("id", postId);
+    const { data: recent } = await sb
+      .from("social_posts")
+      .select("caption_full")
+      .gte("scheduled_at", new Date(start.getTime() - 3 * 86400e3).toISOString())
+      .not("caption_full", "is", null)
+      .neq("id", postId);
+    return buildTagSet(productTags, {
+      daySets: (today ?? []).map((r) => parseTags(r.caption_full)).filter((t) => t.length),
+      recentUse: countRecentUse((recent ?? []).map((r) => r.caption_full)),
+    });
+  };
+}
+
 /** In-process reservations so parallel jobs of one run never pick the same phrasing. */
 const reservedCtas = new Map<string, Set<number>>();
 
@@ -134,13 +162,13 @@ export async function pickProducts(
   settings: SocialSettings,
   cats: Map<string, { label_ar: string; parent_key: string | null }>,
   count: number,
-  opts: { excludeIds?: string[]; previousCategory?: string | null; slotTypes?: ("feed" | "story" | "reel")[]; rotationDays?: number | "auto" } = {},
+  opts: { excludeIds?: string[]; previousCategory?: string | null; slotTypes?: ("feed" | "story" | "reel" | "carousel")[]; rotationDays?: number | "auto"; minImages?: number } = {},
 ): Promise<ProductPick[]> {
   const { data: prods, error } = await sb.from("products").select(PRODUCT_SELECT);
   if (error) throw new Error(error.message);
   const excluded = new Set([...(settings.excluded_product_ids ?? []), ...(opts.excludeIds ?? [])]);
   const eligible = (prods as unknown as ProductRecord[]).filter(
-    (p) => !excluded.has(p.id) && sortedImages(p).length > 0,
+    (p) => !excluded.has(p.id) && sortedImages(p).length >= (opts.minImages ?? 1),
   );
 
   const { data: hist } = await sb
@@ -229,13 +257,13 @@ export async function buildPostAssets(
     const mode: CaptionMode = post.post_type === "feed" && what.caption ? "full" : "design";
     const ctaIndex = mode === "full" ? await pickCtaIndex(sb, (post as { scheduled_at?: string }).scheduled_at ?? null, post.id) : 0;
     const res = precomputed
-      ? resultFromJson(precomputed, settings, ctaIndex, mode)
+      ? resultFromJson(precomputed, settings, ctaIndex, mode, mode === "full" ? await makeTagPicker(sb, (post as { scheduled_at?: string }).scheduled_at ?? null, post.id)(precomputed.hashtags) : undefined)
       : await generateCaption(
           product,
           categoryAr,
           post.angle,
           settings,
-          { mode, avoid: await loadAvoidHints(sb, product.id, post.angle, post.id), recent: await loadRecentTexts(sb, post.id, product.id), label: `${post.post_type} ${product.name_ar.slice(0, 18)}` },
+          { mode, avoid: await loadAvoidHints(sb, product.id, post.angle, post.id), recent: await loadRecentTexts(sb, post.id, product.id), label: `${post.post_type} ${product.name_ar.slice(0, 18)}`, tagPicker: makeTagPicker(sb, (post as { scheduled_at?: string }).scheduled_at ?? null, post.id) },
           ctaIndex,
         );
     design = res.design;
@@ -300,13 +328,13 @@ export async function buildReelAssets(
   const ctaIndex = await pickCtaIndex(sb, post.scheduled_at ?? null, post.id);
   const mode: CaptionMode = keepCaption ? "design" : "full"; // to-reel keeps the feed caption, only the on-screen text is new
   const res = precomputed
-    ? resultFromJson(precomputed, settings, ctaIndex, mode)
+    ? resultFromJson(precomputed, settings, ctaIndex, mode, mode === "full" ? await makeTagPicker(sb, post.scheduled_at ?? null, post.id)(precomputed.hashtags) : undefined)
     : await generateCaption(
         product,
         categoryAr,
         post.angle,
         settings,
-        { mode, avoid: await loadAvoidHints(sb, product.id, post.angle, post.id), recent: await loadRecentTexts(sb, post.id, product.id), label: `reel ${product.name_ar.slice(0, 18)}` },
+        { mode, avoid: await loadAvoidHints(sb, product.id, post.angle, post.id), recent: await loadRecentTexts(sb, post.id, product.id), label: `reel ${product.name_ar.slice(0, 18)}`, tagPicker: makeTagPicker(sb, post.scheduled_at ?? null, post.id) },
         ctaIndex,
       );
   const price = effectivePrice(product);
@@ -343,6 +371,80 @@ export async function buildReelAssets(
   return { video_url, image_url, music_track: track.file, ...(keepCaption ? {} : { caption_full: res.caption }), design: res.design };
 }
 
+/** Builds a carousel: hero design slide + extra product photos + a details slide, all 1080×1350 (4:5), plus the full caption. */
+export async function buildCarouselAssets(
+  sb: SupabaseClient,
+  renderer: Renderer,
+  settings: SocialSettings,
+  cats: Map<string, { label_ar: string; parent_key: string | null }>,
+  post: Pick<SocialPostRow, "id" | "angle" | "design"> & { scheduled_at?: string },
+  product: ProductRecord,
+  precomputed?: CaptionJson,
+): Promise<Partial<SocialPostRow>> {
+  const categoryAr = cats.get(product.category)?.label_ar ?? "";
+  const ctaIndex = await pickCtaIndex(sb, post.scheduled_at ?? null, post.id);
+  const picker = makeTagPicker(sb, post.scheduled_at ?? null, post.id);
+  const res = precomputed
+    ? resultFromJson(precomputed, settings, ctaIndex, "full", await picker(precomputed.hashtags))
+    : await generateCaption(
+        product,
+        categoryAr,
+        post.angle,
+        settings,
+        { mode: "full", avoid: await loadAvoidHints(sb, product.id, post.angle, post.id), recent: await loadRecentTexts(sb, post.id, product.id), label: `carousel ${product.name_ar.slice(0, 18)}`, tagPicker: picker },
+        ctaIndex,
+      );
+  const imgs = sortedImages(product);
+  const extra = imgs.slice(1, 4); // up to 3 more photos → 3–5 slides in total
+  const total = 1 + extra.length + 1;
+  const price = effectivePrice(product);
+  const hero = await renderer.render({
+    type: "feed", // same 1080×1350 design as a feed post
+    angle: post.angle,
+    nameAr: product.name_ar,
+    categoryAr,
+    price: price.current,
+    oldPrice: price.old,
+    photoUrl: imgs[0],
+    text: res.design,
+    storeUrl: settings.store_url,
+    removeBg: (await loadRemoveBgIds(sb)).has(product.id),
+  });
+  const buffers: Buffer[] = [hero];
+  for (const [i, url] of extra.entries()) {
+    buffers.push(await renderPhotoSlide(renderer, { photoUrl: url, nameAr: product.name_ar, index: i + 1, total, storeUrl: settings.store_url, variant: i + 1 }));
+  }
+  const options = [
+    ...product.product_sizes.map((x) => x.label),
+    ...product.product_colors.map((c) => c.label_ar),
+    ...product.product_quantities.map((q) => `${q.label_ar} — ${q.price} TL`),
+  ];
+  buffers.push(
+    await renderDetailsSlide(renderer, {
+      nameAr: product.name_ar,
+      categoryAr,
+      price: price.current,
+      oldPrice: price.old,
+      details: res.details.length ? res.details : [],
+      options,
+      index: total - 1,
+      total,
+      storeUrl: settings.store_url,
+    }),
+  );
+  const day = new Date().toISOString().slice(0, 10);
+  const stamp = Date.now();
+  const slides: string[] = [];
+  for (const [i, b] of buffers.entries()) {
+    const path = `${day}/${post.id}-${stamp}-s${i + 1}.jpg`;
+    const { error } = await sb.storage.from(SOCIAL_BUCKET).upload(path, b, { contentType: "image/jpeg", upsert: false });
+    if (error) throw new Error(`upload slide ${i + 1}: ${error.message}`);
+    slides.push(sb.storage.from(SOCIAL_BUCKET).getPublicUrl(path).data.publicUrl);
+  }
+  log(`carousel «${product.name_ar}»: ${slides.length} slides uploaded`);
+  return { slides, image_url: slides[0], caption_full: res.caption, design: res.design };
+}
+
 export interface Renderers {
   renderer: Renderer;
   reelRenderer: ReelRenderer;
@@ -365,7 +467,9 @@ export async function completePost(
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
       const assets =
-        row.post_type === "reel"
+        row.post_type === "carousel"
+          ? await buildCarouselAssets(sb, r.renderer, settings, cats, row, product, attempt === 1 ? o.precomputed : undefined)
+          : row.post_type === "reel"
           ? await buildReelAssets(sb, r.reelRenderer, settings, cats, row, product, o.musicIndex ?? 0, false, attempt === 1 ? o.precomputed : undefined)
           : await buildPostAssets(sb, r.renderer, settings, cats, row, product, { image: true, caption: row.post_type === "feed" }, attempt === 1 ? o.precomputed : undefined);
       const { error } = await sb.from("social_posts").update({ ...assets, status }).eq("id", row.id);

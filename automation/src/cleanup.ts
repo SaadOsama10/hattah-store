@@ -17,17 +17,17 @@ let removed = 0;
 const cutoff = new Date(Date.now() - 14 * DAY).toISOString();
 const { data: old } = await sb
   .from("social_posts")
-  .select("id, image_url, video_url, status")
+  .select("id, image_url, video_url, slides, status")
   .in("status", ["published", "skipped", "failed"])
   .lt("scheduled_at", cutoff)
-  .or("image_url.not.is.null,video_url.not.is.null");
+  .or("image_url.not.is.null,video_url.not.is.null,slides.not.is.null");
 for (const r of old ?? []) {
-  const paths = [r.image_url, r.video_url].filter(Boolean).map((u) => bucketPath(u as string)).filter(Boolean) as string[];
+  const paths = [r.image_url, r.video_url, ...((r.slides as string[] | null) ?? [])].filter(Boolean).map((u) => bucketPath(u as string)).filter(Boolean) as string[];
   if (!paths.length) continue;
   log(`${dry ? "[dry] " : ""}old ${r.status} post ${r.id}: ${paths.length} file(s)`);
   if (!dry) {
     await sb.storage.from(SOCIAL_BUCKET).remove(paths);
-    await sb.from("social_posts").update({ image_url: null, video_url: null }).eq("id", r.id);
+    await sb.from("social_posts").update({ image_url: null, video_url: null, slides: null }).eq("id", r.id);
   }
   removed += paths.length;
 }

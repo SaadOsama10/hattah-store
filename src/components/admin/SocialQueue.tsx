@@ -141,7 +141,8 @@ function PostCard({
   const editable = ["draft", "approved", "failed"].includes(post.status);
   const isStory = post.post_type === "story";
   const isReel = post.post_type === "reel";
-  const kindLabel = isReel ? "ريل" : isStory ? "ستوري" : "منشور";
+  const isCarousel = post.post_type === "carousel";
+  const kindLabel = isReel ? "ريل" : isCarousel ? "كاروسيل" : isStory ? "ستوري" : "منشور";
   const textDirty =
     headline !== (post.design?.headline ?? "") || subline !== (post.design?.subline ?? "");
   const dirty =
@@ -167,7 +168,15 @@ function PostCard({
     <article className="overflow-hidden rounded-2xl border border-cream/15 bg-bg-secondary">
       <div className="flex gap-4 p-4">
         <div className="w-32 shrink-0 sm:w-40">
-          {post.video_url ? (
+          {isCarousel && post.slides?.length ? (
+            // Swipeable preview of the slides (scroll-snap)
+            <div className="flex w-full snap-x snap-mandatory gap-2 overflow-x-auto rounded-lg border border-cream/10" dir="ltr">
+              {post.slides.map((u, i) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img key={u} src={u} alt={`slide ${i + 1}`} className="aspect-[4/5] w-full shrink-0 snap-center object-cover" />
+              ))}
+            </div>
+          ) : post.video_url ? (
             // eslint-disable-next-line jsx-a11y/media-has-caption
             <video
               src={post.video_url}
@@ -196,7 +205,7 @@ function PostCard({
               {STATUS_LABELS[post.status]}
             </span>
             <span className="rounded-full bg-cream/10 px-2.5 py-0.5 font-inter text-xs text-cream-secondary">
-              {kindLabel} · {ANGLE_LABELS[post.angle]}
+              {kindLabel}{isCarousel && post.slides?.length ? ` (${post.slides.length} شرائح)` : ""} · {ANGLE_LABELS[post.angle]}
             </span>
           </div>
           <p className="font-inter text-sm font-semibold text-cream">{post.products?.name_ar ?? "— منتج محذوف —"}</p>

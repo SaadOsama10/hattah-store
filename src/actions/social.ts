@@ -123,7 +123,7 @@ export async function saveSocialSettings(
 ) {
   await assertAdminSession();
   const slots = s.daily_slots.filter(
-    (x) => (x.type === "feed" || x.type === "story" || x.type === "reel") && /^([01]\d|2[0-3]):[0-5]\d$/.test(x.time)
+    (x) => (x.type === "feed" || x.type === "story" || x.type === "reel" || x.type === "carousel") && /^([01]\d|2[0-3]):[0-5]\d$/.test(x.time)
   );
   const supabase = getServiceSupabaseClient();
   const { error } = await supabase

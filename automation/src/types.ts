@@ -1,4 +1,4 @@
-export type PostType = "feed" | "story" | "reel";
+export type PostType = "feed" | "story" | "reel" | "carousel";
 export type Angle = "showcase" | "heritage" | "quote" | "offer";
 export const ANGLES: Angle[] = ["showcase", "heritage", "quote", "offer"];
 export type PostStatus =
@@ -35,6 +35,8 @@ export interface SocialSettings {
   store_url?: string;
   /** Direct Facebook API publishing; undefined/false until enabled (migration 018). */
   publish_to_facebook?: boolean;
+  /** Facebook Place / Page id used as the Instagram location tag (Istanbul). */
+  location_id?: string | null;
   consecutive_failures: number;
   last_error: string | null;
   auto_disabled_at: string | null;
@@ -48,6 +50,8 @@ export interface SocialPostRow {
   image_url: string | null;
   /** Rendered MP4 (reels only); deleted from storage right after publishing. */
   video_url?: string | null;
+  /** Carousel slide image URLs, in order (image_url = the first). */
+  slides?: string[] | null;
   /** Music file of a reel (automation/music/tracks.json). */
   music_track?: string | null;
   caption_full: string | null;

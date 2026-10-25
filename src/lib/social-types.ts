@@ -7,7 +7,7 @@ export type SocialPostStatus =
   | "skipped";
 
 export interface SocialSlot {
-  type: "feed" | "story" | "reel";
+  type: "feed" | "story" | "reel" | "carousel";
   time: string; // "HH:MM" Istanbul
 }
 
@@ -24,6 +24,8 @@ export interface SocialSettingsRow {
   store_url?: string;
   /** undefined until migration 018 is applied; false = Instagram only (Instagram auto-shares to the Page) */
   publish_to_facebook?: boolean;
+  /** Instagram location tag (Facebook Place id of Istanbul) */
+  location_id?: string | null;
   consecutive_failures: number;
   last_error: string | null;
   auto_disabled_at: string | null;
@@ -32,11 +34,13 @@ export interface SocialSettingsRow {
 export interface SocialPostWithProduct {
   id: string;
   product_id: string | null;
-  post_type: "feed" | "story" | "reel";
+  post_type: "feed" | "story" | "reel" | "carousel";
   angle: "showcase" | "heritage" | "quote" | "offer";
   image_url: string | null;
   /** Reels only: the rendered MP4 until it is published (then removed from storage). */
   video_url?: string | null;
+  /** Carousel slides (image URLs) */
+  slides?: string[] | null;
   caption_full: string | null;
   design: { headline?: string; subline?: string } | null;
   scheduled_at: string;

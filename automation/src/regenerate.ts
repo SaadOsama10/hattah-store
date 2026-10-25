@@ -5,7 +5,7 @@ import { getSupabase } from "./db.js";
 import { Renderer } from "./render/render.js";
 import { ReelRenderer } from "./render/reel.js";
 import { log } from "./time.js";
-import { buildReelAssets, buildPostAssets, loadCategories, loadProduct, loadSettings, pickProducts } from "./pipeline.js";
+import { buildCarouselAssets, buildReelAssets, buildPostAssets, loadCategories, loadProduct, loadSettings, pickProducts } from "./pipeline.js";
 
 loadEnv();
 const arg = (n: string) => process.argv.find((a) => a.startsWith(`--${n}=`))?.split("=")[1];
@@ -52,7 +52,9 @@ try {
     const caption = what === "caption" || what === "both" || what === "swap";
     // A reel is re-rendered whole (hook text, caption and video come from one model call).
     let assets;
-    if (post.post_type === "reel" || what === "to-reel") {
+    if (post.post_type === "carousel") {
+      assets = await buildCarouselAssets(sb, renderer, settings, cats, { ...post, angle, design: null }, product);
+    } else if (post.post_type === "reel" || what === "to-reel") {
       const { count } = await sb.from("social_posts").select("id", { count: "exact", head: true }).eq("post_type", "reel");
       assets = await buildReelAssets(sb, reelRenderer, settings, cats, { ...post, angle, design: null }, product, (count ?? 0) + [...postId].reduce((a, c) => a + c.charCodeAt(0), 0), what === "to-reel"); // varied track per reel
     } else {

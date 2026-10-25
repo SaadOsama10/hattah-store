@@ -42,7 +42,7 @@ const taken = new Set((existing ?? []).filter((e) => e.status !== "skipped").map
 const wanted = onlyArg
   ? onlyArg.split(",").map((x) => {
       const [type, time] = x.split("@");
-      if ((type !== "feed" && type !== "story" && type !== "reel") || !/^\d\d:\d\d$/.test(time ?? "")) throw new Error(`bad --only entry: ${x}`);
+      if ((type !== "feed" && type !== "story" && type !== "reel" && type !== "carousel") || !/^\d\d:\d\d$/.test(time ?? "")) throw new Error(`bad --only entry: ${x}`);
       return { type: type as PostType, time };
     })
   : settings.daily_slots;
@@ -66,6 +66,7 @@ function jittered(time: string): Date {
 // ── product selection ──
 const feedSlots = slots.filter((s) => s.type === "feed");
 const reelSlots = slots.filter((s) => s.type === "reel");
+const carouselSlots = slots.filter((s) => s.type === "carousel");
 const storySlots = slots.filter((s) => s.type === "story");
 
 const { data: prev } = await sb
@@ -99,6 +100,22 @@ for (const [i, slot] of reelSlots.entries()) {
   if (reelPicks[i]) jobs.push({ slot, type: "reel", product: reelPicks[i].product, angle: reelPicks[i].angle });
 }
 
+// Carousels: products with 3+ photos that are not among today's feed posts or reels (nor anything already posted today).
+// No qualifying product → that slot becomes a normal feed post.
+const dayIds = [...feedPicks.map((p) => p.product.id), ...reelPicks.map((p) => p.product.id), ...(existing ?? []).map((e) => e.product_id).filter(Boolean)];
+const carouselPicks = carouselSlots.length
+  ? await pickProducts(sb, settings, cats, carouselSlots.length, { excludeIds: dayIds, rotationDays: "auto", minImages: 3 })
+  : [];
+for (const [i, slot] of carouselSlots.entries()) {
+  if (carouselPicks[i]) {
+    jobs.push({ slot, type: "carousel", product: carouselPicks[i].product, angle: carouselPicks[i].angle });
+  } else {
+    log(`no product with 3+ photos for the ${slot.time} carousel → a normal feed post instead`);
+    const [fb] = await pickProducts(sb, settings, cats, 1, { excludeIds: [...dayIds, ...carouselPicks.map((p) => p.product.id)], rotationDays: "auto" });
+    if (fb) jobs.push({ slot, type: "feed", product: fb.product, angle: fb.angle });
+  }
+}
+
 // Stories: a random mix of the day's feed products (always a different angle, and a
 // different photo — so only products with 2+ photos) and other eligible products.
 // A product never appears twice in the day's stories.
@@ -115,7 +132,7 @@ const overlap = [...feedPicks, ...existingFeed]
 const overlapCount = Math.min(overlap.length, MAX_FEED_OVERLAP, storySlots.length);
 const others = storySlots.length - overlapCount
   ? await pickProducts(sb, settings, cats, storySlots.length - overlapCount, {
-      excludeIds: [...feedPicks.map((p) => p.product.id), ...reelPicks.map((p) => p.product.id), ...(existing ?? []).map((e) => e.product_id).filter(Boolean)],
+      excludeIds: [...dayIds, ...carouselPicks.map((p) => p.product.id)],
       rotationDays: "auto",
     })
   : [];

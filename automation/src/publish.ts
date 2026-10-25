@@ -87,13 +87,17 @@ for (const post of due) {
     try {
       const story = post.post_type === "story";
       const reel = post.post_type === "reel";
+      const carousel = post.post_type === "carousel";
+      const loc = settings.location_id || null; // Istanbul tag on feed posts, carousels and reels
       if (!igId) {
         const r = await publishInstagram(
           reel
-            ? { kind: "reel", videoUrl: post.video_url!, caption: post.caption_full, coverUrl: post.image_url }
-            : story
-              ? { kind: "story", imageUrl: post.image_url, videoUrl: post.video_url }
-              : { kind: "feed", imageUrl: post.image_url!, caption: post.caption_full },
+            ? { kind: "reel", videoUrl: post.video_url!, caption: post.caption_full, coverUrl: post.image_url, locationId: loc }
+            : carousel
+              ? { kind: "carousel", imageUrls: (post.slides as string[]) ?? [post.image_url!], caption: post.caption_full, locationId: loc }
+              : story
+                ? { kind: "story", imageUrl: post.image_url, videoUrl: post.video_url }
+                : { kind: "feed", imageUrl: post.image_url!, caption: post.caption_full, locationId: loc },
         );
         igId = r.id;
         permalink = r.permalink;
@@ -102,7 +106,7 @@ for (const post of due) {
         log(`✓ Instagram ${igId}`);
       }
       // Facebook is off by default: Instagram's own auto-share puts the post on the Page (API posts are hidden while the app is unpublished).
-      if (!story && !reel && !fbId && settings.publish_to_facebook === true) {
+      if (!story && !reel && !carousel && !fbId && settings.publish_to_facebook === true) {
         fbId = (await publishFacebook(post.image_url!, post.caption_full ?? "")).id;
         await sb.from("social_posts").update({ fb_post_id: fbId }).eq("id", post.id);
         log(`✓ Facebook ${fbId}`);

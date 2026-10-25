@@ -28,43 +28,80 @@ async function graph(method: "GET" | "POST", path: string, params: Record<string
 }
 
 export type IgMedia =
-  | { kind: "feed"; imageUrl: string; caption: string | null }
+  | { kind: "feed"; imageUrl: string; caption: string | null; locationId?: string | null }
+  | { kind: "carousel"; imageUrls: string[]; caption: string | null; locationId?: string | null }
   | { kind: "story"; imageUrl?: string | null; videoUrl?: string | null }
-  | { kind: "reel"; videoUrl: string; caption: string | null; coverUrl?: string | null };
+  | { kind: "reel"; videoUrl: string; caption: string | null; coverUrl?: string | null; locationId?: string | null };
+
+async function waitFinished(id: string, token: string, tries: number, wait: number) {
+  for (let i = 0; i < tries; i++) {
+    const s = await graph("GET", id, { fields: "status_code,status" }, token);
+    if (s.status_code === "FINISHED") return;
+    if (s.status_code === "ERROR" || s.status_code === "EXPIRED") throw new MetaError(`IG container ${s.status_code}: ${s.status ?? ""}`, false);
+    if (i === tries - 1) throw new MetaError(`IG container still processing after ${Math.round((tries * wait) / 60000)} min`, true);
+    await sleep(wait);
+  }
+}
+
+/** Creates a media container; if Instagram rejects the location tag the post still goes out (without it). */
+async function createContainer(igId: string, params: Record<string, string>, token: string): Promise<{ id: string }> {
+  try {
+    return await graph("POST", `${igId}/media`, params, token);
+  } catch (e) {
+    if (params.location_id && /location/i.test((e as Error).message)) {
+      log(`location tag ${params.location_id} rejected (${(e as Error).message.slice(0, 120)}) → publishing without it`);
+      const { location_id: _drop, ...rest } = params;
+      return await graph("POST", `${igId}/media`, rest, token);
+    }
+    throw e;
+  }
+}
 
 export async function publishInstagram(media: IgMedia): Promise<{ id: string; permalink: string | null }> {
   const igId = need("META_IG_USER_ID");
   const token = need("META_ACCESS_TOKEN");
   const params: Record<string, string> = {};
-  if (media.kind === "reel") {
-    params.media_type = "REELS";
-    params.video_url = media.videoUrl;
-    params.share_to_feed = "true";
+  let containerId: string;
+  let video = false;
+  if (media.kind === "carousel") {
+    // child containers (one per slide) → carousel container → publish
+    const children: string[] = [];
+    for (const [i, url] of media.imageUrls.entries()) {
+      const child = await graph("POST", `${igId}/media`, { image_url: url, is_carousel_item: "true" }, token);
+      await waitFinished(child.id, token, 24, 5000);
+      children.push(child.id);
+      log(`IG carousel slide ${i + 1}/${media.imageUrls.length}`, child.id);
+    }
+    params.media_type = "CAROUSEL";
+    params.children = children.join(",");
     if (media.caption) params.caption = media.caption;
-    if (media.coverUrl) params.cover_url = media.coverUrl;
-  } else if (media.kind === "story") {
-    params.media_type = "STORIES";
-    if (media.videoUrl) params.video_url = media.videoUrl;
-    else params.image_url = media.imageUrl!;
+    if (media.locationId) params.location_id = media.locationId;
+    containerId = (await createContainer(igId, params, token)).id;
   } else {
-    params.image_url = media.imageUrl;
-    if (media.caption) params.caption = media.caption;
+    if (media.kind === "reel") {
+      video = true;
+      params.media_type = "REELS";
+      params.video_url = media.videoUrl;
+      params.share_to_feed = "true";
+      if (media.caption) params.caption = media.caption;
+      if (media.coverUrl) params.cover_url = media.coverUrl;
+      if (media.locationId) params.location_id = media.locationId;
+    } else if (media.kind === "story") {
+      params.media_type = "STORIES";
+      video = !!media.videoUrl;
+      if (media.videoUrl) params.video_url = media.videoUrl;
+      else params.image_url = media.imageUrl!;
+    } else {
+      params.image_url = media.imageUrl;
+      if (media.caption) params.caption = media.caption;
+      if (media.locationId) params.location_id = media.locationId;
+    }
+    containerId = (await createContainer(igId, params, token)).id;
   }
-  const container = await graph("POST", `${igId}/media`, params, token);
-  log("IG container", container.id);
-
-  // Poll until the container is processed: images ~2 min, videos up to ~10 min.
-  const video = media.kind === "reel" || (media.kind === "story" && !!media.videoUrl);
-  const tries = video ? 60 : 24;
-  const wait = video ? 10000 : 5000;
-  for (let i = 0; i < tries; i++) {
-    const s = await graph("GET", container.id, { fields: "status_code,status" }, token);
-    if (s.status_code === "FINISHED") break;
-    if (s.status_code === "ERROR" || s.status_code === "EXPIRED") throw new MetaError(`IG container ${s.status_code}: ${s.status ?? ""}`, false);
-    if (i === tries - 1) throw new MetaError(`IG container still processing after ${Math.round((tries * wait) / 60000)} min`, true);
-    await sleep(wait);
-  }
-  const pub = await graph("POST", `${igId}/media_publish`, { creation_id: container.id }, token);
+  log("IG container", containerId);
+  // images ~2 min, videos up to ~10 min
+  await waitFinished(containerId, token, video ? 60 : 24, video ? 10000 : 5000);
+  const pub = await graph("POST", `${igId}/media_publish`, { creation_id: containerId }, token);
   let permalink: string | null = null;
   try {
     permalink = (await graph("GET", pub.id, { fields: "permalink" }, token)).permalink ?? null;

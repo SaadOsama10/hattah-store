@@ -77,6 +77,7 @@ export const SIZES: Record<PostType, { width: number; height: number }> = {
   feed: { width: 1080, height: 1350 },
   story: { width: 1080, height: 1920 },
   reel: { width: 1080, height: 1920 },
+  carousel: { width: 1080, height: 1350 },
 };
 
 export function whatsappDisplay(): string {
