@@ -2,6 +2,7 @@
 // Usage: tsx src/generate.ts [--date=YYYY-MM-DD | --tomorrow] [--only=story@21:15,story@22:15] [--jitter=0]
 //   --only   fill just these slots (type@HH:MM) instead of settings.daily_slots (skips ones already taken)
 //   --jitter override the ± random offset in minutes
+//   --test   test day: items are generated but end as `skipped` (error TEST), so nothing can publish
 //   --batch  daily mode: submit all text requests as one OpenAI Batch job (-50 %) and let collect.ts finish the rendering
 import { loadEnv } from "./env.js";
 import { getSupabase } from "./db.js";
@@ -19,6 +20,7 @@ const args = process.argv.slice(2);
 const dateArg = args.find((a) => a.startsWith("--date="))?.slice(7);
 const onlyArg = args.find((a) => a.startsWith("--only="))?.slice(7);
 const jitterArg = args.find((a) => a.startsWith("--jitter="))?.slice(9);
+const testRun = args.includes("--test"); // rows are inserted as TEST and end up `skipped` — never publishable
 const batchMode = args.includes("--batch") && !!process.env.OPENAI_API_KEY;
 const date = dateArg || (args.includes("--tomorrow") ? addDays(istanbulDate(), 1) : istanbulDate());
 
@@ -175,6 +177,7 @@ async function insertJob(job: Job): Promise<SocialPostRow | null> {
       scheduled_at: jittered(job.slot.time).toISOString(),
       slot_key: job.slot.key,
       status: "draft",
+      ...(testRun ? { error: "TEST" } : {}),
     })
     .select()
     .single();

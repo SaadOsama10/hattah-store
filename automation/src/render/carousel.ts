@@ -1,3 +1,4 @@
+import { FLOW_PATH } from "./templates.js";
 import { fetchPhotoDataUri, fontCss, layoutTemplate, logoDataUri, siteDisplay, whatsappDisplay, SIZES, type Renderer } from "./render.js";
 
 const C = { cream: "#F4EBDA", cream2: "#EFE3D0", olive: "#5C6B45", oliveDeep: "#3B4728", terra: "#C17A45", terraDeep: "#A05A2C" };
@@ -43,9 +44,15 @@ const waLine = (storeUrl?: string) =>
   `<div class="cta"><div>اطلب من المتجر: <b>${esc(siteDisplay(storeUrl))}</b></div><div>أو عبر واتساب: <b>${esc(whatsappDisplay())}</b></div></div>`;
 const dots = (i: number, n: number) => `<div class="dots">${Array.from({ length: n }, (_, k) => `<i class="${k === i ? "on" : ""}"></i>`).join("")}</div>`;
 
+/** Continuation of slide 1's arc: the same path viewed through the second slide's window (x 1080–2160). */
+const flowIn = () =>
+  `<svg class="arcs" viewBox="1080 0 1080 1350" preserveAspectRatio="none"><defs><linearGradient id="fadeB" gradientUnits="userSpaceOnUse" x1="1080" y1="0" x2="1470" y2="0"><stop offset="0" stop-color="${C.terra}" stop-opacity=".9"/><stop offset=".45" stop-color="${C.terra}" stop-opacity=".7"/><stop offset="1" stop-color="${C.terra}" stop-opacity="0"/></linearGradient></defs><path d="${FLOW_PATH}" fill="none" stroke="url(#fadeB)" stroke-width="3" stroke-linecap="round"/></svg>`;
+
 const SHAPES = ["300px 300px 28px 28px", "40px", "50%", "28px 28px 300px 300px"];
 
 export interface PhotoSlide {
+  /** First photo slide: the arc that left slide 1 continues here (same path, shifted by one slide width). */
+  flowIn?: boolean;
   photoUrl: string;
   nameAr: string;
   index: number; // 0-based position among all slides
@@ -77,7 +84,7 @@ function photoHtml(s: PhotoSlide, photo: string): string {
   return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><style>${base(false)}
 .photo{width:${w}px;height:${h}px;border-radius:${shape};overflow:hidden;border:10px solid #FBF5E9;background:#fff;box-shadow:0 30px 60px -22px rgba(59,71,40,.55),0 6px 16px -6px rgba(59,71,40,.3);flex:none}
 .photo img{width:100%;height:100%;object-fit:cover;display:block}
-</style></head><body><div class="slide"><div class="tex"></div>${arcs(false)}
+</style></head><body><div class="slide"><div class="tex"></div>${arcs(false)}${s.flowIn ? flowIn() : ""}
 <div class="z" style="gap:18px">
   <img class="logo" src="${logoDataUri()}">
   <div class="photo" style="margin-top:auto"><img src="${photo}"></div>

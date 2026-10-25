@@ -377,14 +377,23 @@ export async function buildCarouselAssets(
   renderer: Renderer,
   settings: SocialSettings,
   cats: Map<string, { label_ar: string; parent_key: string | null }>,
-  post: Pick<SocialPostRow, "id" | "angle" | "design"> & { scheduled_at?: string },
+  post: Pick<SocialPostRow, "id" | "angle" | "design"> & { scheduled_at?: string; caption_full?: string | null },
   product: ProductRecord,
   precomputed?: CaptionJson,
+  opts: { reuseText?: boolean } = {},
 ): Promise<Partial<SocialPostRow>> {
   const categoryAr = cats.get(product.category)?.label_ar ?? "";
   const ctaIndex = await pickCtaIndex(sb, post.scheduled_at ?? null, post.id);
   const picker = makeTagPicker(sb, post.scheduled_at ?? null, post.id);
-  const res = precomputed
+  // Design-only re-render: keep the caption and the on-image texts exactly as they are (no model call).
+  const kept = opts.reuseText && post.caption_full && post.design?.headline && post.design?.subline;
+  const res = kept
+    ? {
+        caption: post.caption_full!,
+        design: { headline: post.design!.headline!, subline: post.design!.subline! },
+        details: (post.caption_full!.split("\n\n").find((p) => p.split("\n").length >= 2 && p.split("\n").every((l) => /^[^\p{L}\p{N}]/u.test(l.trim()))) ?? "").split("\n").filter(Boolean),
+      }
+    : precomputed
     ? resultFromJson(precomputed, settings, ctaIndex, "full", await picker(precomputed.hashtags))
     : await generateCaption(
         product,
@@ -409,10 +418,11 @@ export async function buildCarouselAssets(
     text: res.design,
     storeUrl: settings.store_url,
     removeBg: (await loadRemoveBgIds(sb)).has(product.id),
+    swipeCue: true,
   });
   const buffers: Buffer[] = [hero];
   for (const [i, url] of extra.entries()) {
-    buffers.push(await renderPhotoSlide(renderer, { photoUrl: url, nameAr: product.name_ar, index: i + 1, total, storeUrl: settings.store_url, variant: i + 1 }));
+    buffers.push(await renderPhotoSlide(renderer, { photoUrl: url, nameAr: product.name_ar, index: i + 1, total, storeUrl: settings.store_url, variant: i + 1, flowIn: i === 0 }));
   }
   const options = [
     ...product.product_sizes.map((x) => x.label),
@@ -442,7 +452,7 @@ export async function buildCarouselAssets(
     slides.push(sb.storage.from(SOCIAL_BUCKET).getPublicUrl(path).data.publicUrl);
   }
   log(`carousel «${product.name_ar}»: ${slides.length} slides uploaded`);
-  return { slides, image_url: slides[0], caption_full: res.caption, design: res.design };
+  return { slides, image_url: slides[0], ...(kept ? {} : { caption_full: res.caption, design: res.design }) };
 }
 
 export interface Renderers {
@@ -462,7 +472,8 @@ export async function completePost(
   product: ProductRecord,
   o: { label: string; musicIndex?: number; precomputed?: CaptionJson },
 ): Promise<boolean> {
-  const status = settings.auto_approve ? "approved" : "draft";
+  // Test days (generate.ts --test) are never left publishable: they end up `skipped`.
+  const status = row.error === "TEST" ? "skipped" : settings.auto_approve ? "approved" : "draft";
   let lastErr = "";
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {

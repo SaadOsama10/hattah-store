@@ -71,6 +71,8 @@ export interface RenderRequest {
   storeUrl?: string;
   /** Cut the product out of its photo (per-product option). */
   removeBg?: boolean;
+  /** Carousel hero slide: swipe cue + the arc that flows into slide 2. */
+  swipeCue?: boolean;
 }
 
 export const SIZES: Record<PostType, { width: number; height: number }> = {
@@ -159,6 +161,7 @@ export class Renderer {
       price: req.price,
       oldPrice: req.oldPrice,
       photo: await fetchPhotoDataUri(req.photoUrl),
+      swipe: req.swipeCue,
       cutout: req.removeBg ? await getCutoutDataUri(this.sb, req.photoUrl) : null,
       logo: logoDataUri(),
       fontCss: fontCss(),

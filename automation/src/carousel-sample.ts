@@ -22,9 +22,9 @@ try {
   const extra = imgs.slice(1, 4);
   const total = extra.length + 2;
   const out: Buffer[] = [
-    await r.render({ type: "feed", angle: "heritage", nameAr: p.name_ar, categoryAr: catMap.get(p.category) ?? "", price: price.current, oldPrice: price.old, photoUrl: imgs[0], text }),
+    await r.render({ type: "feed", angle: "heritage", nameAr: p.name_ar, categoryAr: catMap.get(p.category) ?? "", price: price.current, oldPrice: price.old, photoUrl: imgs[0], text, swipeCue: true }),
   ];
-  for (const [i, u] of extra.entries()) out.push(await renderPhotoSlide(r, { photoUrl: u, nameAr: p.name_ar, index: i + 1, total, variant: i + 1 }));
+  for (const [i, u] of extra.entries()) out.push(await renderPhotoSlide(r, { photoUrl: u, nameAr: p.name_ar, index: i + 1, total, variant: i + 1, flowIn: i === 0 }));
   out.push(
     await renderDetailsSlide(r, {
       nameAr: p.name_ar,

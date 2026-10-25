@@ -1,6 +1,8 @@
 import type { Angle, DesignText, PostType } from "../types.js";
 
 export interface TemplateInput {
+  /** Carousel hero slide: adds the "اسحب للمزيد" cue and the arc that continues onto slide 2. */
+  swipe?: boolean;
   type: PostType;
   angle: Angle;
   nameAr: string;
@@ -229,8 +231,19 @@ function offer(t: TemplateInput): string {
 </div>`;
 }
 
+/** Swipe cue (bottom-right, inside the safe area, away from the product) + a thin arc that leaves the slide at the right edge
+ * and continues on slide 2 (see carousel.ts `flowIn`). Unified coordinates: slide 1 = x 0–1080, slide 2 = x 1080–2160. */
+export const FLOW_PATH = "M 700 -10 C 900 70, 1010 170, 1080 290 C 1160 430, 1330 450, 1470 400";
+export function swipeLayer(dark: boolean): string {
+  const ink = dark ? "#E3C9A0" : C.terraDeep;
+  const arc = dark ? "#E3A56E" : C.terra;
+  return `<svg style="position:absolute;inset:0;width:1080px;height:1350px;pointer-events:none" viewBox="0 0 1080 1350"><defs><linearGradient id="fadeA" gradientUnits="userSpaceOnUse" x1="700" y1="0" x2="1080" y2="0"><stop offset="0" stop-color="${arc}" stop-opacity="0"/><stop offset=".55" stop-color="${arc}" stop-opacity=".75"/><stop offset="1" stop-color="${arc}" stop-opacity=".9"/></linearGradient></defs><path d="${FLOW_PATH}" fill="none" stroke="url(#fadeA)" stroke-width="3" stroke-linecap="round"/></svg>
+<div style="position:absolute;z-index:6;right:90px;bottom:62px;display:flex;align-items:center;gap:10px;direction:rtl;font-family:'Amiri',serif;font-size:26px;line-height:1;color:${ink};opacity:.92"><svg width="46" height="14" viewBox="0 0 46 14" fill="none" stroke="${ink}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M45 7H2"/><path d="M38 1l7 6-7 6"/></svg><span>اسحب للمزيد</span></div>`;
+}
+
 export function buildHtml(t: TemplateInput): string {
-  const body =
+  let body =
     t.angle === "heritage" ? heritage(t) : t.angle === "quote" ? quote(t) : t.angle === "offer" ? offer(t) : showcase(t);
+  if (t.swipe) body = body.replace(/(<div class="canvas[^>]*>)/, `$1${swipeLayer(t.angle === "quote")}`);
   return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><style>${baseCss(t)}</style></head><body>${body}</body></html>`;
 }
