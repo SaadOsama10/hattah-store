@@ -52,31 +52,45 @@ export async function trackFile(sb: SupabaseClient, track: Track): Promise<strin
 }
 
 /** Track claims made in this process (a run renders several reels at once, before any of them is saved). */
-const claimed: { file: string; at: number }[] = [];
+const claimed: { file: string; at: number; kind: string }[] = [];
 const WINDOW = 3 * 86400e3;
 
-/** The track for a reel scheduled at `scheduledAt`: never one used by another reel within ±3 days; among the allowed ones the
- * least recently used (so tracks simply rotate). If every track is taken inside the window (more than ~10 reels in 6 days),
- * the least recently used one is reused and a warning is logged. */
-export async function chooseTrack(sb: SupabaseClient, scheduledAt: string | null, excludePostId: string): Promise<Track> {
+/** The track for a reel or a story video scheduled at `scheduledAt`.
+ *  • Reels: HARD rule — never a track used by another reel within ±3 days.
+ *  • Everything (reels and stories): among the allowed tracks take the one used the FEWEST times within ±3 days across reels AND stories,
+ *    then the least recently used. With 11 videos a day and 10 tracks a story can never be fully collision-free; stories simply
+ *    minimise repeats (and avoid the tracks of the reels around them first). */
+export async function chooseTrack(sb: SupabaseClient, scheduledAt: string | null, excludePostId: string, kind: "reel" | "story" = "reel"): Promise<Track> {
   const all = tracks();
   const at = new Date(scheduledAt ?? Date.now()).getTime();
   const { data } = await sb
     .from("social_posts")
-    .select("id, music_track, scheduled_at")
-    .eq("post_type", "reel")
+    .select("id, post_type, music_track, scheduled_at")
+    .in("post_type", ["reel", "story"])
     .neq("status", "skipped")
     .not("music_track", "is", null)
     .neq("id", excludePostId);
-  const uses = [...(data ?? []).map((r) => ({ file: r.music_track as string, at: new Date(r.scheduled_at).getTime() })), ...claimed];
-  const near = new Set(uses.filter((u) => Math.abs(u.at - at) < WINDOW).map((u) => u.file));
+  const uses = [
+    ...(data ?? []).map((r) => ({ file: r.music_track as string, at: new Date(r.scheduled_at).getTime(), kind: r.post_type as string })),
+    ...claimed,
+  ];
+  const near = uses.filter((u) => Math.abs(u.at - at) < WINDOW);
+  const nearReels = new Set(near.filter((u) => u.kind === "reel").map((u) => u.file));
   const lastUse = (file: string) => Math.max(-Infinity, ...uses.filter((u) => u.file === file).map((u) => u.at));
-  const free = all.filter((t) => !near.has(t.file));
-  if (!free.length) log(`⚠ every music track is used within 3 days of this reel — reusing the least recently used one`);
-  const pool = free.length ? free : all;
-  const oldest = Math.min(...pool.map((t) => lastUse(t.file)));
-  const ties = pool.filter((t) => lastUse(t.file) === oldest);
-  const pick = ties[Math.floor(Math.random() * ties.length)];
-  claimed.push({ file: pick.file, at });
+  const count = (file: string) => near.filter((u) => u.file === file).length;
+  let pool = kind === "reel" ? all.filter((t) => !nearReels.has(t.file)) : all;
+  if (kind === "reel" && !pool.length) {
+    log("⚠ every music track is used by a reel within 3 days — reusing the least recently used one");
+    pool = all;
+  }
+  // stories prefer tracks no reel plays nearby, then the fewest repeats, then the oldest use
+  const score = (t: Track) => [kind === "story" && nearReels.has(t.file) ? 1 : 0, count(t.file), lastUse(t.file)];
+  const best = [...pool].sort((a, b) => {
+    const sa = score(a), sb2 = score(b);
+    return sa[0] - sb2[0] || sa[1] - sb2[1] || sa[2] - sb2[2];
+  });
+  const top = best.filter((t) => score(t).join() === score(best[0]).join());
+  const pick = top[Math.floor(Math.random() * top.length)];
+  claimed.push({ file: pick.file, at, kind });
   return pick;
 }

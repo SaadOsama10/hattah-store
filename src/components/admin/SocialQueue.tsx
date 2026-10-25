@@ -167,7 +167,7 @@ function PostCard({
     <article className="overflow-hidden rounded-2xl border border-cream/15 bg-bg-secondary">
       <div className="flex gap-4 p-4">
         <div className="w-32 shrink-0 sm:w-40">
-          {isReel && post.video_url ? (
+          {post.video_url ? (
             // eslint-disable-next-line jsx-a11y/media-has-caption
             <video
               src={post.video_url}

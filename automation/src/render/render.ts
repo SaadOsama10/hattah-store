@@ -89,43 +89,10 @@ export function siteDisplay(override?: string): string {
   return (override || process.env.SITE_URL || "hattah-store.vercel.app").replace(/^https?:\/\//, "").replace(/\/$/, "");
 }
 
-export class Renderer {
-  private browser: Browser | null = null;
-  lastViolations = 0;
-  constructor(private sb: SupabaseClient | null = null) {}
 
-  async open() {
-    if (!this.browser) this.browser = await chromium.launch();
-  }
-
-  async close() {
-    await this.browser?.close();
-    this.browser = null;
-  }
-
-  async render(req: RenderRequest): Promise<Buffer> {
-    await this.open();
-    const input: TemplateInput = {
-      type: req.type,
-      angle: req.angle,
-      nameAr: req.nameAr,
-      categoryAr: req.categoryAr,
-      price: req.price,
-      oldPrice: req.oldPrice,
-      photo: await fetchPhotoDataUri(req.photoUrl),
-      cutout: req.removeBg ? await getCutoutDataUri(this.sb, req.photoUrl) : null,
-      logo: logoDataUri(),
-      fontCss: fontCss(),
-      whatsappDisplay: whatsappDisplay(),
-      siteDisplay: siteDisplay(req.storeUrl),
-      text: req.text,
-    };
-    const size = SIZES[req.type];
-    const page = await this.browser!.newPage({ viewport: size, deviceScaleFactor: 1 });
-    try {
-      await page.setContent(buildHtml(input), { waitUntil: "load" });
-      await page.evaluate(() => document.fonts.ready);
-      // Shrink long text until it fits its box (Arabic names vary a lot).
+/** Shrinks long text to fit its box and stands cut-outs on a ground line — shared by the still renderer and the story-video renderer. */
+export async function layoutTemplate(page: import("playwright").Page) {
+  // Shrink long text until it fits its box (Arabic names vary a lot).
       await page.evaluate(() => {
         document.querySelectorAll<HTMLElement>(".fit").forEach((box) => {
           let size = Number(box.dataset.max) || 48;
@@ -159,6 +126,56 @@ export class Renderer {
           ground.style.left = `${(bw - gw) / 2}px`; ground.style.top = `${base - gh * 0.55}px`;
         }
       });
+}
+
+export class Renderer {
+  private browser: Browser | null = null;
+  lastViolations = 0;
+  constructor(private sb: SupabaseClient | null = null) {}
+
+  async open() {
+    if (!this.browser) this.browser = await chromium.launch();
+  }
+
+  /** A fresh page in the shared Chromium (for the story-video renderer). */
+  async openPage(size: { width: number; height: number }) {
+    await this.open();
+    return this.browser!.newPage({ viewport: size, deviceScaleFactor: 1 });
+  }
+
+  async close() {
+    await this.browser?.close();
+    this.browser = null;
+  }
+
+  /** Everything a template needs (photo/cut-out data URIs, fonts, logo, contact lines). */
+  async buildInput(req: RenderRequest): Promise<TemplateInput> {
+    return {
+      type: req.type,
+      angle: req.angle,
+      nameAr: req.nameAr,
+      categoryAr: req.categoryAr,
+      price: req.price,
+      oldPrice: req.oldPrice,
+      photo: await fetchPhotoDataUri(req.photoUrl),
+      cutout: req.removeBg ? await getCutoutDataUri(this.sb, req.photoUrl) : null,
+      logo: logoDataUri(),
+      fontCss: fontCss(),
+      whatsappDisplay: whatsappDisplay(),
+      siteDisplay: siteDisplay(req.storeUrl),
+      text: req.text,
+    };
+  }
+
+  async render(req: RenderRequest): Promise<Buffer> {
+    await this.open();
+    const input = await this.buildInput(req);
+    const size = SIZES[req.type];
+    const page = await this.browser!.newPage({ viewport: size, deviceScaleFactor: 1 });
+    try {
+      await page.setContent(buildHtml(input), { waitUntil: "load" });
+      await page.evaluate(() => document.fonts.ready);
+      await layoutTemplate(page);
       const violations = await page.evaluate(
         ({ W, H, top, bottom, side }) => {
           const bad: string[] = [];

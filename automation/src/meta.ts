@@ -29,7 +29,7 @@ async function graph(method: "GET" | "POST", path: string, params: Record<string
 
 export type IgMedia =
   | { kind: "feed"; imageUrl: string; caption: string | null }
-  | { kind: "story"; imageUrl: string }
+  | { kind: "story"; imageUrl?: string | null; videoUrl?: string | null }
   | { kind: "reel"; videoUrl: string; caption: string | null; coverUrl?: string | null };
 
 export async function publishInstagram(media: IgMedia): Promise<{ id: string; permalink: string | null }> {
@@ -42,17 +42,21 @@ export async function publishInstagram(media: IgMedia): Promise<{ id: string; pe
     params.share_to_feed = "true";
     if (media.caption) params.caption = media.caption;
     if (media.coverUrl) params.cover_url = media.coverUrl;
+  } else if (media.kind === "story") {
+    params.media_type = "STORIES";
+    if (media.videoUrl) params.video_url = media.videoUrl;
+    else params.image_url = media.imageUrl!;
   } else {
     params.image_url = media.imageUrl;
-    if (media.kind === "story") params.media_type = "STORIES";
-    else if (media.caption) params.caption = media.caption;
+    if (media.caption) params.caption = media.caption;
   }
   const container = await graph("POST", `${igId}/media`, params, token);
   log("IG container", container.id);
 
   // Poll until the container is processed: images ~2 min, videos up to ~10 min.
-  const tries = media.kind === "reel" ? 60 : 24;
-  const wait = media.kind === "reel" ? 10000 : 5000;
+  const video = media.kind === "reel" || (media.kind === "story" && !!media.videoUrl);
+  const tries = video ? 60 : 24;
+  const wait = video ? 10000 : 5000;
   for (let i = 0; i < tries; i++) {
     const s = await graph("GET", container.id, { fields: "status_code,status" }, token);
     if (s.status_code === "FINISHED") break;
@@ -98,11 +102,13 @@ export async function testConnection() {
 }
 
 /** Creates a REELS container for the video and waits for FINISHED — nothing is published. Validates the file against Meta's rules. */
-export async function checkReelContainer(videoUrl: string, coverUrl: string | null): Promise<string> {
+export async function checkReelContainer(videoUrl: string, coverUrl: string | null, story = false): Promise<string> {
   const igId = need("META_IG_USER_ID");
   const token = need("META_ACCESS_TOKEN");
-  const params: Record<string, string> = { media_type: "REELS", video_url: videoUrl, share_to_feed: "true", caption: "container check (not published)" };
-  if (coverUrl) params.cover_url = coverUrl;
+  const params: Record<string, string> = story
+    ? { media_type: "STORIES", video_url: videoUrl }
+    : { media_type: "REELS", video_url: videoUrl, share_to_feed: "true", caption: "container check (not published)" };
+  if (coverUrl && !story) params.cover_url = coverUrl;
   const container = await graph("POST", `${igId}/media`, params, token);
   for (let i = 0; i < 60; i++) {
     const s = await graph("GET", container.id, { fields: "status_code,status" }, token);

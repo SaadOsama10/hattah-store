@@ -50,7 +50,6 @@ if (postArg) {
 }
 log(`${due.length} post(s) due`);
 
-const reel0 = (p: SocialPostRow) => p.post_type === "reel";
 for (const post of due) {
   if (!postArg && Date.now() - new Date(post.scheduled_at).getTime() > MISSED_AFTER_MS) {
     log(`skip ${post.id}: missed its window`);
@@ -93,7 +92,7 @@ for (const post of due) {
           reel
             ? { kind: "reel", videoUrl: post.video_url!, caption: post.caption_full, coverUrl: post.image_url }
             : story
-              ? { kind: "story", imageUrl: post.image_url! }
+              ? { kind: "story", imageUrl: post.image_url, videoUrl: post.video_url }
               : { kind: "feed", imageUrl: post.image_url!, caption: post.caption_full },
         );
         igId = r.id;
@@ -118,7 +117,7 @@ for (const post of due) {
   }
 
   // A reel's video is only needed until Instagram has it: drop it from storage right away.
-  if (ok && reel0(post) && post.video_url) {
+  if (ok && post.video_url) {
     await removeFromBucket(sb, post.video_url);
     await sb.from("social_posts").update({ video_url: null }).eq("id", post.id);
   }

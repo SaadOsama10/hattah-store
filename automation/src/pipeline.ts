@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { Renderer } from "./render/render.js";
 import { ReelRenderer, REEL_SECONDS } from "./render/reel.js";
 import { chooseTrack, musicStartFor, trackFile } from "./music.js";
+import { STORY_SECONDS, renderStoryVideo } from "./render/story.js";
 import { CTA_POOL, ctaIndexOf, generateCaption, resultFromJson, type CaptionJson, type CaptionMode } from "./captions.js";
 import { SOCIAL_BUCKET } from "./db.js";
 import { effectivePrice, sortedImages } from "./products.js";
@@ -244,7 +245,7 @@ export async function buildPostAssets(
 
   if (what.image) {
     const price = effectivePrice(product);
-    const jpeg = await renderer.render({
+    const req = {
       type: post.post_type,
       angle: post.angle,
       nameAr: product.name_ar,
@@ -256,13 +257,28 @@ export async function buildPostAssets(
       text: { headline: design.headline ?? "", subline: design.subline ?? "" },
       storeUrl: settings.store_url,
       removeBg: (await loadRemoveBgIds(sb)).has(product.id),
-    });
+    };
     const day = new Date().toISOString().slice(0, 10);
-    const path = `${day}/${post.id}-${Date.now()}.jpg`;
-    const { error } = await sb.storage.from(SOCIAL_BUCKET).upload(path, jpeg, { contentType: "image/jpeg", upsert: false });
-    if (error) throw new Error(`upload: ${error.message}`);
-    out.image_url = sb.storage.from(SOCIAL_BUCKET).getPublicUrl(path).data.publicUrl;
-    log("image uploaded", out.image_url);
+    const base = `${day}/${post.id}-${Date.now()}`;
+    const upload = async (ext: string, body: Buffer, contentType: string) => {
+      const { error } = await sb.storage.from(SOCIAL_BUCKET).upload(`${base}.${ext}`, body, { contentType, upsert: false });
+      if (error) throw new Error(`upload ${ext}: ${error.message}`);
+      return sb.storage.from(SOCIAL_BUCKET).getPublicUrl(`${base}.${ext}`).data.publicUrl;
+    };
+    if (post.post_type === "story" && process.env.STORY_VIDEO !== "false") {
+      // Stories are short animated videos (7 s) with music; the cover frame doubles as the admin preview image.
+      const track = await chooseTrack(sb, (post as { scheduled_at?: string }).scheduled_at ?? null, post.id, "story");
+      const musicFile = await trackFile(sb, track);
+      const start = musicStartFor(track, [...post.id].reduce((a, c) => a + c.charCodeAt(0), 0), STORY_SECONDS);
+      const { video, cover } = await renderStoryVideo(renderer, req, musicFile, start);
+      out.video_url = await upload("mp4", video, "video/mp4");
+      out.image_url = await upload("jpg", cover, "image/jpeg");
+      out.music_track = track.file;
+      log(`story video uploaded (${(video.length / 1e6).toFixed(1)} MB) ♪ ${track.title}`, out.video_url);
+    } else {
+      out.image_url = await upload("jpg", await renderer.render(req), "image/jpeg");
+      log("image uploaded", out.image_url);
+    }
   }
   return out;
 }
