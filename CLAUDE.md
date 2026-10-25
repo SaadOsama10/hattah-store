@@ -8,7 +8,7 @@
 - `src/lib/supabase/` — `public.ts` (anon)، `service.ts` (service role، سيرفر فقط)، `types.ts`.
 - `src/lib/inventory-period.ts` — حساب فلتر الفترة الزمنية (بالسنتات كأعداد صحيحة).
 - `messages/{ar,en,tr}.json` — الترجمات. واجهة الأدمن عربية فقط (نصوص مباشرة).
-- `supabase/migrations/NNN_*.sql` — الـ migrations مرقّمة (آخر واحد 022). `supabase/schema.sql` المخطط الكامل.
+- `supabase/migrations/NNN_*.sql` — الـ migrations مرقّمة (آخر واحد 027). `supabase/schema.sql` المخطط الكامل.
 - الأسرار في `.env.local` (لا تُطبع ولا تُرفع): `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`.
 
 ## دفتر البضاعة (`/admin/inventory`)
@@ -30,7 +30,7 @@
 - قبل الـ push: `npm run build` بدون أخطاء TypeScript.
 
 ## أتمتة السوشيال ميديا (`/automation`)
-سكربتات Node/TS (Playwright + OpenAI + Meta Graph API) تعمل عبر GitHub Actions (`social-generate.yml` يوميًا 03:00 إسطنبول، `social-publish.yml` كل ساعة عند :35). جداول `social_posts` و`social_settings` (migration 013، الجدول الزمني في 022: 6 منشورات + 3 ريلز + 8 ستوريات يوميًا) وbucket عام `social-posts`. واجهة الأدمن: `/admin/social` (+`/settings`). الأعمال الثقيلة (توليد/إعادة توليد/نشر الآن) تُطلق من الواجهة عبر `workflow_dispatch` (`GH_DISPATCH_TOKEN`). `DRY_RUN=true` يمنع أي استدعاء لـ Meta. الإعداد: `automation/SETUP_AR.md`.
+سكربتات Node/TS (Playwright + OpenAI + Meta Graph API) تعمل عبر GitHub Actions (`social-generate.yml` يوميًا 03:00 إسطنبول، `social-publish.yml` كل ساعة عند :35). جداول `social_posts` و`social_settings` (migration 013، الجدول الزمني في 026: 6 منشورات + 2 كاروسيل + 3 ريلز + 8 ستوريات يوميًا) وbucket عام `social-posts`. واجهة الأدمن: `/admin/social` (+`/settings`). الأعمال الثقيلة (توليد/إعادة توليد/نشر الآن) تُطلق من الواجهة عبر `workflow_dispatch` (`GH_DISPATCH_TOKEN`). `DRY_RUN=true` يمنع أي استدعاء لـ Meta. الإعداد: `automation/SETUP_AR.md`.
 
 ### الريلز (من 26/10)
 - `post_type = 'reel'`، العمود `video_url` (يُحذف من التخزين فور النشر). المُصيِّر: `automation/src/render/reel.ts` (Playwright يلتقط إطارات `seek(t)` + ffmpeg، 1080×1920، 30fps، 13.5–16ث: قطعات كل 2–4 نبضات على إيقاع الموسيقى، كل صور المنتج، انتقالات slide/zoom/iris/up/wipe، ميل ثلاثي الأبعاد وparallax، كتابة حركية كلمة بكلمة). كابشن الريل وهوكه من نفس نداء OpenAI. منتج الريل لا يتكرر مع منشورات نفس اليوم.
@@ -52,3 +52,10 @@
 - كل ستوري فيديو 7 ثوانٍ (1080×1920، 30fps) من نفس قالب الستوري الثابت: `render/story.ts` يحرّك الـ DOM نفسه (تكبير/parallax للصورة، ظهور اللوغو، كلمات نصّية متتابعة RTL، السعر بـpop، CTA). الموسيقى من `social-music` بـ ≈ -20 LUFS مع fade. الغلاف (`image_url`) لقطة من الفيديو. `STORY_VIDEO=false` يرجّع الصور الثابتة.
 - النشر `media_type=STORIES` + `video_url` (polling حتى 10 دقائق)، ويُحذف الفيديو من التخزين فور النشر. التحقق دون نشر: `social-publish.yml -f check_reel=<post_id>`. إعادة رسم ستوريات موجودة كفيديو بنفس المنتج والنص: `social-generate.yml -f mode=regenerate -f post_id=id1,id2,… -f what=image`.
 - الموسيقى: `chooseTrack(kind)`؛ الريلز قاعدة صارمة (لا تكرار بين ريلز خلال ±3 أيام). 11 فيديو يوميًا مقابل 10 مقاطع تجعل «لا تكرار» للستوريات مستحيلًا حسابيًا، فالستوريات تتفادى مقاطع ريلز اليوم ثم الأقل تكرارًا ثم الأقدم استخدامًا.
+
+### كاروسيل، تركي، هاشتاغات، موقع (من 25/10)
+- **الكاروسيل** (`post_type='carousel'`، العمود `slides` jsonb، `image_url` = الشريحة الأولى): 3–5 شرائح 1080×1350: شريحة تصميم (قالب المنشور) + حتى 3 صور للمنتج (`render/carousel.ts`) + شريحة تفاصيل (الأسطر التي كتبها الموديل + المقاسات/الألوان + السعر + الرابط والواتساب). منتجات بـ3+ صور ليست في منشورات/ريلز نفس اليوم؛ بدونها يتحول الموعد إلى منشور عادي. النشر: حاويات الأبناء ثم حاوية الكاروسيل ثم النشر (`meta.ts`). التحقق دون نشر: `gh workflow run social-publish.yml -f check_reel=<post_id>` (يدعم الكاروسيل). مواعيده 10:45 و21:00 (ستوري 21:15 صار 21:30).
+- **فقرة تركية** (2–3 أسطر) بين العربي والإنجليزي في كل كابشن (`caption_languages` فيه `tr`؛ طول 600–1000 يُقاس بدونها). لإضافتها لكابشنات موجودة دون إعادة كتابتها: `social-generate.yml -f mode=fixup -f extra_args="--date=YYYY-MM-DD"` (`caption-fixup.ts`، يعيد توليد الهاشتاغات أيضًا).
+- **هاشتاغات** (`hashtags.ts`): 3 كبيرة + 4 متوسطة + 3 متخصصة/محلية بالعربي والتركي والإنجليزي، تدوير حسب الأقل استخدامًا، ولا تتكرر مجموعة مرتين في اليوم. تصنيف الأحجام تقديري (ليس أرقامًا مقاسة).
+- **موقع إسطنبول**: `social_settings.location_id = 106012156106461` (Facebook Places ID لإسطنبول من Wikidata P1997؛ جُرّب بـ Graph API). يُرسل مع المنشورات والكاروسيل والريلز؛ إن رفضه إنستغرام يُنشر العنصر بدونه. ID الاستكشاف 212903416 مرفوض.
+- ستوريات 25/10 من 19:00 وستوريات 26/10 كلها فيديو.
