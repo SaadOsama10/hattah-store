@@ -12,7 +12,7 @@ interface FormState {
   sale_date: string;
   total_try: string;
   notes: string;
-  items: { item_name: string; quantity: string }[];
+  items: { item_name: string; quantity: string; unit_price: string }[];
 }
 
 const money = (n: number) => `₺ ${n.toLocaleString()}`;
@@ -22,7 +22,7 @@ const emptyForm = (): FormState => ({
   sale_date: new Date().toISOString().slice(0, 10),
   total_try: "",
   notes: "",
-  items: [{ item_name: "", quantity: "1" }],
+  items: [{ item_name: "", quantity: "1", unit_price: "" }],
 });
 
 const inputCls =
@@ -52,17 +52,30 @@ export function SalesManager({ sales }: { sales: SaleWithItems[] }) {
       sale_date: s.sale_date,
       total_try: String(s.total_try),
       notes: s.notes ?? "",
-      items: s.sale_items.map((i) => ({ item_name: i.item_name, quantity: String(i.quantity) })),
+      items: s.sale_items.map((i) => ({
+        item_name: i.item_name,
+        quantity: String(i.quantity),
+        unit_price: i.unit_price != null ? String(i.unit_price) : "",
+      })),
     });
   }
 
   function save() {
     if (!form) return;
+    const items = form.items.map((i) => ({
+      item_name: i.item_name,
+      quantity: Number(i.quantity),
+      unit_price: i.unit_price.trim() ? Number(i.unit_price) : null,
+    }));
+    // Total left blank: derive it only when every item carries a unit price.
+    const derived = items.every((i) => i.unit_price != null)
+      ? Math.round(items.reduce((s, i) => s + i.quantity * (i.unit_price ?? 0) * 100, 0)) / 100
+      : NaN;
     const input = {
       sale_date: form.sale_date,
-      total_try: Number(form.total_try),
+      total_try: form.total_try.trim() ? Number(form.total_try) : derived,
       notes: form.notes,
-      items: form.items.map((i) => ({ item_name: i.item_name, quantity: Number(i.quantity) })),
+      items,
     };
     startTransition(async () => {
       try {
@@ -114,7 +127,9 @@ export function SalesManager({ sales }: { sales: SaleWithItems[] }) {
                 <li key={s.id} className="flex items-start justify-between gap-3 px-4 py-3">
                   <div className="min-w-0">
                     <p className="font-inter text-sm text-cream">
-                      {s.sale_items.map((i) => `${i.item_name} × ${i.quantity}`).join(" + ")}
+                      {s.sale_items
+                        .map((i) => `${i.item_name} × ${Number(i.quantity)}${i.unit_price != null ? ` @ ${Number(i.unit_price)}` : ""}`)
+                        .join(" + ")}
                     </p>
                     {s.notes && <p className="mt-1 font-inter text-xs text-cream-secondary/70">{s.notes}</p>}
                   </div>
@@ -151,13 +166,15 @@ export function SalesManager({ sales }: { sales: SaleWithItems[] }) {
                 </label>
               </div>
               <div className="space-y-2">
-                <span className="font-inter text-xs text-cream-secondary">الأصناف (بسعر واحد للبيعة كلها)</span>
+                <span className="font-inter text-xs text-cream-secondary">الأصناف (سعر الوحدة اختياري؛ بدونه يُعتمد مجموع البيعة)</span>
                 {form.items.map((it, idx) => (
                   <div key={idx} className="flex gap-2">
                     <input className={inputCls} placeholder="اسم الصنف" value={it.item_name}
                       onChange={(e) => setForm({ ...form, items: form.items.map((x, i) => (i === idx ? { ...x, item_name: e.target.value } : x)) })} />
                     <input type="number" min="0" step="any" className={`${inputCls} !w-20`} value={it.quantity}
                       onChange={(e) => setForm({ ...form, items: form.items.map((x, i) => (i === idx ? { ...x, quantity: e.target.value } : x)) })} />
+                    <input type="number" min="0" step="0.01" placeholder="سعر الوحدة" className={`${inputCls} !w-28`} value={it.unit_price}
+                      onChange={(e) => setForm({ ...form, items: form.items.map((x, i) => (i === idx ? { ...x, unit_price: e.target.value } : x)) })} />
                     {form.items.length > 1 && (
                       <button type="button" aria-label="إزالة" onClick={() => setForm({ ...form, items: form.items.filter((_, i) => i !== idx) })}>
                         <X size={16} className="text-cream-secondary" />
@@ -165,7 +182,7 @@ export function SalesManager({ sales }: { sales: SaleWithItems[] }) {
                     )}
                   </div>
                 ))}
-                <button type="button" className="font-inter text-xs text-terracotta" onClick={() => setForm({ ...form, items: [...form.items, { item_name: "", quantity: "1" }] })}>
+                <button type="button" className="font-inter text-xs text-terracotta" onClick={() => setForm({ ...form, items: [...form.items, { item_name: "", quantity: "1", unit_price: "" }] })}>
                   + صنف آخر
                 </button>
               </div>

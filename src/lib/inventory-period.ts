@@ -1,4 +1,4 @@
-import type { InventoryBatchWithEntries } from "@/lib/supabase/types";
+import type { InventoryBatchWithEntries, SaleWithItems } from "@/lib/supabase/types";
 
 // All money math runs in integer cents: unit_cost / unit_sale_price are
 // numeric(10,2), so 0.1 + 0.2 style float drift never leaks into totals.
@@ -13,7 +13,6 @@ export interface PeriodBatchTotals {
   batch: InventoryBatchWithEntries;
   items: number;
   purchases: number;
-  sales: number;
   paid: number;
   debt: number;
 }
@@ -25,6 +24,7 @@ export interface PeriodSummary {
   sales: number;
   paid: number;
   debt: number;
+  salesCount: number; // orders in the period
   net: number; // sales − purchases
 }
 
@@ -40,9 +40,47 @@ export function isFiltered(range: PeriodRange): boolean {
   return range.from !== null || range.to !== null;
 }
 
+/** Sales are read from the `sales` table only (the single source of truth);
+ * batches contribute purchases, paid and debt. */
+function inRangeDate(date: string, range: PeriodRange): boolean {
+  return (!range.from || date >= range.from) && (!range.to || date <= range.to);
+}
+
+export function salesInRange(sales: SaleWithItems[], range: PeriodRange): SaleWithItems[] {
+  return sales.filter((s) => inRangeDate(s.sale_date, range));
+}
+
+export const salesTotal = (sales: SaleWithItems[]): number =>
+  sales.reduce((s, x) => s + toCents(x.total_try), 0) / 100;
+
+export const salesQty = (sales: SaleWithItems[]): number =>
+  sales.reduce((s, x) => s + x.sale_items.reduce((q, i) => q + Number(i.quantity), 0), 0);
+
+export interface SaleDayGroup {
+  date: string;
+  sales: SaleWithItems[];
+  total: number;
+  qty: number;
+}
+
+/** Newest day first; orders inside a day newest first. */
+export function groupSalesByDay(sales: SaleWithItems[]): SaleDayGroup[] {
+  const days = new Map<string, SaleWithItems[]>();
+  for (const s of sales) days.set(s.sale_date, [...(days.get(s.sale_date) ?? []), s]);
+  return [...days.entries()]
+    .sort((a, b) => b[0].localeCompare(a[0]))
+    .map(([date, list]) => ({
+      date,
+      sales: [...list].sort((a, b) => b.created_at.localeCompare(a.created_at)),
+      total: salesTotal(list),
+      qty: salesQty(list),
+    }));
+}
+
 export function summarizePeriod(
   batches: InventoryBatchWithEntries[],
-  range: PeriodRange
+  range: PeriodRange,
+  allSales: SaleWithItems[]
 ): PeriodSummary {
   const inRange = batches.filter(
     (b) => (!range.from || b.batch_date >= range.from) && (!range.to || b.batch_date <= range.to)
@@ -50,17 +88,14 @@ export function summarizePeriod(
 
   const rows: PeriodBatchTotals[] = inRange.map((batch) => {
     let purchases = 0;
-    let sales = 0;
     for (const e of batch.inventory_log) {
       purchases += e.quantity * toCents(e.unit_cost);
-      sales += e.quantity_sold * toCents(e.unit_sale_price ?? 0);
     }
     const paid = toCents(batch.amount_paid);
     return {
       batch,
       items: batch.inventory_log.length,
       purchases: purchases / 100,
-      sales: sales / 100,
       paid: paid / 100,
       debt: Math.max(purchases - paid, 0) / 100,
     };
@@ -69,7 +104,8 @@ export function summarizePeriod(
   const sum = (pick: (r: PeriodBatchTotals) => number) =>
     rows.reduce((s, r) => s + toCents(pick(r)), 0) / 100;
   const purchases = sum((r) => r.purchases);
-  const sales = sum((r) => r.sales);
+  const periodSales = salesInRange(allSales, range);
+  const sales = salesTotal(periodSales);
 
   return {
     batches: rows,
@@ -78,6 +114,7 @@ export function summarizePeriod(
     sales,
     paid: sum((r) => r.paid),
     debt: sum((r) => r.debt),
+    salesCount: periodSales.length,
     net: (toCents(sales) - toCents(purchases)) / 100,
   };
 }
@@ -133,20 +170,19 @@ function inRange(date: string, range: PeriodRange): boolean {
   return (!range.from || date >= range.from) && (!range.to || date <= range.to);
 }
 
-/** Flat purchase or sale rows for batches inside the period, newest first. */
+/** Flat purchase rows for batches inside the period, newest first. */
 export function ledgerRows(
   batches: InventoryBatchWithEntries[],
-  range: PeriodRange,
-  view: "purchases" | "sales"
+  range: PeriodRange
 ): LedgerRow[] {
   const rows: LedgerRow[] = [];
   for (const batch of batches) {
     if (!inRange(batch.batch_date, range)) continue;
     for (const e of batch.inventory_log) {
-      const qty = view === "purchases" ? e.quantity : e.quantity_sold;
-      const unitPrice = view === "purchases" ? e.unit_cost : (e.unit_sale_price ?? 0);
+      const qty = e.quantity;
+      const unitPrice = e.unit_cost;
       const totalCents = qty * toCents(unitPrice);
-      if (view === "purchases" ? totalCents === 0 : e.quantity_sold <= 0) continue;
+      if (totalCents === 0) continue;
       rows.push({
         id: e.id,
         batchId: batch.id,
@@ -165,30 +201,6 @@ export function ledgerRows(
 
 export const sumRows = (rows: LedgerRow[]): number =>
   rows.reduce((s, r) => s + toCents(r.total), 0) / 100;
-
-export interface OrderGroup {
-  key: string;
-  rows: number;
-  qty: number;
-  total: number;
-}
-
-/** Sales grouped by the row note (customer/order); rows without a note are
- * collected under one "no note" group. */
-export function groupByNote(rows: LedgerRow[], emptyLabel: string): OrderGroup[] {
-  const map = new Map<string, { rows: number; qty: number; cents: number }>();
-  for (const r of rows) {
-    const key = r.notes?.trim() || emptyLabel;
-    const g = map.get(key) ?? { rows: 0, qty: 0, cents: 0 };
-    g.rows += 1;
-    g.qty += r.qty;
-    g.cents += toCents(r.total);
-    map.set(key, g);
-  }
-  return [...map.entries()]
-    .map(([key, g]) => ({ key, rows: g.rows, qty: g.qty, total: g.cents / 100 }))
-    .sort((a, b) => b.total - a.total);
-}
 
 export interface BatchGroup {
   batch: InventoryBatchWithEntries;

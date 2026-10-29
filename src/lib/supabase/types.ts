@@ -73,6 +73,7 @@ export interface SaleItemRow {
   item_name: string;
   product_id: string | null;
   quantity: number;
+  unit_price: number | null; // null = order-level total only
 }
 
 export interface SaleWithItems {

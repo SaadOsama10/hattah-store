@@ -16,7 +16,7 @@ import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/Button";
 import { InventoryPeriodFilter } from "@/components/admin/InventoryPeriodFilter";
 import { InventoryLedgerView } from "@/components/admin/InventoryLedgerView";
-import type { InventoryView, PeriodRange } from "@/lib/inventory-period";
+import { salesTotal, type InventoryView, type PeriodRange } from "@/lib/inventory-period";
 import {
   createInventoryBatch,
   createInventoryEntry,
@@ -29,6 +29,7 @@ import type {
   InventoryBatchWithEntries,
   InventoryEntryRow,
   InventoryStatus,
+  SaleWithItems,
 } from "@/lib/supabase/types";
 
 const STATUS_LABELS: Record<InventoryStatus, string> = {
@@ -149,10 +150,12 @@ interface BatchFieldsState {
 
 export function InventoryLog({
   batches,
+  sales,
   range,
   view,
 }: {
   batches: InventoryBatchWithEntries[];
+  sales: SaleWithItems[];
   range: PeriodRange;
   view: InventoryView;
 }) {
@@ -191,14 +194,12 @@ export function InventoryLog({
       acc.totalCost += cost;
       acc.totalPaid += batch.amount_paid;
       acc.totalDebt += Math.max(cost - batch.amount_paid, 0);
-      for (const e of batch.inventory_log) {
-        const sale = e.quantity_sold * (e.unit_sale_price ?? 0);
-        acc.totalSale += sale;
-        acc.totalProfit += sale - e.quantity_sold * e.unit_cost;
-      }
     }
+    // Sales come from the `sales` table (single source); net = sales − purchases.
+    acc.totalSale = salesTotal(sales);
+    acc.totalProfit = Math.round((acc.totalSale - acc.totalCost) * 100) / 100;
     return acc;
-  }, [batches]);
+  }, [batches, sales]);
 
   function toggleCollapsed(id: string) {
     setCollapsed((prev) => {
@@ -391,9 +392,9 @@ export function InventoryLog({
         </div>
       )}
 
-      <InventoryPeriodFilter batches={batches} range={range} view={view} />
+      <InventoryPeriodFilter batches={batches} sales={sales} range={range} view={view} />
 
-      {view !== "all" && <InventoryLedgerView batches={batches} range={range} view={view} />}
+      {view !== "all" && <InventoryLedgerView batches={batches} sales={sales} range={range} view={view} />}
 
       {view === "all" && (
         <>

@@ -5,29 +5,39 @@ import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/cn";
 import {
   groupByDayAndBatch,
-  groupByNote,
+  groupSalesByDay,
   ledgerRows,
+  salesInRange,
   sumRows,
   summarizePeriod,
   type LedgerRow,
   type PeriodRange,
 } from "@/lib/inventory-period";
-import type { InventoryBatchWithEntries } from "@/lib/supabase/types";
+import type { InventoryBatchWithEntries, SaleWithItems } from "@/lib/supabase/types";
 
 const money = (n: number) => `₺ ${n.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
-const NO_NOTE = "بدون ملاحظة";
 
-/** Flat purchases / sales views of the ledger, honouring the period filter. */
+/** Purchases (from ledger batches) and sales (from the `sales` table) views,
+ * honouring the period filter. */
 export function InventoryLedgerView({
   batches,
+  sales,
   range,
   view,
 }: {
   batches: InventoryBatchWithEntries[];
+  sales: SaleWithItems[];
   range: PeriodRange;
   view: "purchases" | "sales";
 }) {
-  const [grouped, setGrouped] = useState(false);
+  return view === "sales" ? (
+    <SalesView batches={batches} sales={sales} range={range} />
+  ) : (
+    <PurchasesView batches={batches} range={range} />
+  );
+}
+
+function useCollapsed() {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const toggle = (id: string) =>
     setCollapsed((prev) => {
@@ -36,11 +46,127 @@ export function InventoryLedgerView({
       else next.add(id);
       return next;
     });
-  const isSales = view === "sales";
+  return { collapsed, toggle };
+}
 
-  const rows = useMemo(() => ledgerRows(batches, range, view), [batches, range, view]);
+function SalesView({
+  batches,
+  sales,
+  range,
+}: {
+  batches: InventoryBatchWithEntries[];
+  sales: SaleWithItems[];
+  range: PeriodRange;
+}) {
+  const { collapsed, toggle } = useCollapsed();
+  const period = useMemo(() => summarizePeriod(batches, range, sales), [batches, range, sales]);
+  const days = useMemo(() => groupSalesByDay(salesInRange(sales, range)), [sales, range]);
+  const qty = days.reduce((s, d) => s + d.qty, 0);
+
+  if (period.salesCount === 0) {
+    return (
+      <p className="mb-6 rounded-2xl border border-dashed border-cream/15 py-12 text-center font-inter text-sm text-cream-secondary/60">
+        ما في بيانات بالفترة
+      </p>
+    );
+  }
+
+  return (
+    <div className="mb-6">
+      <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
+        <Tile label="إجمالي المبيعات" value={money(period.sales)} tone="clear" />
+        <Tile label="عدد القطع المباعة" value={qty.toLocaleString("en-US")} />
+        <Tile label="عدد الطلبات" value={String(period.salesCount)} />
+        <Tile label="متوسط قيمة الطلب" value={money(Math.round((period.sales / period.salesCount) * 100) / 100)} />
+        <Tile label="المشتريات" value={money(period.purchases)} />
+        <div className="col-span-2 sm:col-span-4 lg:col-span-5">
+          <Tile
+            label="الصافي: مبيعات − مشتريات"
+            value={money(period.net)}
+            tone={period.net >= 0 ? "clear" : "debt"}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-6">
+        {days.map((day) => (
+          <section key={day.date}>
+            <h3 className="mb-2 font-playfair text-base font-bold text-cream" dir="ltr" style={{ textAlign: "right" }}>
+              {day.date}
+            </h3>
+            <div className="space-y-3">
+              {day.sales.map((sale) => {
+                const isCollapsed = collapsed.has(sale.id);
+                return (
+                  <div key={sale.id} className="overflow-hidden rounded-2xl border border-cream/10 bg-bg-secondary">
+                    <button
+                      type="button"
+                      onClick={() => toggle(sale.id)}
+                      aria-expanded={!isCollapsed}
+                      className="flex w-full items-center justify-between gap-3 px-4 py-3 text-right"
+                    >
+                      <span className="min-w-0">
+                        <span className="block truncate font-playfair text-base font-bold text-cream">
+                          {sale.sale_items.map((i) => i.item_name).join(" + ")}
+                        </span>
+                        {sale.notes && (
+                          <span className="block truncate font-inter text-xs text-cream-secondary/60">{sale.notes}</span>
+                        )}
+                      </span>
+                      <span className="flex shrink-0 items-center gap-3">
+                        <span className="font-inter text-sm font-bold text-cream">{money(Number(sale.total_try))}</span>
+                        <ChevronDown
+                          size={18}
+                          className={cn("text-cream-secondary transition-transform", isCollapsed && "-rotate-90")}
+                        />
+                      </span>
+                    </button>
+                    {!isCollapsed && (
+                      <div className="overflow-x-auto border-t border-cream/10">
+                        <table className="w-full min-w-[28rem] text-right font-inter text-sm">
+                          <thead>
+                            <tr className="border-b border-cream/10 text-xs text-cream-secondary/60">
+                              <th className="px-3 py-2 font-medium">الصنف</th>
+                              <th className="px-3 py-2 font-medium">الكمية</th>
+                              <th className="px-3 py-2 font-medium">سعر الوحدة</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {sale.sale_items.map((i) => (
+                              <tr key={i.id} className="border-b border-cream/5 text-cream last:border-0">
+                                <td className="px-3 py-2">{i.item_name}</td>
+                                <td className="px-3 py-2">{Number(i.quantity)}</td>
+                                <td className="px-3 py-2 whitespace-nowrap">
+                                  {i.unit_price != null ? money(Number(i.unit_price)) : "—"}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 rounded-xl border border-terracotta/30 bg-terracotta/10 px-4 py-2 font-inter text-xs text-cream">
+              <span className="font-bold">إجمالي اليوم</span>
+              <Stat label="القطع" value={String(day.qty)} />
+              <Stat label="المبيعات" value={money(day.total)} strong />
+              <Stat label="الطلبات" value={String(day.sales.length)} />
+            </div>
+          </section>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PurchasesView({ batches, range }: { batches: InventoryBatchWithEntries[]; range: PeriodRange }) {
+  const { collapsed, toggle } = useCollapsed();
+  const rows = useMemo(() => ledgerRows(batches, range), [batches, range]);
   const total = useMemo(() => sumRows(rows), [rows]);
-  const period = useMemo(() => summarizePeriod(batches, range), [batches, range]);
+  const period = useMemo(() => summarizePeriod(batches, range, []), [batches, range]);
   const purchaseBatches = useMemo(() => {
     const ids = new Set(rows.map((r) => r.batchId));
     return period.batches.filter((b) => ids.has(b.batch.id));
@@ -55,47 +181,19 @@ export function InventoryLedgerView({
     );
   }
 
-  const qtySum = rows.reduce((s, r) => s + r.qty, 0);
-
   return (
     <div className="mb-6">
       <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
-        {isSales ? (
-          <>
-            <Tile label="إجمالي المبيعات" value={money(total)} tone="clear" />
-            <Tile label="عدد القطع المباعة" value={qtySum.toLocaleString("en-US")} />
-            <Tile label="عدد الصفوف" value={String(rows.length)} />
-            <Tile label="متوسط قيمة الصف" value={money(Math.round((total / rows.length) * 100) / 100)} />
-          </>
-        ) : (
-          <>
-            <Tile label="إجمالي المشتريات" value={money(total)} />
-            <Tile label="المدفوع" value={money(purchaseBatches.reduce((s, b) => s + b.paid, 0))} />
-            <Tile
-              label="الدين"
-              value={money(purchaseBatches.reduce((s, b) => s + b.debt, 0))}
-              tone={purchaseBatches.some((b) => b.debt > 0) ? "debt" : "clear"}
-            />
-            <Tile label="عدد الدفعات" value={String(purchaseBatches.length)} />
-            <Tile label="عدد الأصناف" value={String(rows.length)} />
-          </>
-        )}
+        <Tile label="إجمالي المشتريات" value={money(total)} />
+        <Tile label="المدفوع" value={money(purchaseBatches.reduce((s, b) => s + b.paid, 0))} />
+        <Tile
+          label="الدين"
+          value={money(purchaseBatches.reduce((s, b) => s + b.debt, 0))}
+          tone={purchaseBatches.some((b) => b.debt > 0) ? "debt" : "clear"}
+        />
+        <Tile label="عدد الدفعات" value={String(purchaseBatches.length)} />
+        <Tile label="عدد الأصناف" value={String(rows.length)} />
       </div>
-
-      {isSales && (
-        <button
-          type="button"
-          onClick={() => setGrouped((g) => !g)}
-          className={cn(
-            "mb-3 rounded-full border px-4 py-1.5 font-inter text-xs transition-colors",
-            grouped
-              ? "border-terracotta bg-terracotta text-cream"
-              : "border-cream/20 text-cream-secondary hover:text-cream"
-          )}
-        >
-          تجميع حسب الطلبية
-        </button>
-      )}
 
       <div className="space-y-6">
         {days.map((day) => (
@@ -130,26 +228,12 @@ export function InventoryLedgerView({
 
                     {!isCollapsed && (
                       <div className="overflow-x-auto border-t border-cream/10">
-                        {isSales && grouped ? (
-                          <OrderTable rows={g.rows} />
-                        ) : (
-                          <RowsTable rows={g.rows} isSales={isSales} />
-                        )}
+                        <RowsTable rows={g.rows} />
                         <div className="flex flex-wrap gap-x-6 gap-y-1 border-t border-cream/10 bg-bg-primary/40 px-4 py-2 font-inter text-xs text-cream-secondary">
-                          {isSales ? (
-                            <>
-                              <Stat label="القطع المباعة" value={String(g.qty)} />
-                              <Stat label="إجمالي المبيعات" value={money(g.total)} strong />
-                              <Stat label="الصفوف" value={String(g.rows.length)} />
-                            </>
-                          ) : (
-                            <>
-                              <Stat label="إجمالي التكلفة" value={money(g.total)} strong />
-                              <Stat label="المدفوع" value={money(g.paid)} />
-                              <Stat label="الدين" value={money(g.debt)} warn={g.debt > 0} />
-                              <Stat label="الأصناف" value={String(g.rows.length)} />
-                            </>
-                          )}
+                          <Stat label="إجمالي التكلفة" value={money(g.total)} strong />
+                          <Stat label="المدفوع" value={money(g.paid)} />
+                          <Stat label="الدين" value={money(g.debt)} warn={g.debt > 0} />
+                          <Stat label="الأصناف" value={String(g.rows.length)} />
                         </div>
                       </div>
                     )}
@@ -159,20 +243,10 @@ export function InventoryLedgerView({
             </div>
             <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 rounded-xl border border-terracotta/30 bg-terracotta/10 px-4 py-2 font-inter text-xs text-cream">
               <span className="font-bold">إجمالي اليوم</span>
-              {isSales ? (
-                <>
-                  <Stat label="القطع" value={String(day.qty)} />
-                  <Stat label="المبيعات" value={money(day.total)} strong />
-                  <Stat label="الصفوف" value={String(day.rows)} />
-                </>
-              ) : (
-                <>
-                  <Stat label="التكلفة" value={money(day.total)} strong />
-                  <Stat label="المدفوع" value={money(day.paid)} />
-                  <Stat label="الدين" value={money(day.debt)} warn={day.debt > 0} />
-                  <Stat label="الأصناف" value={String(day.rows)} />
-                </>
-              )}
+              <Stat label="التكلفة" value={money(day.total)} strong />
+              <Stat label="المدفوع" value={money(day.paid)} />
+              <Stat label="الدين" value={money(day.debt)} warn={day.debt > 0} />
+              <Stat label="الأصناف" value={String(day.rows)} />
             </div>
           </section>
         ))}
@@ -190,16 +264,15 @@ function Stat({ label, value, strong, warn }: { label: string; value: string; st
   );
 }
 
-function RowsTable({ rows, isSales }: { rows: LedgerRow[]; isSales: boolean }) {
+function RowsTable({ rows }: { rows: LedgerRow[] }) {
   return (
     <table className="w-full min-w-[36rem] text-right font-inter text-sm">
       <thead>
         <tr className="border-b border-cream/10 text-xs text-cream-secondary/60">
           <th className="px-3 py-2 font-medium">الوصف</th>
-          <th className="px-3 py-2 font-medium">{isSales ? "الكمية المباعة" : "الكمية"}</th>
-          <th className="px-3 py-2 font-medium">{isSales ? "سعر الوحدة" : "تكلفة الوحدة"}</th>
+          <th className="px-3 py-2 font-medium">الكمية</th>
+          <th className="px-3 py-2 font-medium">تكلفة الوحدة</th>
           <th className="px-3 py-2 font-medium">الإجمالي</th>
-          {isSales && <th className="px-3 py-2 font-medium">الملاحظات</th>}
         </tr>
       </thead>
       <tbody>
@@ -209,33 +282,6 @@ function RowsTable({ rows, isSales }: { rows: LedgerRow[]; isSales: boolean }) {
             <td className="px-3 py-2">{r.qty}</td>
             <td className="px-3 py-2 whitespace-nowrap">{money(r.unitPrice)}</td>
             <td className={cn("px-3 py-2 whitespace-nowrap font-bold", r.total < 0 && "text-forest")}>{money(r.total)}</td>
-            {isSales && <td className="px-3 py-2 text-cream-secondary">{r.notes ?? ""}</td>}
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-}
-
-function OrderTable({ rows }: { rows: LedgerRow[] }) {
-  const groups = groupByNote(rows, NO_NOTE);
-  return (
-    <table className="w-full min-w-[28rem] text-right font-inter text-sm">
-      <thead>
-        <tr className="border-b border-cream/10 text-xs text-cream-secondary/60">
-          <th className="px-3 py-2 font-medium">الطلبية / الزبون</th>
-          <th className="px-3 py-2 font-medium">الصفوف</th>
-          <th className="px-3 py-2 font-medium">القطع</th>
-          <th className="px-3 py-2 font-medium">الإجمالي</th>
-        </tr>
-      </thead>
-      <tbody>
-        {groups.map((o) => (
-          <tr key={o.key} className="border-b border-cream/5 text-cream last:border-0">
-            <td className="px-3 py-2">{o.key}</td>
-            <td className="px-3 py-2">{o.rows}</td>
-            <td className="px-3 py-2">{o.qty}</td>
-            <td className="px-3 py-2 whitespace-nowrap font-bold">{money(o.total)}</td>
           </tr>
         ))}
       </tbody>

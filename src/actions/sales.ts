@@ -19,7 +19,7 @@ export interface SaleInput {
   sale_date: string;
   total_try: number;
   notes: string;
-  items: { item_name: string; quantity: number }[];
+  items: { item_name: string; quantity: number; unit_price: number | null }[];
 }
 
 function validate(input: SaleInput) {
@@ -30,7 +30,12 @@ function validate(input: SaleInput) {
   for (const i of items) {
     if (!Number.isFinite(i.quantity) || i.quantity <= 0) throw new Error("كمية غير صالحة");
   }
-  return items.map((i) => ({ item_name: i.item_name.trim(), quantity: i.quantity }));
+  for (const i of items) {
+    if (i.unit_price != null && (!Number.isFinite(i.unit_price) || i.unit_price < 0)) {
+      throw new Error("سعر وحدة غير صالح");
+    }
+  }
+  return items.map((i) => ({ item_name: i.item_name.trim(), quantity: i.quantity, unit_price: i.unit_price }));
 }
 
 /** Items are matched to a storefront product only on an exact Arabic-name
@@ -44,7 +49,7 @@ async function resolveProductIds(names: string[]): Promise<Map<string, string>> 
   return map;
 }
 
-async function writeItems(saleId: string, items: { item_name: string; quantity: number }[]) {
+async function writeItems(saleId: string, items: { item_name: string; quantity: number; unit_price: number | null }[]) {
   const supabase = getServiceSupabaseClient();
   const ids = await resolveProductIds(items.map((i) => i.item_name));
   const { error } = await supabase.from("sale_items").insert(

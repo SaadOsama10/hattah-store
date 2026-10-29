@@ -8,7 +8,7 @@
 - `src/lib/supabase/` — `public.ts` (anon)، `service.ts` (service role، سيرفر فقط)، `types.ts`.
 - `src/lib/inventory-period.ts` — حساب فلتر الفترة الزمنية (بالسنتات كأعداد صحيحة).
 - `messages/{ar,en,tr}.json` — الترجمات. واجهة الأدمن عربية فقط (نصوص مباشرة).
-- `supabase/migrations/NNN_*.sql` — الـ migrations مرقّمة (آخر واحد 028). `supabase/schema.sql` المخطط الكامل.
+- `supabase/migrations/NNN_*.sql` — الـ migrations مرقّمة (آخر واحد 030). `supabase/schema.sql` المخطط الكامل.
 - الأسرار في `.env.local` (لا تُطبع ولا تُرفع): `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`.
 
 ## دفتر البضاعة (`/admin/inventory`)
@@ -19,8 +19,10 @@
 - التكلفة = `quantity × unit_cost`، الإيراد = `quantity_sold × unit_sale_price`، الربح القديم = الإيراد − `quantity_sold × unit_cost`.
 - فلتر الفترة (`?from=YYYY-MM-DD&to=YYYY-MM-DD`) يفلتر الدفعات حسب `batch_date`؛ بدون بارامترات الصفحة كما كانت.
 
-## دفعات الإيرادات التوثيقية
-دفعة تكلفتها 0 و`amount_paid = 0` وفيها صفوف بيع فقط (مثال: «إيرادات معرض الكيا»، «إيرادات مبيعات 16-10-2026»). كل صف: `quantity = quantity_sold`، `unit_cost = 0`، `status = 'sold_out'`، `unit_sale_price` = سعر الوحدة، `entry_date = last_sale_date = batch_date`، واسم الزبون/الطلبية في `notes`. ملاحظة الدفعة تذكر أنها غير مربوطة بصف مخزون محدد. دفعات المشتريات: `status = 'in_stock'`، `quantity_sold = 0`، و`amount_paid` = المدفوع فعليًا.
+## المبيعات (مصدر واحد: جدولا `sales` و`sale_items`، migration 029/030)
+- `sales`: `id, sale_date, total_try, notes, created_at` (المجموع على مستوى الطلب). `sale_items`: `sale_id, item_name, product_id?, quantity, unit_price?` — `unit_price` اختياري؛ NULL = البيعة بمجموع واحد فقط ولا يُخترع سعر لكل صنف. RLS بلا policy (service role فقط).
+- صفحة `/admin/sales` (إضافة/تعديل/حذف، مجمّعة حسب اليوم). `/admin/inventory` (فلتر الفترة، `view=sales`، الملخصات) تقرأ المبيعات من `sales` فقط؛ **الصافي = المبيعات − المشتريات**، والمشتريات من دفعات الدفتر. `inventory_log.quantity_sold/unit_sale_price` لم تعد تدخل أي مجموع.
+- دفعات "الإيرادات التوثيقية" القديمة نُقلت إلى `sales` (28/10 → حُذفت من الدفتر). لا تُنشئ دفعات إيرادات جديدة: سجّل البيع من `/admin/sales`. دفعات المشتريات: `status = 'in_stock'`، `amount_paid` = المدفوع فعليًا.
 
 ## قواعد العمل
 - **نفّذ كل شيء بنفسك**: الـ migrations (Supabase SQL Editor عبر Chrome المسجّل دخوله، الصق SQL بـ `monaco.editor.getEditors()[0].setValue(...)` ثم cmd+Enter)، النشر، التوليد (`gh workflow run social-generate.yml -f mode=today -f extra_args="--date=… --only=story@HH:MM --jitter=0"`)، وأي خطوة إعداد. لا تطلب من المستخدم نسخًا/لصقًا/نقرًا إلا إذا احتاجت الخطوة كلمة مرور أو رمز تحقق.

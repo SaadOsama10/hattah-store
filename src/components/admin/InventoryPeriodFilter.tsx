@@ -11,7 +11,7 @@ import {
   type InventoryView,
   type PeriodRange,
 } from "@/lib/inventory-period";
-import type { InventoryBatchWithEntries } from "@/lib/supabase/types";
+import type { InventoryBatchWithEntries, SaleWithItems } from "@/lib/supabase/types";
 
 const PRESETS: [PeriodPreset, string][] = [
   ["today", "اليوم"],
@@ -39,16 +39,18 @@ const dateInputClass =
  * unchanged all-time view. */
 export function InventoryPeriodFilter({
   batches,
+  sales,
   range,
   view,
 }: {
   batches: InventoryBatchWithEntries[];
+  sales: SaleWithItems[];
   range: PeriodRange;
   view: InventoryView;
 }) {
   const router = useRouter();
   const filtered = isFiltered(range);
-  const summary = useMemo(() => summarizePeriod(batches, range), [batches, range]);
+  const summary = useMemo(() => summarizePeriod(batches, range, sales), [batches, range, sales]);
 
   function apply(next: PeriodRange, nextView: InventoryView = view) {
     const qs = new URLSearchParams();
@@ -134,7 +136,7 @@ export function InventoryPeriodFilter({
             {range.from ?? "…"} → {range.to ?? "…"}
           </p>
 
-          {summary.batches.length === 0 ? (
+          {summary.batches.length === 0 && summary.salesCount === 0 ? (
             <p className="rounded-xl border border-dashed border-cream/15 py-8 text-center font-inter text-sm text-cream-secondary/60">
               ما في بيانات بالفترة
             </p>
@@ -147,6 +149,7 @@ export function InventoryPeriodFilter({
                 <Tile label="الدين" value={money(summary.debt)} tone={summary.debt > 0 ? "debt" : "clear"} />
                 <Tile label="عدد الدفعات" value={String(summary.batches.length)} />
                 <Tile label="عدد الأصناف" value={String(summary.itemCount)} />
+                <Tile label="عدد الطلبات" value={String(summary.salesCount)} />
                 <div className="col-span-2">
                   <Tile
                     label="صافي الفترة: مبيعات − مشتريات"
@@ -163,7 +166,6 @@ export function InventoryPeriodFilter({
                       <th className="px-3 py-2 font-medium">الدفعة</th>
                       <th className="px-3 py-2 font-medium">التاريخ</th>
                       <th className="px-3 py-2 font-medium">التكلفة</th>
-                      <th className="px-3 py-2 font-medium">الإيراد</th>
                       <th className="px-3 py-2 font-medium">المدفوع</th>
                       <th className="px-3 py-2 font-medium">الدين</th>
                     </tr>
@@ -174,7 +176,6 @@ export function InventoryPeriodFilter({
                         <td className="px-3 py-2">{r.batch.title}</td>
                         <td className="px-3 py-2 whitespace-nowrap" dir="ltr">{r.batch.batch_date}</td>
                         <td className="px-3 py-2 whitespace-nowrap">{money(r.purchases)}</td>
-                        <td className="px-3 py-2 whitespace-nowrap">{money(r.sales)}</td>
                         <td className="px-3 py-2 whitespace-nowrap">{money(r.paid)}</td>
                         <td className={cn("px-3 py-2 whitespace-nowrap", r.debt > 0 && "text-terracotta-deep")}>
                           {money(r.debt)}
