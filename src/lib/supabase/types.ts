@@ -67,6 +67,23 @@ export interface InventoryBatchWithEntries extends InventoryBatchRow {
   inventory_log: InventoryEntryRow[];
 }
 
+export interface SaleItemRow {
+  id: string;
+  sale_id: string;
+  item_name: string;
+  product_id: string | null;
+  quantity: number;
+}
+
+export interface SaleWithItems {
+  id: string;
+  sale_date: string; // "YYYY-MM-DD"
+  total_try: number;
+  notes: string | null;
+  created_at: string;
+  sale_items: SaleItemRow[];
+}
+
 export interface ProductImageRow {
   id: string;
   product_id: string;
