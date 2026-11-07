@@ -83,6 +83,19 @@ export async function chooseTrack(sb: SupabaseClient, scheduledAt: string | null
     log("⚠ every music track is used by a reel within 3 days — reusing the least recently used one");
     pool = all;
   }
+  // With only a few tracks the ±3-day rule cannot always hold — but the same song never plays in two videos back to back:
+  // drop the tracks of the nearest earlier / later video (of the same kind first, then of any kind) while alternatives remain.
+  const sorted = [...uses].sort((a, b) => a.at - b.at);
+  const neighbours = (only?: string) => {
+    const same = sorted.filter((u) => !only || u.kind === only);
+    const before = [...same].reverse().find((u) => u.at <= at);
+    const after = same.find((u) => u.at > at);
+    return new Set([before?.file, after?.file].filter(Boolean) as string[]);
+  };
+  for (const set of kind === "reel" ? [neighbours("reel"), neighbours()] : [neighbours()]) {
+    const rest = pool.filter((t) => !set.has(t.file));
+    if (rest.length) pool = rest;
+  }
   // stories prefer tracks no reel plays nearby, then the fewest repeats, then the oldest use
   const score = (t: Track) => [kind === "story" && nearReels.has(t.file) ? 1 : 0, count(t.file), lastUse(t.file)];
   const best = [...pool].sort((a, b) => {

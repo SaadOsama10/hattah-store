@@ -40,7 +40,8 @@ export interface ReelTiming {
 }
 
 /** Cut grid locked to the music: the excerpt is trimmed so that a beat lands exactly on t=0.
- * The end card starts on the last cut before 11.3 s and the reel ends 4.4 s later (≈ 13.5–16 s). */
+ * The end card starts on the last cut before 11.3 s and the reel ends ≈ 4.4 s later — rounded to a whole number of beats, so the
+ * music's final fade-out lands exactly on a beat (≈ 13.5–16 s). */
 export function reelTiming(bpm: number): ReelTiming {
   const period = 60 / bpm;
   const beats = Math.min(4, Math.max(2, Math.round(1.75 / period)));
@@ -48,7 +49,7 @@ export function reelTiming(bpm: number): ReelTiming {
   const cuts: number[] = [];
   for (let t = 0; t < 18; t += cutStep) cuts.push(+t.toFixed(4));
   const endStart = cuts.filter((c) => c <= 11.3).slice(-1)[0];
-  const seconds = Math.round((endStart + 4.4) * REEL_FPS) / REEL_FPS;
+  const seconds = Math.round((endStart + Math.round(4.4 / period) * period) * REEL_FPS) / REEL_FPS;
   const phase1 = cuts[2];
   const phase2 = Math.max(cuts.filter((c) => c <= endStart - cutStep * 1.5).slice(-1)[0] ?? cuts[4], phase1 + cutStep);
   return { seconds, cutStep, period, cuts: cuts.filter((c) => c <= endStart), phase1, phase2, endStart };
@@ -301,11 +302,11 @@ export class ReelRenderer {
           "-f", "image2pipe", "-framerate", String(REEL_FPS), "-c:v", "mjpeg", "-i", "-",
           "-ss", musicStart.toFixed(3), "-i", musicFile,
           "-t", String(timing.seconds),
-          // ≈ -18 LUFS, soft fade in / out
-          "-af", `loudnorm=I=-18:TP=-2:LRA=7,afade=t=in:st=0:d=0.8,afade=t=out:st=${timing.seconds - 1.6}:d=1.6`,
+          // gentle EQ (soft highs) → loudnorm (target set 1 LU low: measured result lands at -18 LUFS) → soft limiter; 0.2 s fade-in (click guard), 1.8 s fade-out ending on the last beat
+          "-af", `treble=g=-2:f=6000,loudnorm=I=-19:TP=-2:LRA=7,alimiter=limit=0.89:attack=5:release=80,afade=t=in:st=0:d=0.2,afade=t=out:st=${(timing.seconds - 1.8).toFixed(3)}:d=1.8`,
           "-c:v", "libx264", "-preset", "medium", "-crf", "19", "-pix_fmt", "yuv420p", "-profile:v", "high", "-r", String(REEL_FPS),
           "-c:a", "aac", "-b:a", "160k", "-ar", "44100", "-ac", "2",
-          "-movflags", "+faststart", "-shortest", outFile,
+          "-movflags", "+faststart", outFile,
         ],
         { stdio: ["pipe", "ignore", "pipe"] },
       );

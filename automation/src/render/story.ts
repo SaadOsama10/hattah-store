@@ -80,11 +80,11 @@ export async function renderStoryVideo(
         "-f", "image2pipe", "-framerate", String(STORY_FPS), "-c:v", "mjpeg", "-i", "-",
         "-ss", musicStart.toFixed(3), "-i", musicFile,
         "-t", String(STORY_SECONDS),
-        // soft: ≈ -20 LUFS with a fade in / out
-        "-af", `loudnorm=I=-20:TP=-2:LRA=7,afade=t=in:st=0:d=0.5,afade=t=out:st=${STORY_SECONDS - 1.2}:d=1.2`,
+        // gentle EQ (soft highs) → loudnorm (target set 1 LU low: measured result lands at -20 LUFS) → soft limiter; 0.2 s fade-in (click guard), 1.5 s fade-out
+        "-af", `treble=g=-2:f=6000,loudnorm=I=-21:TP=-2:LRA=7,alimiter=limit=0.89:attack=5:release=80,afade=t=in:st=0:d=0.2,afade=t=out:st=${STORY_SECONDS - 1.5}:d=1.5`,
         "-c:v", "libx264", "-preset", "medium", "-crf", "21", "-pix_fmt", "yuv420p", "-profile:v", "high", "-r", String(STORY_FPS),
         "-c:a", "aac", "-b:a", "128k", "-ar", "44100", "-ac", "2",
-        "-movflags", "+faststart", "-shortest", outFile,
+        "-movflags", "+faststart", outFile,
       ],
       { stdio: ["pipe", "ignore", "pipe"] },
     );

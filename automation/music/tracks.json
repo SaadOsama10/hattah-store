@@ -1,101 +1,38 @@
 [
   {
-    "file": "atlas-palestine.mp3",
-    "title": "Atlas • Palestine",
-    "artist": "Vadim_Makes_Sound",
-    "source": "https://pixabay.com/music/world-atlas-palestine-579050/",
-    "bpm": 126.5,
-    "offset": 0.441,
-    "hf": 0.032
-  },
-  {
-    "file": "dabke-fusion-theme.mp3",
-    "title": "Dabke Fusion Theme",
-    "artist": "vjgalaxy",
-    "source": "https://pixabay.com/music/arabic-dabke-fusion-theme-588122/",
-    "bpm": 107.0,
-    "offset": 0.215,
-    "hf": 0.034
-  },
-  {
-    "file": "melodic-dabke-fusion-theme.mp3",
-    "title": "Melodic Dabke Fusion Theme",
-    "artist": "vjgalaxy",
-    "source": "https://pixabay.com/music/arabic-melodic-dabke-fusion-theme-588123/",
-    "bpm": 95.0,
-    "offset": 0.232,
-    "hf": 0.032
-  },
-  {
-    "file": "oasis-rhythm.mp3",
-    "title": "Oasis Rhythm",
-    "artist": "AstronautFlute",
-    "source": "https://pixabay.com/music/world-oasis-rhythm-590416/",
-    "bpm": 114.0,
-    "offset": 0.017,
-    "hf": 0.012
-  },
-  {
-    "file": "upbeat-arabic.mp3",
-    "title": "Upbeat Arabic",
-    "artist": "Alec_Koff",
-    "source": "https://pixabay.com/music/world-upbeat-arabic-486550/",
-    "bpm": 110.0,
-    "offset": 0.348,
-    "hf": 0.032
-  },
-  {
-    "file": "col-atesi-darbuka.mp3",
-    "title": "Çöl Ateşi Darbuka",
-    "artist": "KeopsRa",
-    "source": "https://pixabay.com/music/dance-%C3%A7%C3%B6l-ate%C5%9Fi-darbuka-519931/",
-    "bpm": 110.0,
-    "offset": 0.099,
-    "hf": 0.026
-  },
-  {
-    "file": "night-of-gold.mp3",
-    "title": "Night of Gold",
-    "artist": "djovan",
-    "source": "https://pixabay.com/music/folk-night-of-gold-461581/",
-    "bpm": 112.0,
-    "offset": 0.058,
-    "hf": 0.003
-  },
-  {
-    "file": "red-veil-dance.mp3",
-    "title": "Red Veil Dance",
-    "artist": "djovan",
-    "source": "https://pixabay.com/music/upbeat-red-veil-dance-461585/",
-    "bpm": 102.5,
-    "offset": 0.104,
-    "hf": 0.004
-  },
-  {
-    "file": "belly-dance.mp3",
-    "title": "Belly Dance",
-    "artist": "AliveTunesMusic",
-    "source": "https://pixabay.com/music/world-belly-dance-118609/",
+    "file": "ancient-egyptian-celebration.mp3",
+    "title": "Ancient Egyptian Celebration (Oud, Ney & Darbuka Groove)",
+    "artist": "SoundsByAmelia",
+    "source": "https://pixabay.com/music/folk-ancient-egyptian-celebration-oud-ney-amp-darbuka-groove-422958/",
     "bpm": 100.0,
-    "offset": 0.0,
-    "hf": 0.018
+    "offset": 0.006,
+    "hf": 0.0
   },
   {
-    "file": "pearls-of-fez.mp3",
-    "title": "Pearls of Fez",
-    "artist": "djovan",
-    "source": "https://pixabay.com/music/world-pearls-of-fez-461583/",
-    "bpm": 100.0,
-    "offset": 0.197,
-    "hf": 0.009
+    "file": "arabic-music-desert.mp3",
+    "title": "Arabic Music Desert",
+    "artist": "os_music",
+    "source": "https://pixabay.com/music/world-arabic-music-desert-royalty-free-music-497001/",
+    "bpm": 106.69,
+    "offset": 0.006,
+    "hf": 0.0
   },
   {
-    "file": "middle-eastern-percussion.mp3",
-    "title": "Middle Eastern Percussion (World, Oriental)",
-    "artist": "Ashot_Danielyan",
-    "source": "https://pixabay.com/music/world-middle-eastern-percussion-world-oriental-224611/",
-    "bpm": 87.0,
-    "offset": 0.499,
-    "hf": 0.009
+    "file": "middle-east-ethnic.mp3",
+    "title": "Middle East (Ethnic Arabic Music)",
+    "artist": "NverAvetyanMusic",
+    "source": "https://pixabay.com/music/upbeat-middle-east-ethnic-arabic-music-156548/",
+    "bpm": 105.0,
+    "offset": 0.006,
+    "hf": 0.0
+  },
+  {
+    "file": "nopti-arabe.mp3",
+    "title": "Nopți Arabe",
+    "artist": "Iul4an",
+    "source": "https://pixabay.com/music/folk-nop%C8%9Bi-arabe-487088/",
+    "bpm": 110.0,
+    "offset": 0.006,
+    "hf": 0.0
   }
 ]

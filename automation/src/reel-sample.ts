@@ -18,7 +18,7 @@ const { data: cats } = await sb.from("categories").select("key,label_ar");
 const catMap = new Map((cats ?? []).map((c) => [c.key as string, c.label_ar as string]));
 const withPhotos = (products ?? []).filter((p: any) => sortedImages(p).length > 1);
 const byLen = [...withPhotos].sort((a: any, b: any) => b.name_ar.length - a.name_ar.length);
-const picks = [withPhotos[0], byLen[0], withPhotos[Math.floor(withPhotos.length / 2)]].slice(0, count);
+const picks = [withPhotos[0], byLen[0], withPhotos[Math.floor(withPhotos.length / 2)], withPhotos[Math.floor(withPhotos.length / 4)]].slice(0, count);
 const outDir = process.env.SAMPLE_OUT ?? "previews";
 mkdirSync(outDir, { recursive: true });
 const r = new ReelRenderer(sb);
