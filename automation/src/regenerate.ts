@@ -1,4 +1,5 @@
-// Re-creates parts of one post (or several: --post=id1,id2,…). Usage: tsx src/regenerate.ts --post=<uuid> --what=image|caption|both|swap|to-reel
+// Re-creates parts of one post (or several: --post=id1,id2,…). Usage: tsx src/regenerate.ts --post=<uuid> --what=image|caption|both|swap|to-reel|music
+// --what=music re-renders a reel/story video with a freshly chosen track, keeping the product, on-screen text and caption exactly as they are.
 // A story re-rendered with --what=image keeps its product and texts and becomes an animated video story.
 import { loadEnv } from "./env.js";
 import { getSupabase } from "./db.js";
@@ -60,7 +61,8 @@ try {
       assets = await buildCarouselAssets(sb, renderer, settings, cats, { ...post, angle, design: what === "image" ? post.design : null }, product, undefined, { reuseText: what === "image" });
     } else if (post.post_type === "reel" || what === "to-reel") {
       const { count } = await sb.from("social_posts").select("id", { count: "exact", head: true }).eq("post_type", "reel");
-      assets = await buildReelAssets(sb, reelRenderer, settings, cats, { ...post, angle, design: null }, product, (count ?? 0) + [...postId].reduce((a, c) => a + c.charCodeAt(0), 0), what === "to-reel", undefined, { track }); // varied track per reel
+      const fixed = what === "music" && post.design?.headline && post.design?.subline ? { design: { headline: post.design.headline as string, subline: post.design.subline as string }, caption: post.caption_full as string | null } : undefined;
+      assets = await buildReelAssets(sb, reelRenderer, settings, cats, { ...post, angle, design: null }, product, (count ?? 0) + [...postId].reduce((a, c) => a + c.charCodeAt(0), 0), what === "to-reel", undefined, { track, fixed }); // varied track per reel
     } else {
       assets = await buildPostAssets(sb, renderer, settings, cats, { ...post, angle, design }, product, {
         image,

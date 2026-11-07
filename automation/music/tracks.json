@@ -1,92 +1,101 @@
 [
   {
-    "file": "forty-thieves.mp3",
-    "title": "Forty Thieves (instrumental dance, Arabian)",
-    "artist": "melodyayresgriffiths",
-    "source": "https://pixabay.com/music/upbeat-forty-thieves-instrumental-dance-arabian-aladdin-persian-138348/",
-    "bpm": 122.0,
-    "offset": 0.058,
-    "hf": 0.019
+    "file": "atlas-palestine.mp3",
+    "title": "Atlas • Palestine",
+    "artist": "Vadim_Makes_Sound",
+    "source": "https://pixabay.com/music/world-atlas-palestine-579050/",
+    "bpm": 126.5,
+    "offset": 0.441,
+    "hf": 0.032
   },
   {
-    "file": "arabic-dance.mp3",
-    "title": "Arabic Dance",
-    "artist": "Tunetank",
-    "source": "https://pixabay.com/music/pop-arabic-dance-347242/",
-    "bpm": 120.0,
-    "offset": 0.238,
+    "file": "dabke-fusion-theme.mp3",
+    "title": "Dabke Fusion Theme",
+    "artist": "vjgalaxy",
+    "source": "https://pixabay.com/music/arabic-dabke-fusion-theme-588122/",
+    "bpm": 107.0,
+    "offset": 0.215,
+    "hf": 0.034
+  },
+  {
+    "file": "melodic-dabke-fusion-theme.mp3",
+    "title": "Melodic Dabke Fusion Theme",
+    "artist": "vjgalaxy",
+    "source": "https://pixabay.com/music/arabic-melodic-dabke-fusion-theme-588123/",
+    "bpm": 95.0,
+    "offset": 0.232,
+    "hf": 0.032
+  },
+  {
+    "file": "oasis-rhythm.mp3",
+    "title": "Oasis Rhythm",
+    "artist": "AstronautFlute",
+    "source": "https://pixabay.com/music/world-oasis-rhythm-590416/",
+    "bpm": 114.0,
+    "offset": 0.017,
     "hf": 0.012
   },
   {
-    "file": "turkish-istanbul-114324.mp3",
-    "title": "Turkish Istanbul Music",
-    "artist": "StudioKolomna",
-    "source": "https://pixabay.com/music/world-turkish-istanbul-music-114324/",
-    "bpm": 115.0,
-    "offset": 0.163,
-    "hf": 0.006
+    "file": "upbeat-arabic.mp3",
+    "title": "Upbeat Arabic",
+    "artist": "Alec_Koff",
+    "source": "https://pixabay.com/music/world-upbeat-arabic-486550/",
+    "bpm": 110.0,
+    "offset": 0.348,
+    "hf": 0.032
   },
   {
-    "file": "egyptian-desert.mp3",
-    "title": "Egyptian Egypt Desert Music",
-    "artist": "HitsLab",
-    "source": "https://pixabay.com/music/world-egyptian-egypt-desert-music-502005/",
-    "bpm": 106.5,
-    "offset": 0.546,
-    "hf": 0.001
+    "file": "col-atesi-darbuka.mp3",
+    "title": "Çöl Ateşi Darbuka",
+    "artist": "KeopsRa",
+    "source": "https://pixabay.com/music/dance-%C3%A7%C3%B6l-ate%C5%9Fi-darbuka-519931/",
+    "bpm": 110.0,
+    "offset": 0.099,
+    "hf": 0.026
   },
   {
-    "file": "oriental-way.mp3",
-    "title": "The Oriental Way (Pop, Oriental, Instrumental)",
-    "artist": "Lyrium-2025",
-    "source": "https://pixabay.com/music/instrumental-the-oriental-way-pop-oriental-instrumental-566606/",
-    "bpm": 105.0,
-    "offset": 0.551,
-    "hf": 0.015
+    "file": "night-of-gold.mp3",
+    "title": "Night of Gold",
+    "artist": "djovan",
+    "source": "https://pixabay.com/music/folk-night-of-gold-461581/",
+    "bpm": 112.0,
+    "offset": 0.058,
+    "hf": 0.003
   },
   {
-    "file": "istanbul-615062.mp3",
-    "title": "Istanbul Turkish Turkey",
-    "artist": "lNPLUSMUSIC",
-    "source": "https://pixabay.com/music/world-istanbul-turkish-turkey-615062/",
-    "bpm": 105.0,
-    "offset": 0.128,
-    "hf": 0.005
-  },
-  {
-    "file": "turkish-dance.mp3",
-    "title": "Turkish Dance",
-    "artist": "Loka_music",
-    "source": "https://pixabay.com/music/arabic-turkish-dance-602715/",
-    "bpm": 101.0,
-    "offset": 0.389,
-    "hf": 0.01
-  },
-  {
-    "file": "arabic-music-294013.mp3",
-    "title": "Arabic Music",
-    "artist": "JonasBlakewood",
-    "source": "https://pixabay.com/music/upbeat-arabic-arabic-music-294013/",
-    "bpm": 97.5,
-    "offset": 0.476,
+    "file": "red-veil-dance.mp3",
+    "title": "Red Veil Dance",
+    "artist": "djovan",
+    "source": "https://pixabay.com/music/upbeat-red-veil-dance-461585/",
+    "bpm": 102.5,
+    "offset": 0.104,
     "hf": 0.004
   },
   {
-    "file": "ki-337459.mp3",
-    "title": "KI - Instrumental (Pop, Oriental)",
-    "artist": "Lyrium-2025",
-    "source": "https://pixabay.com/music/world-ki-instrumental-pop-oriental-337459/",
+    "file": "belly-dance.mp3",
+    "title": "Belly Dance",
+    "artist": "AliveTunesMusic",
+    "source": "https://pixabay.com/music/world-belly-dance-118609/",
     "bpm": 100.0,
-    "offset": 0.035,
-    "hf": 0.007
+    "offset": 0.0,
+    "hf": 0.018
   },
   {
-    "file": "ki-337454.mp3",
-    "title": "KI - Instrumental (Pop, Oriental) II",
-    "artist": "Lyrium-2025",
-    "source": "https://pixabay.com/music/world-ki-instrumental-pop-oriental-337454/",
-    "bpm": 94.0,
-    "offset": 0.621,
-    "hf": 0.01
+    "file": "pearls-of-fez.mp3",
+    "title": "Pearls of Fez",
+    "artist": "djovan",
+    "source": "https://pixabay.com/music/world-pearls-of-fez-461583/",
+    "bpm": 100.0,
+    "offset": 0.197,
+    "hf": 0.009
+  },
+  {
+    "file": "middle-eastern-percussion.mp3",
+    "title": "Middle Eastern Percussion (World, Oriental)",
+    "artist": "Ashot_Danielyan",
+    "source": "https://pixabay.com/music/world-middle-eastern-percussion-world-oriental-224611/",
+    "bpm": 87.0,
+    "offset": 0.499,
+    "hf": 0.009
   }
 ]
