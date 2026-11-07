@@ -2,6 +2,7 @@ export type PostType = "feed" | "story" | "reel" | "carousel";
 export type Angle = "showcase" | "heritage" | "quote" | "offer";
 export const ANGLES: Angle[] = ["showcase", "heritage", "quote", "offer"];
 export type PostStatus =
+  | "composing"
   | "draft"
   | "approved"
   | "publishing"
@@ -64,6 +65,25 @@ export interface SocialPostRow {
   attempts: number;
   created_at: string;
   published_at: string | null;
+  /** Manual posts (/admin/social/new) */
+  is_manual?: boolean;
+  manual_params?: ManualParams | null;
+  render_state?: "queued" | "running" | "ready" | "failed" | null;
+  render_error?: string | null;
+}
+
+/** What the owner chose in the manual-post wizard. */
+export interface ManualParams {
+  /** Chosen product photos, in order. */
+  images: string[];
+  /** "ai" = the model writes headline/subline/caption; "manual" = the owner's own text (stored on the row). */
+  text_mode: "ai" | "manual";
+  /** Music file (tracks.json) or null = automatic choice. */
+  music: string | null;
+  /** Next build: "full" = write new text with the model, then render; "render" = keep the stored text, only render. */
+  op: "full" | "render";
+  /** "now" = publish right after approval. */
+  publish_now?: boolean;
 }
 
 export interface ProductImage {

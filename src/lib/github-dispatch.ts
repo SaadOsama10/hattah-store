@@ -44,3 +44,19 @@ export async function hasActiveRun(workflow: "social-generate.yml" | "social-col
   }
   return false;
 }
+
+/** Starts the build of a manual post (text + render). Local dev can run the script directly instead of GitHub Actions. */
+export async function startManualBuild(postId: string): Promise<void> {
+  if (process.env.MANUAL_BUILD_LOCAL === "1" && process.env.NODE_ENV !== "production") {
+    const { spawn } = await import("node:child_process");
+    const path = await import("node:path");
+    spawn("npx", ["tsx", "src/manual.ts", `--post=${postId}`], {
+      cwd: path.join(process.cwd(), "automation"),
+      detached: true,
+      stdio: "ignore",
+      env: { ...process.env, DRY_RUN: "true" },
+    }).unref();
+    return;
+  }
+  await dispatchWorkflow("social-generate.yml", { mode: "manual", post_id: postId });
+}

@@ -8,7 +8,7 @@
 - `src/lib/supabase/` — `public.ts` (anon)، `service.ts` (service role، سيرفر فقط)، `types.ts`.
 - `src/lib/inventory-period.ts` — حساب فلتر الفترة الزمنية (بالسنتات كأعداد صحيحة).
 - `messages/{ar,en,tr}.json` — الترجمات. واجهة الأدمن عربية فقط (نصوص مباشرة).
-- `supabase/migrations/NNN_*.sql` — الـ migrations مرقّمة (آخر واحد 030). `supabase/schema.sql` المخطط الكامل.
+- `supabase/migrations/NNN_*.sql` — الـ migrations مرقّمة (آخر واحد 031). `supabase/schema.sql` المخطط الكامل.
 - الأسرار في `.env.local` (لا تُطبع ولا تُرفع): `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`.
 
 ## دفتر البضاعة (`/admin/inventory`)
@@ -46,6 +46,11 @@
 - التوليد اليومي 03:00 عبر OpenAI Batch API (`generate.ts --batch` ⇒ جدول `social_batches` ⇒ `collect.ts` عبر `social-collect.yml` يُطلقه مسار Vercel)، ومسار احتياطي بالاستدعاءات العادية عند 07:00 إسطنبول أو فشل الإرسال. أزرار الأدمن (إعادة/تبديل/«توليد الغد») فورية وعادية.
 - المفتاح `hattah-social-v2` (Restricted: Responses/Files/Batch Write + Models Read) في سر `OPENAI_API_KEY`؛ القديم `hattah-social` مُلغى.
 - القياس: `gh workflow run social-openai-bench.yml -f variant=baseline|new|batch` (لا يكتب في قاعدة البيانات). النتائج ليوم كامل: قبل 0.214$، بعد (عادي) 0.083$، Batch 0.036$.
+
+### المنشور اليدوي (`/admin/social/new`، migration 031)
+- معالج: منتج (كل المنتجات) ← نوع/زاوية ← صور بالترتيب ← موعد (أو «انشر الآن»، بلا jitter) ← نص (AI بنداء عادي، أو يدوي) ← موسيقى اختيارية ← معاينة ← اعتماد. الصف `is_manual=true`، `status='composing'` أثناء الإعداد (لا يُنشر ولا يدخل التدوير)، `manual_params` (الصور/الموسيقى/وضع النص)، `render_state` (queued/running/ready/failed).
+- البناء: `social-generate.yml mode=manual post_id=…` ← `automation/src/manual.ts` (نفس دوال `pipeline.ts`). الاعتماد يحوّله إلى `approved` فيمرّ بنفس مسار النشر؛ «انشر الآن» يطلق `social-publish.yml`. تحذيرات (لا تمنع): ±20 دقيقة، نفس المنتج ±3 أيام، تكرار موسيقى ريل، النظام مطفأ.
+- المسودات `composing` الأقدم من 3 أيام يحذفها `cleanup.ts`. محليًا: `MANUAL_BUILD_LOCAL=1` يشغّل `manual.ts` مباشرة بدل GitHub.
 
 ### تعديلات الأدمن اليدوية
 - **المالك يعدّل المنشورات من لوحة `/admin/social` بنفسه** (تبديل المنتج، إعادة التصميم/الكابشن، اعتماد/إلغاء اعتماد، «انشر الآن»). هذا طبيعي: لا تعتبر أي تغيّر في المنتج أو الحالة (مثل `draft` بعد «تبديل المنتج») أو تشغيلة `workflow_dispatch` غير مفسّرة، ولا تُبلّغ عنه كمشكلة. مع ذلك تأكد قبل الموعد أن ما سيُنشر `approved` ووسائطه تعمل، واعتمد ما بقي `draft` إن كان المطلوب نشره.

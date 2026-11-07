@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ExternalLink, Settings } from "lucide-react";
+import { ExternalLink, Plus, Settings } from "lucide-react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/Button";
 import {
@@ -19,6 +19,7 @@ import {
 } from "@/lib/social-types";
 
 const STATUS_CLASSES: Record<SocialPostStatus, string> = {
+  composing: "bg-cream/10 text-cream-secondary",
   draft: "bg-cream/10 text-cream-secondary",
   approved: "bg-forest/15 text-forest",
   publishing: "bg-terracotta/15 text-terracotta",
@@ -65,7 +66,14 @@ export function Tabs({ tab }: { tab: "upcoming" | "history" | "products" }) {
       active ? "bg-terracotta text-cream" : "text-cream-secondary/70 hover:text-cream"
     );
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
+      <Link
+        href="/admin/social/new"
+        className="flex items-center gap-1.5 rounded-full bg-[#b8441f] px-5 py-1.5 font-inter text-sm font-semibold text-white transition-colors hover:bg-terracotta-deep"
+      >
+        <Plus size={15} />
+        منشور جديد
+      </Link>
       <Link href="/admin/social" className={item(tab === "upcoming")}>
         القادمة
       </Link>
@@ -204,6 +212,9 @@ function PostCard({
             <span className={cn("rounded-full px-2.5 py-0.5 font-inter text-xs", STATUS_CLASSES[post.status])}>
               {STATUS_LABELS[post.status]}
             </span>
+            {post.is_manual && (
+              <span className="rounded-full bg-terracotta/15 px-2.5 py-0.5 font-inter text-xs font-semibold text-terracotta">يدوي</span>
+            )}
             <span className="rounded-full bg-cream/10 px-2.5 py-0.5 font-inter text-xs text-cream-secondary">
               {kindLabel}{isCarousel && post.slides?.length ? ` (${post.slides.length} شرائح)` : ""} · {ANGLE_LABELS[post.angle]}
             </span>

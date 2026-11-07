@@ -14,6 +14,22 @@ const sb = getSupabase();
 const DAY = 86400e3;
 let removed = 0;
 
+// Unfinished manual drafts (/admin/social/new) abandoned for 3+ days: delete the row and its files.
+const { data: drafts } = await sb
+  .from("social_posts")
+  .select("id, image_url, video_url, slides")
+  .eq("status", "composing")
+  .lt("created_at", new Date(Date.now() - 3 * DAY).toISOString());
+for (const r of drafts ?? []) {
+  const paths = [r.image_url, r.video_url, ...((r.slides as string[] | null) ?? [])].filter(Boolean).map((u) => bucketPath(u as string)).filter(Boolean) as string[];
+  log(`${dry ? "[dry] " : ""}stale manual draft ${r.id}: ${paths.length} file(s)`);
+  if (!dry) {
+    if (paths.length) await sb.storage.from(SOCIAL_BUCKET).remove(paths);
+    await sb.from("social_posts").delete().eq("id", r.id).eq("status", "composing");
+  }
+  removed += paths.length;
+}
+
 const cutoff = new Date(Date.now() - 14 * DAY).toISOString();
 const { data: old } = await sb
   .from("social_posts")

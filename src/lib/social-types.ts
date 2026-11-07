@@ -1,4 +1,5 @@
 export type SocialPostStatus =
+  | "composing"
   | "draft"
   | "approved"
   | "publishing"
@@ -51,10 +52,26 @@ export interface SocialPostWithProduct {
   error: string | null;
   attempts: number;
   published_at: string | null;
+  music_track?: string | null;
+  /** Created in /admin/social/new */
+  is_manual?: boolean;
+  manual_params?: ManualParams | null;
+  render_state?: "queued" | "running" | "ready" | "failed" | null;
+  render_error?: string | null;
+  render_updated_at?: string | null;
   products: { name_ar: string } | null;
 }
 
+export interface ManualParams {
+  images: string[];
+  text_mode: "ai" | "manual";
+  music: string | null;
+  op: "full" | "render";
+  publish_now?: boolean;
+}
+
 export const STATUS_LABELS: Record<SocialPostStatus, string> = {
+  composing: "قيد الإعداد",
   draft: "مسودة",
   approved: "معتمد",
   publishing: "قيد النشر",

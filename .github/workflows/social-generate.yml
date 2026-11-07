@@ -7,11 +7,11 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "daily (batch) | today | tomorrow (immediate) | fixup | regenerate"
+        description: "daily (batch) | today | tomorrow (immediate) | fixup | regenerate | manual"
         default: "today"
         type: string
       post_id:
-        description: "regenerate: social_posts.id"
+        description: "regenerate / manual: social_posts.id"
         required: false
         type: string
       what:
@@ -88,6 +88,7 @@ jobs:
           MODE="${IN_MODE:-daily}"
           case "$MODE" in
             regenerate) npx tsx src/regenerate.ts --post="$IN_POST" --what="${IN_WHAT:-both}" ;;
+            manual)     npx tsx src/manual.ts --post="$IN_POST" ;;                 # /admin/social/new: builds one manual post (normal API calls)
             today)      npx tsx src/generate.ts $IN_ARGS ;;
             fixup)      npx tsx src/caption-fixup.ts $IN_ARGS ;;
             tomorrow)   npx tsx src/generate.ts --tomorrow ;;            # admin button: immediate, normal API calls

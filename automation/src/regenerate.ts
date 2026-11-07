@@ -5,7 +5,7 @@ import { getSupabase } from "./db.js";
 import { Renderer } from "./render/render.js";
 import { ReelRenderer } from "./render/reel.js";
 import { log } from "./time.js";
-import { buildCarouselAssets, buildReelAssets, buildPostAssets, loadCategories, loadProduct, loadSettings, pickProducts } from "./pipeline.js";
+import { applyManualParams, buildCarouselAssets, buildReelAssets, buildPostAssets, loadCategories, loadProduct, loadSettings, manualTrack, pickProducts } from "./pipeline.js";
 
 loadEnv();
 const arg = (n: string) => process.argv.find((a) => a.startsWith(`--${n}=`))?.split("=")[1];
@@ -46,7 +46,10 @@ try {
     log(`swapping to «${pick.product.name_ar}» (${angle})`);
   }
 
-  const product = await loadProduct(sb, productId);
+  // Manual posts keep the photos (and music) the owner chose.
+  const manual = post.is_manual && what !== "swap" ? post.manual_params : null;
+  const product = applyManualParams(await loadProduct(sb, productId), manual);
+  const track = manualTrack(manual);
 
     const image = true; // image text comes from the same call as the caption, so always re-render
     const caption = what === "caption" || what === "both" || what === "swap";
@@ -57,12 +60,12 @@ try {
       assets = await buildCarouselAssets(sb, renderer, settings, cats, { ...post, angle, design: what === "image" ? post.design : null }, product, undefined, { reuseText: what === "image" });
     } else if (post.post_type === "reel" || what === "to-reel") {
       const { count } = await sb.from("social_posts").select("id", { count: "exact", head: true }).eq("post_type", "reel");
-      assets = await buildReelAssets(sb, reelRenderer, settings, cats, { ...post, angle, design: null }, product, (count ?? 0) + [...postId].reduce((a, c) => a + c.charCodeAt(0), 0), what === "to-reel"); // varied track per reel
+      assets = await buildReelAssets(sb, reelRenderer, settings, cats, { ...post, angle, design: null }, product, (count ?? 0) + [...postId].reduce((a, c) => a + c.charCodeAt(0), 0), what === "to-reel", undefined, { track }); // varied track per reel
     } else {
       assets = await buildPostAssets(sb, renderer, settings, cats, { ...post, angle, design }, product, {
         image,
         caption,
-      });
+      }, undefined, { firstPhoto: !!manual, track });
     }
     const patch: Record<string, unknown> = { ...assets, product_id: productId, angle, error: null, attempts: 0 };
     if (post.status === "failed") patch.status = "draft";

@@ -1,14 +1,14 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { Renderer } from "./render/render.js";
 import { ReelRenderer, REEL_SECONDS } from "./render/reel.js";
-import { chooseTrack, musicStartFor, trackFile } from "./music.js";
+import { chooseTrack, musicStartFor, trackFile, tracks, type Track } from "./music.js";
 import { STORY_SECONDS, renderStoryVideo } from "./render/story.js";
 import { CTA_POOL, ctaIndexOf, generateCaption, resultFromJson, type CaptionJson, type CaptionMode } from "./captions.js";
 import { buildTagSet, countRecentUse, parseTags } from "./hashtags.js";
 import { renderDetailsSlide, renderPhotoSlide } from "./render/carousel.js";
 import { SOCIAL_BUCKET } from "./db.js";
 import { effectivePrice, sortedImages } from "./products.js";
-import { ANGLES, type Angle, type ProductRecord, type SocialPostRow, type SocialSettings } from "./types.js";
+import { ANGLES, type Angle, type DesignText, type ManualParams, type ProductRecord, type SocialPostRow, type SocialSettings } from "./types.js";
 import { log } from "./time.js";
 
 export const PRODUCT_SELECT =
@@ -175,7 +175,7 @@ export async function pickProducts(
     .from("social_posts")
     .select("product_id, angle, scheduled_at, status")
     .not("product_id", "is", null)
-    .neq("status", "skipped")
+    .not("status", "in", "(skipped,composing)")
     .order("scheduled_at", { ascending: false });
   const lastPosted = new Map<string, number>();
   // Feed rotation: a product that appeared in a feed post within the last N days is out
@@ -189,7 +189,7 @@ export async function pickProducts(
       .select("product_id, scheduled_at")
       .eq("post_type", "feed")
       .not("product_id", "is", null)
-      .not("status", "in", "(skipped,failed)")
+      .not("status", "in", "(skipped,failed,composing)")
       .gte("scheduled_at", new Date(since).toISOString());
     for (const h of feedHist ?? []) recentFeed.add(h.product_id);
   }
@@ -243,6 +243,8 @@ export async function buildPostAssets(
   product: ProductRecord,
   what: { image: boolean; caption: boolean },
   precomputed?: CaptionJson,
+  /** Manual posts: use the first chosen photo as is (no "second photo for stories" rule) and a chosen music track. */
+  manual: { firstPhoto?: boolean; track?: Track } = {},
 ): Promise<Partial<SocialPostRow>> {
   const categoryAr = cats.get(product.category)?.label_ar ?? "";
   const out: Partial<SocialPostRow> = {};
@@ -281,7 +283,7 @@ export async function buildPostAssets(
       price: price.current,
       oldPrice: price.old,
       // Stories prefer the product's second photo so they don't look like a copy of the feed post.
-      photoUrl: sortedImages(product)[post.post_type === "story" && sortedImages(product).length > 1 ? 1 : 0],
+      photoUrl: sortedImages(product)[post.post_type === "story" && !manual.firstPhoto && sortedImages(product).length > 1 ? 1 : 0],
       text: { headline: design.headline ?? "", subline: design.subline ?? "" },
       storeUrl: settings.store_url,
       removeBg: (await loadRemoveBgIds(sb)).has(product.id),
@@ -295,7 +297,7 @@ export async function buildPostAssets(
     };
     if (post.post_type === "story" && process.env.STORY_VIDEO !== "false") {
       // Stories are short animated videos (7 s) with music; the cover frame doubles as the admin preview image.
-      const track = await chooseTrack(sb, (post as { scheduled_at?: string }).scheduled_at ?? null, post.id, "story");
+      const track = manual.track ?? (await chooseTrack(sb, (post as { scheduled_at?: string }).scheduled_at ?? null, post.id, "story"));
       const musicFile = await trackFile(sb, track);
       const start = musicStartFor(track, [...post.id].reduce((a, c) => a + c.charCodeAt(0), 0), STORY_SECONDS);
       const { video, cover } = await renderStoryVideo(renderer, req, musicFile, start);
@@ -323,11 +325,15 @@ export async function buildReelAssets(
   musicIndex: number,
   keepCaption = false,
   precomputed?: CaptionJson,
+  /** Manual posts: `fixed` = the owner's own text (no model call); `track` = the chosen music. */
+  manual: { fixed?: { design: Required<DesignText>; caption?: string | null }; track?: Track } = {},
 ): Promise<Partial<SocialPostRow>> {
   const categoryAr = cats.get(product.category)?.label_ar ?? "";
   const ctaIndex = await pickCtaIndex(sb, post.scheduled_at ?? null, post.id);
   const mode: CaptionMode = keepCaption ? "design" : "full"; // to-reel keeps the feed caption, only the on-screen text is new
-  const res = precomputed
+  const res = manual.fixed
+    ? { caption: manual.fixed.caption ?? "", design: manual.fixed.design }
+    : precomputed
     ? resultFromJson(precomputed, settings, ctaIndex, mode, mode === "full" ? await makeTagPicker(sb, post.scheduled_at ?? null, post.id)(precomputed.hashtags) : undefined)
     : await generateCaption(
         product,
@@ -339,7 +345,7 @@ export async function buildReelAssets(
       );
   const price = effectivePrice(product);
   const imgs = sortedImages(product);
-  const track = await chooseTrack(sb, post.scheduled_at ?? null, post.id);
+  const track = manual.track ?? (await chooseTrack(sb, post.scheduled_at ?? null, post.id));
   const music = await trackFile(sb, track);
   const musicStart = musicStartFor(track, musicIndex, REEL_SECONDS);
   log(`reel «${product.name_ar}» ♪ ${track.title} (${track.bpm} bpm, +${musicStart.toFixed(2)}s)`);
@@ -368,7 +374,7 @@ export async function buildReelAssets(
   const video_url = await up("mp4", video, "video/mp4");
   const image_url = await up("jpg", cover, "image/jpeg");
   log(`reel uploaded (${(video.length / 1e6).toFixed(1)} MB, ${timing.seconds.toFixed(1)}s)`, video_url);
-  return { video_url, image_url, music_track: track.file, ...(keepCaption ? {} : { caption_full: res.caption }), design: res.design };
+  return { video_url, image_url, music_track: track.file, ...(keepCaption || manual.fixed ? {} : { caption_full: res.caption }), design: res.design };
 }
 
 /** Builds a carousel: hero design slide + extra product photos + a details slide, all 1080×1350 (4:5), plus the full caption. */
@@ -495,4 +501,16 @@ export async function completePost(
   await sb.from("social_posts").update({ status: "skipped", error: `generation failed: ${lastErr}`.slice(0, 500) }).eq("id", row.id);
   log(`✗ SKIPPED ${o.label}`);
   return false;
+}
+
+/** Manual posts: the owner's photo choice (in order) replaces the product's own photo list. */
+export function applyManualParams(product: ProductRecord, params: ManualParams | null | undefined): ProductRecord {
+  const urls = params?.images?.filter(Boolean) ?? [];
+  if (!urls.length) return product;
+  return { ...product, product_images: urls.map((image_url, sort_order) => ({ image_url, sort_order })) };
+}
+
+/** The music track the owner picked for a manual reel/story, if any. */
+export function manualTrack(params: ManualParams | null | undefined): Track | undefined {
+  return params?.music ? tracks().find((t) => t.file === params.music) : undefined;
 }

@@ -67,7 +67,7 @@ export async function chooseTrack(sb: SupabaseClient, scheduledAt: string | null
     .from("social_posts")
     .select("id, post_type, music_track, scheduled_at")
     .in("post_type", ["reel", "story"])
-    .neq("status", "skipped")
+    .not("status", "in", "(skipped,composing)")
     .not("music_track", "is", null)
     .neq("id", excludePostId);
   const uses = [
