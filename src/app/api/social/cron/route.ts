@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "crypto";
 import { getServiceSupabaseClient } from "@/lib/supabase/service";
-import { dispatchWorkflow, hasActiveRun } from "@/lib/github-dispatch";
+import { dispatchWorkflow, hasActiveRun, recentFailureStreak } from "@/lib/github-dispatch";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -39,8 +39,19 @@ async function handle(request: Request) {
     .lte("scheduled_at", now.toISOString())
     .gte("scheduled_at", new Date(now.getTime() - 12 * 3600e3).toISOString());
   if ((due ?? 0) > 0 && !(await hasActiveRun("social-publish.yml"))) {
-    await dispatchWorkflow("social-publish.yml", {});
-    actions.push(`publish (${due} due)`);
+    // Circuit breaker: after N failed runs in a row wait 10·2^(N-1) min (max 60) before retrying, so an outage
+    // sends a handful of emails instead of one every 5 minutes; the first failure is retried at once.
+    const { failures, lastAt } = await recentFailureStreak("social-publish.yml");
+    const waitMs = failures <= 1 ? 0 : Math.min(60, 10 * 2 ** (failures - 2)) * 60e3;
+    if (failures >= 3) {
+      await supabase.from("social_settings").update({ last_error: `CI: workflow social-publish فشل ${failures} مرات متتالية (راجع GitHub Actions)` }).eq("id", 1);
+    }
+    if (lastAt !== null && now.getTime() - lastAt < waitMs) {
+      actions.push(`publish backoff (${failures} failures, retry in ${Math.ceil((waitMs - (now.getTime() - lastAt)) / 60e3)} min)`);
+    } else {
+      await dispatchWorkflow("social-publish.yml", {});
+      actions.push(`publish (${due} due${failures ? `, after ${failures} failed runs` : ""})`);
+    }
   }
 
   // 2) tomorrow's posts missing after 03:00 Istanbul → generate workflow
