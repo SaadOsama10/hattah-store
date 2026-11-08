@@ -46,7 +46,13 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: automation/package-lock.json
-      - run: npm ci
+      - name: Install dependencies (retry; last resort skips install scripts)
+        run: |
+          # ffmpeg-static downloads its binary from GitHub releases in a postinstall script; a GitHub 5xx there
+          # used to fail the whole run (8/11: every publish failed on a 504). Retry, then fall back to --ignore-scripts
+          # (ffmpegBin() then uses the system ffmpeg; publish needs no native postinstall at all).
+          for i in 1 2 3; do npm ci && exit 0; echo "npm ci failed (attempt $i)"; sleep $((i*10)); done
+          echo "falling back to npm ci --ignore-scripts"; npm ci --ignore-scripts
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
       - name: Publish
