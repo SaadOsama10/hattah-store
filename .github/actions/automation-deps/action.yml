@@ -1,0 +1,64 @@
+name: Install automation dependencies
+description: >
+  node_modules cached on the lockfile hash (a hit skips npm ci entirely) plus a separate long-lived ffmpeg binary cache.
+  ffmpeg-static downloads its binary from GitHub releases in a postinstall script; a GitHub 5xx there failed every run on
+  8/11. On a cache miss we retry npm ci; if the download still fails we install without scripts, restore the cached ffmpeg
+  binary (or leave the system ffmpeg, which ffmpegBin() falls back to) and rebuild the other native packages.
+runs:
+  using: composite
+  steps:
+    - name: Restore node_modules
+      id: nm
+      uses: actions/cache/restore@v4
+      with:
+        path: automation/node_modules
+        key: node-modules-${{ runner.os }}-node22-${{ hashFiles('automation/package-lock.json') }}
+    - name: Restore ffmpeg binary
+      id: ff
+      uses: actions/cache/restore@v4
+      with:
+        path: ~/.cache/hattah-ffmpeg
+        key: ffmpeg-static-${{ runner.os }}-v1
+        restore-keys: ffmpeg-static-${{ runner.os }}-
+    - name: npm ci (retry, degraded fallback)
+      id: install
+      if: steps.nm.outputs.cache-hit != 'true'
+      shell: bash
+      working-directory: automation
+      env:
+        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+      run: |
+        for i in 1 2 3; do
+          if npm ci; then echo "full=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          echo "npm ci failed (attempt $i)"; rm -rf node_modules; sleep $((i*10))
+        done
+        echo "::warning::npm ci kept failing (ffmpeg-static download?): installing without scripts"
+        npm ci --ignore-scripts
+        # the other native packages still need their install scripts (not ffmpeg-static)
+        npm rebuild sharp onnxruntime-node esbuild || echo "::warning::npm rebuild of native packages failed"
+        echo "full=false" >> "$GITHUB_OUTPUT"
+    - name: Provide ffmpeg (cached binary or system)
+      shell: bash
+      working-directory: automation
+      run: |
+        BIN=node_modules/ffmpeg-static/ffmpeg
+        if [ -x "$BIN" ]; then
+          mkdir -p ~/.cache/hattah-ffmpeg && cp -f "$BIN" ~/.cache/hattah-ffmpeg/ffmpeg   # refresh the long-lived copy
+        elif [ -x ~/.cache/hattah-ffmpeg/ffmpeg ] && [ -d node_modules/ffmpeg-static ]; then
+          cp -f ~/.cache/hattah-ffmpeg/ffmpeg "$BIN" && chmod +x "$BIN" && echo "ffmpeg: restored from cache"
+        else
+          echo "ffmpeg-static binary unavailable; the system ffmpeg is used if the workflow needs one"
+        fi
+    - name: Save node_modules (full installs only)
+      if: steps.install.outputs.full == 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: automation/node_modules
+        key: node-modules-${{ runner.os }}-node22-${{ hashFiles('automation/package-lock.json') }}
+    - name: Save ffmpeg binary (first time only)
+      continue-on-error: true
+      if: steps.ff.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: ~/.cache/hattah-ffmpeg
+        key: ffmpeg-static-${{ runner.os }}-v1
