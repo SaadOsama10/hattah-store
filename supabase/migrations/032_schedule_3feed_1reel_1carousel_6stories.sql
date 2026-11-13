@@ -1,0 +1,4 @@
+-- Daily schedule from 13/11: 3 feed + 1 carousel + 1 reel + 6 stories = 11 items.
+alter table social_settings alter column daily_slots set default '[{"type":"story","time":"09:30"},{"type":"feed","time":"10:00"},{"type":"story","time":"12:00"},{"type":"carousel","time":"12:30"},{"type":"feed","time":"15:00"},{"type":"story","time":"15:30"},{"type":"story","time":"18:00"},{"type":"feed","time":"20:00"},{"type":"story","time":"20:30"},{"type":"reel","time":"21:30"},{"type":"story","time":"22:30"}]'::jsonb;
+update social_settings set daily_slots = '[{"type":"story","time":"09:30"},{"type":"feed","time":"10:00"},{"type":"story","time":"12:00"},{"type":"carousel","time":"12:30"},{"type":"feed","time":"15:00"},{"type":"story","time":"15:30"},{"type":"story","time":"18:00"},{"type":"feed","time":"20:00"},{"type":"story","time":"20:30"},{"type":"reel","time":"21:30"},{"type":"story","time":"22:30"}]'::jsonb where id = 1;
+notify pgrst, 'reload schema';
