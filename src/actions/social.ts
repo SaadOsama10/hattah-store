@@ -230,7 +230,7 @@ export interface SocialFocusRow {
   weight: number;
 }
 
-const VALID_WEIGHTS = [0, 1, 2, 4];
+const VALID_WEIGHTS = [0, 0.5, 1, 2, 4];
 
 export async function listSocialFocusProducts(): Promise<{ rows: SocialFocusRow[]; categories: { key: string; label: string }[] }> {
   await assertAdminSession();
@@ -258,7 +258,7 @@ export async function listSocialFocusProducts(): Promise<{ rows: SocialFocusRow[
   return { rows, categories: [...used].map((k) => ({ key: k, label: label.get(k) ?? k })).sort((a, b) => a.label.localeCompare(b.label, "ar")) };
 }
 
-/** Sets the social focus weight (0/1/2/4) for one or many products — saved immediately. */
+/** Sets the social focus weight (0/0.5/1/2/4) for one or many products — saved immediately. */
 export async function setProductWeights(productIds: string[], weight: number) {
   await assertAdminSession();
   if (!VALID_WEIGHTS.includes(weight)) throw new Error("وزن غير صالح");

@@ -152,8 +152,8 @@ export interface ProductPick {
   angle: Angle;
 }
 
-/** Social focus weights: 0 excluded, 1 normal, 2 high, 4 very high. Missing row = 1. */
-export const SOCIAL_WEIGHTS = [0, 1, 2, 4] as const;
+/** Social focus weights: 0 excluded, 0.5 low, 1 normal, 2 high, 4 very high. Missing row = 1. */
+export const SOCIAL_WEIGHTS = [0, 0.5, 1, 2, 4] as const;
 
 export async function loadSocialWeights(sb: SupabaseClient): Promise<Map<string, number>> {
   const { data, error } = await sb.from("social_product_settings").select("product_id, social_weight");
@@ -164,9 +164,9 @@ export async function loadSocialWeights(sb: SupabaseClient): Promise<Map<string,
   return new Map((data ?? []).map((r: any) => [r.product_id as string, Number(r.social_weight ?? 1)]));
 }
 
-/** Feed cooldown (days) shrinks with the weight so a heavy product returns sooner but never floods: ×1, ×0.6, ×0.4 (min 2 days). */
+/** Feed cooldown (days) shrinks with the weight so a heavy product returns sooner but never floods: ×1.5 for low (0.5), ×1 normal, ×0.6 high, ×0.4 very high (min 2 days, whole days). */
 export function cooldownDays(base: number, weight: number): number {
-  const factor = weight >= 4 ? 0.4 : weight >= 2 ? 0.6 : 1;
+  const factor = weight >= 4 ? 0.4 : weight >= 2 ? 0.6 : weight > 0 && weight < 1 ? 1.5 : 1;
   return Math.max(2, Math.ceil(base * factor));
 }
 

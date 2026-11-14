@@ -13,6 +13,7 @@ import {
 
 const LEVELS = [
   { w: 0, label: "استبعاد" },
+  { w: 0.5, label: "قليل" },
   { w: 1, label: "عادي" },
   { w: 2, label: "عالي" },
   { w: 4, label: "عالي جداً" },
@@ -114,7 +115,9 @@ export function SocialFocus({ rows, categories }: { rows: SocialFocusRow[]; cate
       active
         ? w === 0
           ? "bg-terracotta-deep text-cream"
-          : w === 1
+          : w === 0.5
+            ? "bg-amber-700/70 text-cream"
+            : w === 1
             ? "bg-cream/25 text-cream"
             : "bg-forest text-cream"
         : "border border-cream/20 text-cream-secondary/80 hover:text-cream",
@@ -128,11 +131,11 @@ export function SocialFocus({ rows, categories }: { rows: SocialFocusRow[]; cate
       </div>
 
       <p className="font-inter text-sm text-cream-secondary/80">
-        اختر المنتجات التي يركّز عليها النشر التلقائي: «عالي» ضعف الاحتمال، «عالي جداً» أربعة أضعاف، «استبعاد» لا يُنشر أبدًا. يُحفظ كل تغيير فورًا.
+        اختر المنتجات التي يركّز عليها النشر التلقائي: «قليل» نصف الاحتمال، «عالي» ضعف الاحتمال، «عالي جداً» أربعة أضعاف، «استبعاد» لا يُنشر أبدًا. يُحفظ كل تغيير فورًا.
         التغيير يؤثر على التوليد القادم فقط، ولا يمس منشورات الغد المولّدة إلا بزر إعادة التوليد.
       </p>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
         {summary.map((s) => (
           <div key={s.w} className="rounded-2xl border border-cream/15 bg-bg-secondary p-4">
             <p className="font-inter text-xs text-cream-secondary/70">{s.label}</p>
