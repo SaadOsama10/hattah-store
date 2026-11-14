@@ -220,6 +220,93 @@ export async function setProductRemoveBg(productId: string, removeBg: boolean) {
   revalidatePath("/[locale]/admin/social", "page");
 }
 
+
+export interface SocialFocusRow {
+  id: string;
+  name_ar: string;
+  category: string;
+  category_label: string;
+  image_url: string | null;
+  weight: number;
+}
+
+const VALID_WEIGHTS = [0, 1, 2, 4];
+
+export async function listSocialFocusProducts(): Promise<{ rows: SocialFocusRow[]; categories: { key: string; label: string }[] }> {
+  await assertAdminSession();
+  const supabase = getServiceSupabaseClient();
+  const [{ data: prods, error }, { data: opts }, { data: cats }] = await Promise.all([
+    supabase.from("products").select("id, name_ar, category, product_images(image_url, sort_order)").order("name_ar"),
+    supabase.from("social_product_settings").select("product_id, social_weight"),
+    supabase.from("categories").select("key, label_ar"),
+  ]);
+  if (error) throw new Error(error.message);
+  const w = new Map((opts ?? []).map((o) => [o.product_id as string, Number(o.social_weight ?? 1)]));
+  const label = new Map((cats ?? []).map((c) => [c.key as string, c.label_ar as string]));
+  const rows = (prods ?? []).map((p) => {
+    const imgs = [...((p.product_images as { image_url: string; sort_order: number }[]) ?? [])].sort((a, b) => a.sort_order - b.sort_order);
+    return {
+      id: p.id as string,
+      name_ar: p.name_ar as string,
+      category: p.category as string,
+      category_label: label.get(p.category as string) ?? (p.category as string),
+      image_url: imgs[0]?.image_url ?? null,
+      weight: w.get(p.id as string) ?? 1,
+    };
+  });
+  const used = new Set(rows.map((r) => r.category));
+  return { rows, categories: [...used].map((k) => ({ key: k, label: label.get(k) ?? k })).sort((a, b) => a.label.localeCompare(b.label, "ar")) };
+}
+
+/** Sets the social focus weight (0/1/2/4) for one or many products — saved immediately. */
+export async function setProductWeights(productIds: string[], weight: number) {
+  await assertAdminSession();
+  if (!VALID_WEIGHTS.includes(weight)) throw new Error("وزن غير صالح");
+  if (!productIds.length) return;
+  const supabase = getServiceSupabaseClient();
+  const now = new Date().toISOString();
+  const { error } = await supabase
+    .from("social_product_settings")
+    .upsert(productIds.map((id) => ({ product_id: id, social_weight: weight, updated_at: now })), { onConflict: "product_id" });
+  if (error) throw new Error(error.message);
+  revalidatePath("/[locale]/admin/social", "page");
+}
+
+export async function resetAllProductWeights() {
+  await assertAdminSession();
+  const supabase = getServiceSupabaseClient();
+  const { error } = await supabase
+    .from("social_product_settings")
+    .update({ social_weight: 1, updated_at: new Date().toISOString() })
+    .neq("social_weight", 1);
+  if (error) throw new Error(error.message);
+  revalidatePath("/[locale]/admin/social", "page");
+}
+
+/** Skips tomorrow's not-yet-published automatic posts (manual posts are kept) and generates them again with the current weights. */
+export async function regenerateTomorrowWithWeights(): Promise<{ skipped: number }> {
+  await assertAdminSession();
+  const supabase = getServiceSupabaseClient();
+  const istDay = (offset: number) => {
+    const d = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul" }).format(new Date(Date.now() + offset * 86400e3));
+    return new Date(`${d}T00:00:00+03:00`);
+  };
+  const start = istDay(1);
+  const end = new Date(start.getTime() + 86400e3);
+  const { data, error } = await supabase
+    .from("social_posts")
+    .update({ status: "skipped", error: "REGENERATED_WITH_WEIGHTS" })
+    .gte("scheduled_at", start.toISOString())
+    .lt("scheduled_at", end.toISOString())
+    .in("status", ["draft", "approved"])
+    .eq("is_manual", false)
+    .select("id");
+  if (error) throw new Error(error.message);
+  await dispatchWorkflow("social-generate.yml", { mode: "tomorrow" });
+  revalidatePath("/[locale]/admin/social", "page");
+  return { skipped: data?.length ?? 0 };
+}
+
 /** The big kill switch. Turning it back on clears any automatic shut-off warning. */
 export async function setSocialEnabled(enabled: boolean) {
   await assertAdminSession();

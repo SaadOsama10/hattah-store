@@ -152,7 +152,38 @@ export interface ProductPick {
   angle: Angle;
 }
 
-/** Picks `count` distinct products, least-recently-posted first (never posted
+/** Social focus weights: 0 excluded, 1 normal, 2 high, 4 very high. Missing row = 1. */
+export const SOCIAL_WEIGHTS = [0, 1, 2, 4] as const;
+
+export async function loadSocialWeights(sb: SupabaseClient): Promise<Map<string, number>> {
+  const { data, error } = await sb.from("social_product_settings").select("product_id, social_weight");
+  if (error) {
+    log("social_weight unavailable (migration 033 not applied?):", error.message);
+    return new Map();
+  }
+  return new Map((data ?? []).map((r: any) => [r.product_id as string, Number(r.social_weight ?? 1)]));
+}
+
+/** Feed cooldown (days) shrinks with the weight so a heavy product returns sooner but never floods: ×1, ×0.6, ×0.4 (min 2 days). */
+export function cooldownDays(base: number, weight: number): number {
+  const factor = weight >= 4 ? 0.4 : weight >= 2 ? 0.6 : 1;
+  return Math.max(2, Math.ceil(base * factor));
+}
+
+/** Weighted random pick (no replacement is done by the caller). Items with weight <= 0 are never chosen. */
+export function weightedPick<T>(items: T[], weightOf: (x: T) => number, rnd: () => number = Math.random): T | undefined {
+  const w = items.map((x) => Math.max(0, weightOf(x)));
+  const total = w.reduce((a, b) => a + b, 0);
+  if (total <= 0) return undefined;
+  let r = rnd() * total;
+  for (let i = 0; i < items.length; i++) {
+    r -= w[i];
+    if (r < 0) return items[i];
+  }
+  return items[items.length - 1];
+}
+
+/** Picks `count` distinct products by weighted random (social_weight × a staleness boost), avoiding the cooldown window, (never posted
  * first), avoiding the same category family back-to-back where possible, and
  * varying the angle per product. */
 export const ANGLE_LIST = ANGLES;
@@ -167,8 +198,10 @@ export async function pickProducts(
   const { data: prods, error } = await sb.from("products").select(PRODUCT_SELECT);
   if (error) throw new Error(error.message);
   const excluded = new Set([...(settings.excluded_product_ids ?? []), ...(opts.excludeIds ?? [])]);
+  const weights = await loadSocialWeights(sb);
+  const weightOf = (p: ProductRecord) => weights.get(p.id) ?? 1;
   const eligible = (prods as unknown as ProductRecord[]).filter(
-    (p) => !excluded.has(p.id) && sortedImages(p).length >= (opts.minImages ?? 1),
+    (p) => !excluded.has(p.id) && weightOf(p) > 0 && sortedImages(p).length >= (opts.minImages ?? 1),
   );
 
   const { data: hist } = await sb
@@ -191,7 +224,12 @@ export async function pickProducts(
       .not("product_id", "is", null)
       .not("status", "in", "(skipped,failed,composing)")
       .gte("scheduled_at", new Date(since).toISOString());
-    for (const h of feedHist ?? []) recentFeed.add(h.product_id);
+    const byId = new Map(eligible.map((p) => [p.id, p]));
+    for (const h of feedHist ?? []) {
+      const prod = byId.get(h.product_id);
+      const days = prod ? cooldownDays(rotationDays, weightOf(prod)) : rotationDays;
+      if (new Date(h.scheduled_at).getTime() >= Date.now() - days * 86400e3) recentFeed.add(h.product_id);
+    }
   }
   const lastAngle = new Map<string, Angle>();
   for (const h of hist ?? []) {
@@ -201,22 +239,25 @@ export async function pickProducts(
     }
   }
 
-  // never posted (-Infinity) first, then oldest; shuffle first so ties vary.
-  const ordered = shuffle(eligible).sort(
-    (a, b) => (lastPosted.get(a.id) ?? -Infinity) - (lastPosted.get(b.id) ?? -Infinity),
-  );
+  // Weighted random: social_weight × staleness boost (never posted ×3, else 1 → 3 over 30 days),
+  // so weight-1 products still rotate fairly while heavier ones appear proportionally more.
+  const ordered = shuffle(eligible);
   const fresh = ordered.filter((p) => !recentFeed.has(p.id));
   const pool = fresh.length >= count ? fresh : [...fresh, ...ordered.filter((p) => recentFeed.has(p.id))];
-  if (fresh.length < count) log(`rotation window relaxed: only ${fresh.length} product(s) outside the last ${rotationDays} days`);
+  if (fresh.length < count) log(`rotation window relaxed: only ${fresh.length} product(s) outside the cooldown (base ${rotationDays} days)`);
+  const stale = (p: ProductRecord) => {
+    const t = lastPosted.get(p.id);
+    return t == null ? 3 : 1 + (2 * Math.min(30, (Date.now() - t) / 86400e3)) / 30;
+  };
+  const pickWeight = (p: ProductRecord) => weightOf(p) * stale(p);
 
   const picks: ProductPick[] = [];
   const usedAngles: Angle[] = [];
   let prevFamily = opts.previousCategory ? family(cats, opts.previousCategory) : null;
   for (let i = 0; i < count; i++) {
-    // Look only at the freshest candidates so the rotation stays fair, but
-    // among them prefer a different category family than the previous pick.
-    const window = pool.slice(0, Math.max(8, count * 3));
-    const chosen = window.find((p) => family(cats, p.category) !== prevFamily) ?? pool[0];
+    // Prefer a different category family than the previous pick when possible.
+    const differentFamily = pool.filter((p) => family(cats, p.category) !== prevFamily);
+    const chosen = weightedPick(differentFamily.length ? differentFamily : pool, pickWeight);
     if (!chosen) break;
     pool.splice(pool.indexOf(chosen), 1);
 

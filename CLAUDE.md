@@ -8,7 +8,7 @@
 - `src/lib/supabase/` — `public.ts` (anon)، `service.ts` (service role، سيرفر فقط)، `types.ts`.
 - `src/lib/inventory-period.ts` — حساب فلتر الفترة الزمنية (بالسنتات كأعداد صحيحة).
 - `messages/{ar,en,tr}.json` — الترجمات. واجهة الأدمن عربية فقط (نصوص مباشرة).
-- `supabase/migrations/NNN_*.sql` — الـ migrations مرقّمة (آخر واحد 032). `supabase/schema.sql` المخطط الكامل.
+- `supabase/migrations/NNN_*.sql` — الـ migrations مرقّمة (آخر واحد 033). `supabase/schema.sql` المخطط الكامل.
 - الأسرار في `.env.local` (لا تُطبع ولا تُرفع): `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`.
 
 ## دفتر البضاعة (`/admin/inventory`)
@@ -33,6 +33,10 @@
 
 ## أتمتة السوشيال ميديا (`/automation`)
 سكربتات Node/TS (Playwright + OpenAI + Meta Graph API) تعمل عبر GitHub Actions (`social-generate.yml` يوميًا 03:00 إسطنبول، `social-publish.yml` كل ساعة عند :35). جداول `social_posts` و`social_settings` (migration 013، الجدول الزمني في 032 (من 13/11): 3 منشورات (10:00، 15:00، 20:00) + 1 كاروسيل (12:30) + 1 ريل (21:30) + 6 ستوريات (09:30، 12:00، 15:30، 18:00، 20:30، 22:30) يوميًا؛ قبله 6+2+3+5) وbucket عام `social-posts`. واجهة الأدمن: `/admin/social` (+`/settings`). الأعمال الثقيلة (توليد/إعادة توليد/نشر الآن) تُطلق من الواجهة عبر `workflow_dispatch` (`GH_DISPATCH_TOKEN`). `DRY_RUN=true` يمنع أي استدعاء لـ Meta. الإعداد: `automation/SETUP_AR.md`.
+
+### التركيز على منتجات (من 14/11، migration 033)
+- عمود `social_product_settings.social_weight` (0 استبعاد، 1 عادي، 2 عالي، 4 عالي جدًا؛ غياب الصف = 1). تبويب `/admin/social?tab=focus` («التركيز على منتجات»، `SocialFocus.tsx`): بحث + فلتر فئة، أزرار وزن لكل منتج تُحفظ فورًا، تحديد جماعي وتطبيق وزن، «إعادة الكل لعادي»، ملخص (عدد كل مستوى + نسبة ظهور تقديرية على 5 خانات يوميًا)، وزر «إعادة توليد منشورات الغد بالأوزان الجديدة» (بتأكيد: يلغي approved/draft غير اليدوية لغد ثم `mode=tomorrow`). واجهة الأدمن عربية فقط (قاعدة المشروع).
+- `pickProducts` (pipeline.ts) صار اختيارًا عشوائيًا موزونًا: الوزن × عامل تقادم (لم يُنشر ×3، ثم 1→3 على 30 يومًا)؛ وزن 0 لا يُختار أبدًا؛ فترة الهدوء للفيد = القاعدة (auto) × 1 / 0.6 / 0.4 للأوزان 1/2/4 (حد أدنى يومان)؛ القواعد القديمة باقية (لا تكرار في اليوم عبر `excludeIds`، تفضيل عائلة فئة مختلفة، الستوريز تعيد منتجات البوستات). لا يوجد عمود إخفاء/توفر للمنتجات في المخطط، فالاستبعاد عبر الوزن 0 أو `excluded_product_ids`. تغيير الأوزان لا يمس المنشورات المولّدة.
 
 ### الريلز (من 26/10)
 - `post_type = 'reel'`، العمود `video_url` (يُحذف من التخزين فور النشر). المُصيِّر: `automation/src/render/reel.ts` (Playwright يلتقط إطارات `seek(t)` + ffmpeg، 1080×1920، 30fps، 13.5–16ث: قطعات كل 2–4 نبضات على إيقاع الموسيقى، كل صور المنتج، انتقالات slide/zoom/iris/up/wipe، ميل ثلاثي الأبعاد وparallax، كتابة حركية كلمة بكلمة). كابشن الريل وهوكه من نفس نداء OpenAI. منتج الريل لا يتكرر مع منشورات نفس اليوم.

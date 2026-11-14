@@ -59,7 +59,7 @@ const fmtDate = (iso: string) =>
 
 const fbLink = (id: string) => `https://www.facebook.com/${id}`;
 
-export function Tabs({ tab }: { tab: "upcoming" | "history" | "products" }) {
+export function Tabs({ tab }: { tab: "upcoming" | "history" | "products" | "focus" }) {
   const item = (active: boolean) =>
     cn(
       "rounded-full px-4 py-1.5 font-inter text-sm transition-colors",
@@ -82,6 +82,9 @@ export function Tabs({ tab }: { tab: "upcoming" | "history" | "products" }) {
       </Link>
       <Link href="/admin/social?tab=products" className={item(tab === "products")}>
         المنتجات
+      </Link>
+      <Link href="/admin/social?tab=focus" className={item(tab === "focus")}>
+        التركيز على منتجات
       </Link>
       <Link
         href="/admin/social/settings"
