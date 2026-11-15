@@ -20,6 +20,8 @@ export interface CartItem {
   // The chosen quantity-option's label (e.g. "250g") — distinct from
   // `quantity` above, which is how many of this line are in the cart.
   quantityOption?: string;
+  // Price-on-request products can never be in the cart (WhatsApp only).
+  priceOnRequest?: boolean;
 }
 
 /** The same product + the same size/color/quantity-option selection (or

@@ -40,7 +40,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // Read the persisted cart once on mount (client only — localStorage
   // doesn't exist during SSR).
   useEffect(() => {
-    setItems(readCartFromStorage());
+    setItems(readCartFromStorage().filter((i) => !i.priceOnRequest && i.price > 0));
     setHydrated(true);
   }, []);
 
@@ -49,6 +49,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [items, hydrated]);
 
   const addItem = useCallback((item: AddCartItemInput, quantity = 1) => {
+    // Price-on-request (or otherwise unpriced) products are WhatsApp-only.
+    if (item.priceOnRequest || !(item.price > 0)) return;
     const lineId = buildCartLineId(item.id, item.size, item.color, item.quantityOption);
     setItems((prev) => {
       const existing = prev.find((p) => p.lineId === lineId);

@@ -3,7 +3,7 @@ import { Renderer } from "./render/render.js";
 import { ReelRenderer, REEL_SECONDS } from "./render/reel.js";
 import { chooseTrack, musicStartFor, trackFile, tracks, type Track } from "./music.js";
 import { STORY_SECONDS, renderStoryVideo } from "./render/story.js";
-import { CTA_POOL, ctaIndexOf, generateCaption, resultFromJson, type CaptionJson, type CaptionMode } from "./captions.js";
+import { CTA_POOL, POR_CTA_INDEX, ctaIndexOf, generateCaption, resultFromJson, type CaptionJson, type CaptionMode } from "./captions.js";
 import { buildTagSet, countRecentUse, parseTags } from "./hashtags.js";
 import { renderDetailsSlide, renderPhotoSlide } from "./render/carousel.js";
 import { SOCIAL_BUCKET } from "./db.js";
@@ -262,8 +262,10 @@ export async function pickProducts(
     pool.splice(pool.indexOf(chosen), 1);
 
     const onSale = effectivePrice(chosen).old != null;
-    const prefer = ANGLES.filter((a) => a !== lastAngle.get(chosen.id) && !usedAngles.includes(a));
-    const order = shuffle(prefer.length ? prefer : ANGLES.filter((a) => a !== lastAngle.get(chosen.id)));
+    // Price-on-request products never get the price-focused "offer" angle.
+    const allowed = chosen.price_on_request ? ANGLES.filter((a) => a !== "offer") : ANGLES;
+    const prefer = allowed.filter((a) => a !== lastAngle.get(chosen.id) && !usedAngles.includes(a));
+    const order = shuffle(prefer.length ? prefer : allowed.filter((a) => a !== lastAngle.get(chosen.id)));
     // A product that is actually on sale gets the offer angle when possible.
     const angle = onSale && order.includes("offer") ? "offer" : (order[0] ?? "showcase");
     usedAngles.push(angle);
@@ -298,7 +300,7 @@ export async function buildPostAssets(
   if (what.caption || needText) {
     // Feed captions need the full output; everything else (stories, image-only re-renders) only needs the on-image text.
     const mode: CaptionMode = post.post_type === "feed" && what.caption ? "full" : "design";
-    const ctaIndex = mode === "full" ? await pickCtaIndex(sb, (post as { scheduled_at?: string }).scheduled_at ?? null, post.id) : 0;
+    const ctaIndex = product.price_on_request ? POR_CTA_INDEX : mode === "full" ? await pickCtaIndex(sb, (post as { scheduled_at?: string }).scheduled_at ?? null, post.id) : 0;
     const res = precomputed
       ? resultFromJson(precomputed, settings, ctaIndex, mode, mode === "full" ? await makeTagPicker(sb, (post as { scheduled_at?: string }).scheduled_at ?? null, post.id)(precomputed.hashtags) : undefined)
       : await generateCaption(
@@ -370,7 +372,7 @@ export async function buildReelAssets(
   manual: { fixed?: { design: Required<DesignText>; caption?: string | null }; track?: Track } = {},
 ): Promise<Partial<SocialPostRow>> {
   const categoryAr = cats.get(product.category)?.label_ar ?? "";
-  const ctaIndex = await pickCtaIndex(sb, post.scheduled_at ?? null, post.id);
+  const ctaIndex = product.price_on_request ? POR_CTA_INDEX : await pickCtaIndex(sb, post.scheduled_at ?? null, post.id);
   const mode: CaptionMode = keepCaption ? "design" : "full"; // to-reel keeps the feed caption, only the on-screen text is new
   const res = manual.fixed
     ? { caption: manual.fixed.caption ?? "", design: manual.fixed.design }
@@ -430,7 +432,7 @@ export async function buildCarouselAssets(
   opts: { reuseText?: boolean } = {},
 ): Promise<Partial<SocialPostRow>> {
   const categoryAr = cats.get(product.category)?.label_ar ?? "";
-  const ctaIndex = await pickCtaIndex(sb, post.scheduled_at ?? null, post.id);
+  const ctaIndex = product.price_on_request ? POR_CTA_INDEX : await pickCtaIndex(sb, post.scheduled_at ?? null, post.id);
   const picker = makeTagPicker(sb, post.scheduled_at ?? null, post.id);
   // Design-only re-render: keep the caption and the on-image texts exactly as they are (no model call).
   const kept = opts.reuseText && post.caption_full && post.design?.headline && post.design?.subline;

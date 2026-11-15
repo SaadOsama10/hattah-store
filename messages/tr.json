@@ -123,6 +123,8 @@
     "selectQuantity": "Miktar Seçin",
     "quantityLabel": "Miktar",
     "selectQuantityFirst": "Lütfen önce bir miktar seçin",
+    "priceOnRequest": "Fiyat için iletişime geçin",
+    "whatsappPriceMessage": "Merhaba, şu ürünün fiyatını öğrenmek istiyorum: {productName}\nBağlantı: {url}",
     "startingFrom": "Başlangıç",
     "discountBadge": "-%{percent}"
   },

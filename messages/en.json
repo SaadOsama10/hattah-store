@@ -123,6 +123,8 @@
     "selectQuantity": "Select Quantity",
     "quantityLabel": "Quantity",
     "selectQuantityFirst": "Please select a quantity first",
+    "priceOnRequest": "Price on request",
+    "whatsappPriceMessage": "Hi, I'd like to ask about the price of: {productName}\nLink: {url}",
     "startingFrom": "Starting from",
     "discountBadge": "-{percent}%"
   },

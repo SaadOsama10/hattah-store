@@ -27,6 +27,7 @@ import {
 } from "@/lib/supabase/queries";
 import { localizeProduct, localizeCategory, type Locale } from "@/lib/supabase/types";
 import { ChevronLeft } from "lucide-react";
+import { absoluteUrl } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
@@ -146,6 +147,8 @@ export default async function ProductDetailPage({
                 name: localized.name,
                 price: localized.price,
                 salePrice: localized.salePrice,
+                priceOnRequest: localized.priceOnRequest,
+                url: absoluteUrl(pagePath(locale, productPath(product))),
                 image: localized.images[0],
               }}
               sizes={localized.sizes}

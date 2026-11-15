@@ -209,6 +209,7 @@ export function ShopClient({
                 name={product.name}
                 price={product.startingPrice}
                 salePrice={product.salePrice}
+                priceOnRequest={product.priceOnRequest}
                 startingFrom={product.quantities.length > 0}
                 image={product.images[0]}
                 categoryLabel={categoryLabelByKey[product.category]}

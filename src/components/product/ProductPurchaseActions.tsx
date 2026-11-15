@@ -19,6 +19,10 @@ export interface PurchaseProduct {
   // Optional sale price — only ever applies when the product has no
   // quantity options (quantities carry their own per-option pricing).
   salePrice?: number | null;
+  // No public price: WhatsApp-only ordering, no cart, no price display.
+  priceOnRequest?: boolean;
+  // Absolute product URL, included in the price-inquiry WhatsApp message.
+  url?: string;
   image?: string;
 }
 
@@ -65,7 +69,8 @@ export function ProductPurchaseActions({
   const minQuantityPrice = hasQuantities
     ? Math.min(...quantities.map((q) => q.price))
     : null;
-  const isOnSale = !hasQuantities && isProductOnSale(product.price, product.salePrice ?? null);
+  const priceOnRequest = product.priceOnRequest === true;
+  const isOnSale = !priceOnRequest && !hasQuantities && isProductOnSale(product.price, product.salePrice ?? null);
   const displayPrice = hasQuantities
     ? (selectedQuantityOption?.price ?? minQuantityPrice!)
     : isOnSale
@@ -90,6 +95,7 @@ export function ProductPurchaseActions({
   }
 
   function handleAddToCart() {
+    if (priceOnRequest) return;
     if (!validate()) return;
     playClick();
     addItem({
@@ -120,15 +126,23 @@ export function ProductPurchaseActions({
     selectedSize ?? undefined,
     selectedColor ?? undefined,
     selectedQuantity ?? undefined,
-    selectedQuantityOption?.price,
-    currency,
+    priceOnRequest ? undefined : selectedQuantityOption?.price,
+    priceOnRequest ? undefined : currency,
     isOnSale ? displayPrice : undefined
   );
-  const whatsappHref = buildWhatsAppOrderLink(t("whatsappMessage", { productName: productLabel }));
+  const whatsappHref = buildWhatsAppOrderLink(
+    priceOnRequest
+      ? t("whatsappPriceMessage", { productName: productLabel, url: product.url ?? "" })
+      : t("whatsappMessage", { productName: productLabel })
+  );
 
   return (
     <div className="space-y-5">
-      {isOnSale ? (
+      {priceOnRequest ? (
+        <p className="inline-block rounded-full border border-terracotta/40 bg-terracotta/10 px-4 py-1.5 font-inter text-base font-semibold text-terracotta">
+          {t("priceOnRequest")}
+        </p>
+      ) : isOnSale ? (
         <div className="flex flex-wrap items-baseline gap-3">
           <p className="font-inter text-lg text-cream-secondary/50 line-through">
             {currency} {product.price.toLocaleString()}
@@ -227,7 +241,7 @@ export function ProductPurchaseActions({
                     : "border-cream/20 text-cream-secondary hover:border-cream/50"
                 )}
               >
-                {q.label} — {currency} {q.price.toLocaleString()}
+                {priceOnRequest || q.price <= 0 ? q.label : `${q.label} — ${currency} ${q.price.toLocaleString()}`}
               </button>
             ))}
           </div>
@@ -249,15 +263,17 @@ export function ProductPurchaseActions({
           <MessageCircle size={20} />
           {t("orderWhatsapp")}
         </Button>
-        <Button
-          variant="secondary"
-          size="lg"
-          onClick={handleAddToCart}
-          className="w-full sm:w-auto"
-        >
-          {justAdded ? <Check size={20} /> : <ShoppingBag size={20} />}
-          {justAdded ? tCart("added") : tCart("addToCart")}
-        </Button>
+        {!priceOnRequest && (
+          <Button
+            variant="secondary"
+            size="lg"
+            onClick={handleAddToCart}
+            className="w-full sm:w-auto"
+          >
+            {justAdded ? <Check size={20} /> : <ShoppingBag size={20} />}
+            {justAdded ? tCart("added") : tCart("addToCart")}
+          </Button>
+        )}
       </div>
     </div>
   );

@@ -23,6 +23,7 @@ export interface ProductFormInitialData {
   description_tr: string;
   price: number;
   sale_price: number | null;
+  price_on_request?: boolean;
   category: CategoryKey;
   is_featured: boolean;
   has_sizes: boolean;
@@ -62,6 +63,7 @@ export function ProductForm({
     description_tr: initialData?.description_tr ?? "",
     price: initialData?.price ?? 0,
     sale_price: initialData?.sale_price != null ? String(initialData.sale_price) : "",
+    price_on_request: initialData?.price_on_request ?? false,
     category: initialData?.category ?? ("" as CategoryKey | ""),
     is_featured: initialData?.is_featured ?? false,
     has_sizes: initialData?.has_sizes ?? false,
@@ -98,7 +100,7 @@ export function ProductForm({
     setError(null);
 
     const salePriceTrimmed = fields.sale_price.trim();
-    if (salePriceTrimmed && !fields.has_quantities) {
+    if (salePriceTrimmed && !fields.has_quantities && !fields.price_on_request) {
       const salePriceNum = Number(salePriceTrimmed);
       if (!Number.isFinite(salePriceNum) || salePriceNum <= 0) {
         setError(t("invalidSalePrice"));
@@ -117,8 +119,12 @@ export function ProductForm({
     formData.set("description_ar", fields.description_ar);
     formData.set("description_en", fields.description_en);
     formData.set("description_tr", fields.description_tr);
-    formData.set("price", String(fields.price));
-    formData.set("sale_price", fields.has_quantities ? "" : salePriceTrimmed);
+    formData.set("price", String(fields.price_on_request ? 0 : fields.price));
+    formData.set(
+      "sale_price",
+      fields.has_quantities || fields.price_on_request ? "" : salePriceTrimmed
+    );
+    if (fields.price_on_request) formData.set("price_on_request", "on");
     formData.set("category", fields.category);
     if (fields.is_featured) formData.set("is_featured", "on");
     if (fields.has_sizes) {
@@ -205,21 +211,34 @@ export function ProductForm({
         </div>
 
         <div className="sm:col-span-2">
+          <Toggle
+            checked={fields.price_on_request}
+            onChange={(v) => {
+              update("price_on_request", v);
+              if (v) update("sale_price", "");
+            }}
+            label="بدون سعر — السعر عند الطلب"
+            description="يظهر «السعر عند الطلب» بدل السعر، والطلب عبر واتساب فقط (بدون سلة)"
+          />
+        </div>
+
+        <div className="sm:col-span-2">
           <label className="mb-2 block font-inter text-xs uppercase tracking-widest text-cream-secondary/60">
             {t("price")}
           </label>
           <input
             type="number"
-            required
+            required={!fields.price_on_request}
+            disabled={fields.price_on_request}
             min={0}
             step="0.01"
-            value={fields.price}
+            value={fields.price_on_request ? "" : fields.price}
             onChange={(e) => update("price", Number(e.target.value))}
-            className="w-full rounded-2xl border border-cream/20 bg-bg-secondary px-4 py-3 font-inter text-sm text-cream focus:border-terracotta focus:outline-none"
+            className="w-full rounded-2xl border disabled:opacity-40 border-cream/20 bg-bg-secondary px-4 py-3 font-inter text-sm text-cream focus:border-terracotta focus:outline-none"
           />
         </div>
 
-        {!fields.has_quantities && (
+        {!fields.has_quantities && !fields.price_on_request && (
           <div className="sm:col-span-2">
             <label className="mb-2 block font-inter text-xs uppercase tracking-widest text-cream-secondary/60">
               {t("salePrice")}
@@ -314,6 +333,7 @@ export function ProductForm({
                 pricePlaceholder={t("quantityPricePlaceholder")}
                 addLabel={tCommon("add")}
                 currency={tCommon("currency")}
+                priceOptional={fields.price_on_request}
               />
             </div>
           )}

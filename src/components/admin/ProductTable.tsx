@@ -241,6 +241,11 @@ export function ProductTable({
                                   />
                                 </span>
                               )}
+                              {localized.priceOnRequest && (
+                                <span className="shrink-0 rounded-full bg-terracotta/15 px-2 py-0.5 font-inter text-[11px] text-terracotta">
+                                  بدون سعر
+                                </span>
+                              )}
                               {onSale && (
                                 <span
                                   title={t("onSaleIndicator")}
@@ -256,7 +261,9 @@ export function ProductTable({
                             {categoryLabelByKey[localized.category]}
                           </td>
                           <td className="px-5 py-3 font-inter text-sm">
-                            {onSale ? (
+                            {localized.priceOnRequest ? (
+                              <span className="text-cream-secondary/50">—</span>
+                            ) : onSale ? (
                               <span className="flex items-center gap-2">
                                 <span className="text-cream-secondary/40 line-through">
                                   {tCommon("currency")} {localized.startingPrice.toLocaleString()}

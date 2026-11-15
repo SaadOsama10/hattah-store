@@ -19,6 +19,7 @@ export function ProductCard({
   categoryLabel,
   hasVariants = false,
   startingFrom = false,
+  priceOnRequest = false,
   priority = false,
 }: {
   id: string;
@@ -32,6 +33,8 @@ export function ProductCard({
   // When true, `price` is the cheapest of several quantity options rather
   // than a single fixed price — shown with the "starting from" prefix.
   startingFrom?: boolean;
+  // No public price: show the badge, hide add-to-cart.
+  priceOnRequest?: boolean;
   // When true, the product needs a size/color chosen before it can be
   // added — the quick-add icon just follows the card's Link to the
   // product page instead of silently adding without a selection.
@@ -48,7 +51,7 @@ export function ProductCard({
   const chargedPrice = effectivePrice(price, salePrice);
 
   function handleAddToCart(e: React.MouseEvent) {
-    if (hasVariants) return;
+    if (hasVariants || priceOnRequest) return;
     e.preventDefault();
     e.stopPropagation();
     playClick();
@@ -92,11 +95,12 @@ export function ProductCard({
               {categoryLabel}
             </span>
           )}
-          {onSale && (
+          {onSale && !priceOnRequest && (
             <span className="absolute end-3 top-3 rounded-full bg-terracotta px-3 py-1 text-[10px] font-inter font-bold uppercase tracking-widest text-cream shadow-glow-terracotta">
               {tProduct("discountBadge", { percent: discountPercent(price, salePrice as number) })}
             </span>
           )}
+          {!priceOnRequest && (
           <button
             type="button"
             onClick={handleAddToCart}
@@ -105,12 +109,17 @@ export function ProductCard({
           >
             <ShoppingBag size={16} />
           </button>
+          )}
         </div>
         <div className="mt-4 space-y-1">
           <h3 className="font-playfair text-lg font-bold text-cream transition-colors duration-300 group-hover:text-terracotta">
             {name}
           </h3>
-          {onSale ? (
+          {priceOnRequest ? (
+            <p className="inline-block rounded-full border border-terracotta/40 bg-terracotta/10 px-3 py-1 font-inter text-xs font-semibold text-terracotta">
+              {tProduct("priceOnRequest")}
+            </p>
+          ) : onSale ? (
             <p className="flex items-baseline gap-2 font-inter text-sm">
               <span className="text-cream-secondary/50 line-through">
                 {t("currency")} {price.toLocaleString()}

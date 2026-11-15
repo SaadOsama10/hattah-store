@@ -135,6 +135,9 @@ export interface ProductRow {
   // the product is currently on sale. See isProductOnSale/effectivePrice
   // below for the rule on when it actually applies.
   sale_price: number | null;
+  // "Price on request": no public price (price column holds 0). Orders go
+  // through WhatsApp only; never show a price or allow add-to-cart.
+  price_on_request?: boolean;
   category: CategoryKey;
   is_featured: boolean;
   has_sizes: boolean;
@@ -176,6 +179,9 @@ export interface LocalizedProduct {
   // actually lower than price. Always null for a product with quantity
   // options (those carry their own per-option pricing, no sale).
   salePrice: number | null;
+  // True when the product has no public price — render the "price on
+  // request" badge instead of any price, and WhatsApp-only ordering.
+  priceOnRequest: boolean;
   category: CategoryKey;
   createdAt: string;
   images: string[];
@@ -225,7 +231,8 @@ export function localizeProduct(
     description,
     price: row.price,
     startingPrice: hasQuantities ? Math.min(...quantities.map((q) => q.price)) : row.price,
-    salePrice: hasQuantities ? null : row.sale_price,
+    salePrice: hasQuantities || row.price_on_request ? null : row.sale_price,
+    priceOnRequest: row.price_on_request === true,
     category: row.category,
     createdAt: row.created_at,
     images,

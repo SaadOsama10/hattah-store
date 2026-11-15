@@ -99,6 +99,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ local
               name={p.name}
               price={p.startingPrice}
               salePrice={p.salePrice}
+              priceOnRequest={p.priceOnRequest}
               image={p.images[0]}
               categoryLabel={labelByKey[p.category]}
               startingFrom={p.quantities.length > 0}

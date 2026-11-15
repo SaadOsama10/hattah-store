@@ -156,7 +156,7 @@ body{font-family:'Amiri','Playfair Display',serif;color:${C.oliveDeep}}
 
 <div class="fit name" id="name" data-max="66" data-min="34" style="top:1350px;height:152px"><span>${words(displayName(req.nameAr))}</span></div>
 <div class="fit subl" id="subl" data-max="44" data-min="28" style="top:1502px;height:116px"><span>${words(req.text.subline)}</span></div>
-<div class="pricepill" id="pill" style="top:1508px">${oldHtml}<span class="price" id="price">0 <small>TL</small></span></div>
+<div class="pricepill" id="pill" style="top:1508px">${oldHtml}${req.price <= 0 ? `<span class="price" id="price" style="direction:rtl;font-size:46px;line-height:1.3;text-align:center">للطلب تواصل واتساب<br><bdi dir="ltr" style="font-size:54px">${whatsappDisplay()}</bdi></span>` : `<span class="price" id="price">0 <small>TL</small></span>`}</div>
 
 <div id="end"><div class="tex"></div>
   <img class="logo" id="logo3" src="${logoDataUri()}" style="left:370px;top:420px;width:340px;height:340px;border:6px solid #FBF5E9;opacity:0">
@@ -181,7 +181,8 @@ const TYPES=['slide','zoom','iris','up','wipe'];
 const beat=t=>{const ph=((t%CFG.period)+CFG.period)%CFG.period/CFG.period;return Math.exp(-ph*5)};
 const price=$('price'), fmt=n=>Math.round(n).toLocaleString('en-US');
 // fixed width for the count-up so the pill does not jiggle (measured once the fonts are in)
-window.initPrice=()=>{price.style.minWidth='0';price.firstChild.nodeValue=fmt(CFG.price)+' ';price.style.minWidth=price.getBoundingClientRect().width+'px'};
+const POR=CFG.price<=0;
+window.initPrice=()=>{if(POR)return;price.style.minWidth='0';price.firstChild.nodeValue=fmt(CFG.price)+' ';price.style.minWidth=price.getBoundingClientRect().width+'px'};
 const wordsOf=id=>[...document.querySelectorAll('#'+id+' .w')];
 // Kinetic words: each word flies in (rise + tilt + overshoot) with a stagger, and optionally leaves upwards.
 function kinetic(id,t,t0,t1,stagger,dur){wordsOf(id).forEach((w,i)=>{
@@ -232,7 +233,7 @@ window.seek=function(t){
   // phase 3 — the price pops in and counts up
   const pp=clamp((t-C0)/.55);
   const pill=$('pill');pill.style.opacity=clamp(pp*2.5)*(1-endP);pill.style.transform='translateX(-50%) scale('+(.5+.5*eBack(pp)+.03*be)+')';
-  price.firstChild.nodeValue=fmt(CFG.price*eOut3(clamp((t-C0)/.7)))+' ';
+  if(!POR)price.firstChild.nodeValue=fmt(CFG.price*eOut3(clamp((t-C0)/.7)))+' ';
   // end card: iris reveal from the centre, then kinetic text
   $('end').style.clipPath='circle('+(eOut4(clamp((t-E)/.55))*1500)+'px at 50% 52%)';
   const b=E+.25, l3=clamp((t-b)/.7);

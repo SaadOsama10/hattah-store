@@ -11,6 +11,10 @@
 - `supabase/migrations/NNN_*.sql` — الـ migrations مرقّمة (آخر واحد 034). `supabase/schema.sql` المخطط الكامل.
 - الأسرار في `.env.local` (لا تُطبع ولا تُرفع): `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`.
 
+## منتج بدون سعر (migration 035)
+- `products.price_on_request` (boolean، افتراضي false). عند التفعيل: `price` = 0 و`sale_price` = null و`product_quantities.price` اختياري (0). الموقع يعرض شارة «السعر عند الطلب» ولا سلة (`addItem` يرفض)، والطلب واتساب برسالة فيها الاسم والرابط والخيارات، وJSON-LD بدون `offers`.
+- السوشيال: `effectivePrice` يرجع `current: 0` ⇒ القوالب/الريل/تفاصيل الكاروسيل تعرض «للطلب تواصل واتساب +رقم» بدل السعر؛ البرومت لا يستلم أي سعر وتُمنع زاوية offer؛ `porViolation` في `validate` يرفض أي سعر/عملة/رخيص/عرض/خصم فيُعاد التوليد؛ الخاتمة `POR_CTA_INDEX`.
+
 ## دفتر البضاعة (`/admin/inventory`)
 جداول مفعّل عليها RLS بدون أي policy (service role فقط).
 - `inventory_batches`: `id, title, batch_date, amount_paid, notes, created_at`. الدين = تكلفة الدفعة − `amount_paid` (يُحسب ولا يُخزَّن).

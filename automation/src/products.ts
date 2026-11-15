@@ -9,8 +9,11 @@ export function sortedImages(p: { product_images?: { image_url: string; sort_ord
 export function effectivePrice(p: {
   price: number;
   sale_price?: number | null;
+  price_on_request?: boolean;
   product_quantities?: { price: number }[];
 }): { current: number; old: number | null } {
+  // Price on request → current = 0 is the "no price" signal for every renderer.
+  if (p.price_on_request) return { current: 0, old: null };
   const q = p.product_quantities ?? [];
   if (q.length) return { current: Math.min(...q.map((x) => Number(x.price))), old: null };
   const price = Number(p.price);

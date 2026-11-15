@@ -123,6 +123,8 @@
     "selectQuantity": "اختر الكمية",
     "quantityLabel": "الكمية",
     "selectQuantityFirst": "الرجاء اختيار الكمية أولاً",
+    "priceOnRequest": "السعر عند الطلب",
+    "whatsappPriceMessage": "مرحباً، بدي أسأل عن سعر: {productName}\nالرابط: {url}",
     "startingFrom": "يبدأ من",
     "discountBadge": "-{percent}%"
   },

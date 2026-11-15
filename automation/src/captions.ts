@@ -24,8 +24,12 @@ export const CTA_POOL = [
   "تلاقوها بالمتجر {URL} ✨ (أو من رابط البايو 🔗) وللطلب المباشر واتساب: {WA}",
   "للطلب والتفاصيل: {URL} أو من رابط البايو 🔗، أو راسلونا على واتساب: {WA}",
 ];
+/** ctaIndex sentinel for price-on-request products: fixed WhatsApp-first closing, no pool phrasing. */
+export const POR_CTA_INDEX = -2;
 export const renderCta = (i: number, storeUrl?: string) =>
-  CTA_POOL[i % CTA_POOL.length].replace("{URL}", siteDisplay(storeUrl)).replace("{WA}", whatsappDisplay());
+  i === POR_CTA_INDEX
+    ? `للطلب والاستفسار تواصل عبر واتساب: ${whatsappDisplay()}\nالمتجر: ${siteDisplay(storeUrl)} (الرابط بالبايو 🔗)`
+    : CTA_POOL[i % CTA_POOL.length].replace("{URL}", siteDisplay(storeUrl)).replace("{WA}", whatsappDisplay());
 
 /** Index of the pool phrasing used inside an existing caption (or -1). */
 export function ctaIndexOf(caption: string | null): number {
@@ -150,18 +154,20 @@ ${JSON.stringify({
 
 /** Only what the prompt uses: Arabic name/description (+ English name for the English line); Turkish only when requested; options as short labels. */
 function productBrief(p: ProductRecord, categoryAr: string, languages: string[]): string {
+  const por = p.price_on_request === true;
   const price = effectivePrice(p);
   const tr = languages.includes("tr");
+  // Price-on-request: the model never receives any price field at all.
   const brief: Record<string, unknown> = {
     name_ar: p.name_ar,
     name_en: p.name_en,
     ...(tr ? { name_tr: p.name_tr } : {}),
     description_ar: p.description_ar,
     category: categoryAr,
-    price_tl: price.current,
-    ...(price.old != null ? { original_price_tl: price.old } : {}),
+    ...(por ? {} : { price_tl: price.current }),
+    ...(!por && price.old != null ? { original_price_tl: price.old } : {}),
   };
-  if (p.product_quantities.length) brief.quantity_options = p.product_quantities.map((q) => `${q.label_ar} — ${q.price} TL`);
+  if (p.product_quantities.length) brief.quantity_options = p.product_quantities.map((q) => (por ? q.label_ar : `${q.label_ar} — ${q.price} TL`));
   if (p.product_sizes.length) brief.sizes = p.product_sizes.map((s) => s.label);
   if (p.product_colors.length) brief.colors = p.product_colors.map((c) => c.label_ar);
   return JSON.stringify(brief);
@@ -184,9 +190,14 @@ export interface PromptInput {
 /** The variable tail of the prompt — everything before it (FIXED_INSTRUCTIONS) is identical across calls so it is served from the prompt cache. */
 export function variablePart(i: PromptInput): string {
   const tr = i.languages.includes("tr");
+  const por = i.product.price_on_request === true;
+  const angle = por && i.angle === "offer" ? "showcase" : i.angle;
   return [
     `الوضع: ${i.mode}`,
-    `الزاوية: ${i.angle}`,
+    `الزاوية: ${angle}`,
+    por
+      ? "منتج بدون سعر (السعر عند الطلب) — تعليمات صريحة: ممنوع منعًا باتًا ذكر السعر أو أي رقم سعر أو أي عملة (ليرة/TL/₺)، وممنوع كلمات مثل: رخيص، سعر رمزي، سعر مناسب، عرض، خصم، تخفيض، مجاني، قيمة مقابل المال — لا في العنوان ولا السطر الفرعي ولا الكابشن ولا الهاشتاغات، بأي لغة. ركّز على المنتج وقصته وتفاصيله واكتب بزاوية showcase. لا تذكر واتساب ولا الرابط في النص (تُضاف تلقائيًا في الخاتمة)."
+      : "",
     `التركية: ${tr ? "مطلوبة" : 'غير مطلوبة (caption_tr = "")'}`,
     `بيانات المنتج: ${productBrief(i.product, i.categoryAr, i.languages)}`,
     i.arabicHook ? `الافتتاحية العربية الحالية: ${i.arabicHook}` : "",
@@ -303,6 +314,22 @@ function clampWords(text: string, max: number): string {
 }
 
 const CURRENCY = /(ليرة|₺|\bTL\b)/i;
+
+/** Price-on-request products: no price, currency, or price-flavoured wording anywhere (caption, headline, subline, hashtags). */
+const POR_FORBIDDEN =
+  /(₺|\$|€|\bTL\b|\bTRY\b|\blira\b|\bliras\b|ليرة|ليرات|\d\s*(tl|try|lira|ليرة)|(^|[^\u0600-\u06FF])(ال)?(سعر|أسعار|اسعار|بسعر|سعرها|سعره|رخيص|رخيصة|أرخص|رمزي|رمزية|عرض|عروض|خصم|خصومات|تخفيض|تخفيضات|مجاني|مجانا|مجانًا)([^\u0600-\u06FF]|$)|\b(price|prices|priced|cheap|cheaper|discount|discounted|sale|offer|offers|affordable|bargain)\b|\b(fiyat|fiyatı|fiyatlar|ucuz|indirim|kampanya|ekonomik)\b)/iu;
+export function porViolation(c: CaptionJson): string | null {
+  const fields: [string, string][] = [
+    ["headline", c.image_headline], ["subline", c.image_subline], ["hook", c.caption_hook],
+    ["story", c.caption_story.join(" ")], ["details", c.caption_details.join(" ")],
+    ["english", c.caption_en], ["turkish", c.caption_tr], ["hashtags", c.hashtags.join(" ")],
+  ];
+  for (const [name, text] of fields) {
+    const m = POR_FORBIDDEN.exec(text);
+    if (m) return `منتج بدون سعر: ممنوع ذكر السعر أو العملة أو كلمات مثل رخيص/عرض/خصم (وُجد «${m[0].trim()}» في ${name})`;
+  }
+  return null;
+}
 /** On-image text must not mention a price: drop the clause that does when enough words remain (otherwise validation rejects it). */
 function dropPriceClause(text: string, minWords: number): string {
   if (!CURRENCY.test(text)) return text;
@@ -342,6 +369,10 @@ export function repair(raw: CaptionJson, mode: CaptionMode, withTr: boolean): Ca
 /** Real failures only (these are the only reasons to call the model again). */
 export function validate(c: CaptionJson, mode: CaptionMode, p: ProductRecord, withTr: boolean): string | null {
   if (mode === "turkish") return c.caption_tr.trim().length >= 80 ? null : "Turkish paragraph is missing or too short";
+  if (p.price_on_request) {
+    const por = porViolation(c);
+    if (por) return por;
+  }
   const wc = (v: string) => v.trim().split(/\s+/).filter(Boolean).length;
   const head = c.image_headline, sub = c.image_subline;
   if (wc(head) < 2) return "headline must be 2–6 words";
@@ -423,7 +454,7 @@ const PLACEHOLDERS: Record<Angle, [string, string][]> = {
 
 function stub(p: ProductRecord, angle: Angle, salt = 0): CaptionJson {
   const hash = (seed: string) => [...(seed + p.id + angle + p.name_ar)].reduce((a, c) => Math.imul(a ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261);
-  const pool = PLACEHOLDERS[angle];
+  const pool = PLACEHOLDERS[p.price_on_request && angle === "offer" ? "showcase" : angle];
   // headline and subline are picked independently → 36 combinations per angle
   const headline = pool[(hash("h") + salt) % pool.length][0];
   const subline = pool[(hash("s") + salt) % pool.length][1];

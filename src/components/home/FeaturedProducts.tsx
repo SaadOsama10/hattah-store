@@ -88,6 +88,7 @@ export function FeaturedProducts({
                 name={localized.name}
                 price={localized.startingPrice}
                 salePrice={localized.salePrice}
+                priceOnRequest={localized.priceOnRequest}
                 startingFrom={localized.quantities.length > 0}
                 image={localized.images[0]}
                 categoryLabel={categoryLabelByKey[localized.category]}

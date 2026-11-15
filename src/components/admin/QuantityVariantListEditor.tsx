@@ -21,6 +21,7 @@ export function QuantityVariantListEditor({
   pricePlaceholder,
   addLabel,
   currency,
+  priceOptional = false,
 }: {
   items: QuantityEntry[];
   onChange: (items: QuantityEntry[]) => void;
@@ -29,6 +30,8 @@ export function QuantityVariantListEditor({
   pricePlaceholder: string;
   addLabel: string;
   currency: string;
+  // Price-on-request products: option prices may be left empty (stored 0).
+  priceOptional?: boolean;
 }) {
   const [draftAr, setDraftAr] = useState("");
   const [draftEn, setDraftEn] = useState("");
@@ -40,10 +43,10 @@ export function QuantityVariantListEditor({
     const label_en = draftEn.trim();
     const label_tr = draftTr.trim();
     const price = Number(draftPrice);
-    if (!label_ar || !label_en || !label_tr || !draftPrice || !Number.isFinite(price) || price <= 0) {
+    if (!label_ar || !label_en || !label_tr || (!priceOptional && (!draftPrice || !Number.isFinite(price) || price <= 0))) {
       return;
     }
-    onChange([...items, { label_ar, label_en, label_tr, price }]);
+    onChange([...items, { label_ar, label_en, label_tr, price: Number.isFinite(price) ? price : 0 }]);
     setDraftAr("");
     setDraftEn("");
     setDraftTr("");
@@ -118,10 +121,14 @@ export function QuantityVariantListEditor({
               <span>{item.label_en}</span>
               <span className="text-cream-secondary/40">/</span>
               <span>{item.label_tr}</span>
-              <span className="text-cream-secondary/40">—</span>
-              <span className="text-terracotta">
-                {currency} {item.price.toLocaleString()}
-              </span>
+              {item.price > 0 && (
+                <>
+                  <span className="text-cream-secondary/40">—</span>
+                  <span className="text-terracotta">
+                    {currency} {item.price.toLocaleString()}
+                  </span>
+                </>
+              )}
               <button
                 type="button"
                 onClick={() => moveItem(i, -1)}

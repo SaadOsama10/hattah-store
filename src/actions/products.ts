@@ -16,6 +16,7 @@ export interface ProductFormFields {
   description_tr: string;
   price: number;
   sale_price: number | null;
+  price_on_request: boolean;
   category: CategoryKey;
   is_featured: boolean;
   has_sizes: boolean;
@@ -29,6 +30,7 @@ export interface ProductFormFields {
 
 function readFields(formData: FormData): ProductFormFields {
   const salePriceRaw = String(formData.get("sale_price") ?? "").trim();
+  const priceOnRequest = formData.get("price_on_request") === "on";
   return {
     name_ar: String(formData.get("name_ar") ?? "").trim(),
     name_en: String(formData.get("name_en") ?? "").trim(),
@@ -36,8 +38,10 @@ function readFields(formData: FormData): ProductFormFields {
     description_ar: String(formData.get("description_ar") ?? "").trim(),
     description_en: String(formData.get("description_en") ?? "").trim(),
     description_tr: String(formData.get("description_tr") ?? "").trim(),
-    price: Number(formData.get("price") ?? 0),
-    sale_price: salePriceRaw ? Number(salePriceRaw) : null,
+    // Price-on-request products store price 0 and never a sale price.
+    price: priceOnRequest ? 0 : Number(formData.get("price") ?? 0),
+    sale_price: priceOnRequest ? null : salePriceRaw ? Number(salePriceRaw) : null,
+    price_on_request: priceOnRequest,
     category: String(formData.get("category") ?? "") as CategoryKey,
     is_featured: formData.get("is_featured") === "on",
     has_sizes: formData.get("has_sizes") === "on",
@@ -56,7 +60,10 @@ function readFields(formData: FormData): ProductFormFields {
 /** A sale_price, when present, must be a real discount — positive and
  * strictly below price — otherwise it wouldn't compute to a valid "on
  * sale" state everywhere it's read (see isProductOnSale). */
-function assertValidPrice(fields: Pick<ProductFormFields, "price" | "sale_price">) {
+function assertValidPrice(
+  fields: Pick<ProductFormFields, "price" | "sale_price" | "price_on_request">
+) {
+  if (fields.price_on_request) return;
   if (fields.sale_price == null) return;
   if (!Number.isFinite(fields.sale_price) || fields.sale_price <= 0) {
     throw new Error("سعر العرض غير صالح");
@@ -112,7 +119,7 @@ interface QuantityEntry {
 /** Same JSON-blob approach as colors, plus a per-entry price — each
  * quantity option (e.g. "250g") is sold at its own price, not the
  * product's base price. */
-function readQuantityEntries(formData: FormData): QuantityEntry[] {
+function readQuantityEntries(formData: FormData, priceOptional = false): QuantityEntry[] {
   const raw = formData.get("quantities_json");
   if (!raw) return [];
   let parsed: unknown;
@@ -130,12 +137,17 @@ function readQuantityEntries(formData: FormData): QuantityEntry[] {
         label_ar: String(e?.label_ar ?? "").trim(),
         label_en: String(e?.label_en ?? "").trim(),
         label_tr: String(e?.label_tr ?? "").trim(),
-        price: Number(e?.price),
+        // Price-on-request: option prices are optional and stored as 0.
+        price: priceOptional ? Number(e?.price) || 0 : Number(e?.price),
       };
     })
     .filter(
       (entry) =>
-        entry.label_ar && entry.label_en && entry.label_tr && Number.isFinite(entry.price) && entry.price > 0
+        entry.label_ar &&
+        entry.label_en &&
+        entry.label_tr &&
+        Number.isFinite(entry.price) &&
+        (priceOptional ? entry.price >= 0 : entry.price > 0)
     );
 }
 
@@ -305,7 +317,7 @@ export async function createProduct(formData: FormData) {
   await replaceQuantityVariants(
     supabase,
     product.id,
-    fields.has_quantities ? readQuantityEntries(formData) : []
+    fields.has_quantities ? readQuantityEntries(formData, fields.price_on_request) : []
   );
 
   revalidatePath("/", "layout");
@@ -382,7 +394,7 @@ export async function updateProduct(
   await replaceQuantityVariants(
     supabase,
     productId,
-    fields.has_quantities ? readQuantityEntries(formData) : []
+    fields.has_quantities ? readQuantityEntries(formData, fields.price_on_request) : []
   );
 
   revalidatePath("/", "layout");

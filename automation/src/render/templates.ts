@@ -106,9 +106,15 @@ function photoBox(
 }
 
 const waLine = (t: TemplateInput) =>
-  `<div class="cta"><div>اطلب من المتجر: <b>${esc(t.siteDisplay)}</b></div><div>أو عبر واتساب: <b>${esc(t.whatsappDisplay)}</b></div></div>`;
+  t.price <= 0
+    ? `<div class="cta"><div>اطلب من المتجر: <b>${esc(t.siteDisplay)}</b></div></div>`
+    : `<div class="cta"><div>اطلب من المتجر: <b>${esc(t.siteDisplay)}</b></div><div>أو عبر واتساب: <b>${esc(t.whatsappDisplay)}</b></div></div>`;
 
 const priceBlock = (t: TemplateInput, size: number, color: string) => {
+  // Price on request: no price/TL anywhere — a call to order on WhatsApp instead.
+  if (t.price <= 0) {
+    return `<div class="price" style="display:flex;flex-direction:column;align-items:center;gap:0;direction:rtl;color:${color};line-height:1.25"><span style="font-size:${Math.round(size * 0.5)}px;font-family:'Cairo','Amiri',sans-serif;font-weight:700">للطلب تواصل واتساب</span><bdi dir="ltr" style="font-size:${Math.round(size * 0.62)}px;font-family:'Playfair Display','Amiri',serif;font-weight:700">${esc(t.whatsappDisplay)}</bdi></div>`;
+  }
   const old = t.oldPrice
     ? `<span class="old" style="font-size:${Math.round(size * 0.55)}px;color:${color}">${fmt(t.oldPrice)} TL</span>`
     : "";

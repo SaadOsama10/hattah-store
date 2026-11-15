@@ -69,7 +69,9 @@ export async function buildLlmsFullTxt(): Promise<string> {
       `- Arabic name: ${ar.name}`,
       `- Turkish name: ${tr.name}`,
       cat ? `- Category: ${localizeCategory(cat, "en")} (${localizeCategory(cat, "ar")})` : "",
-      en.quantities.length
+      row.price_on_request
+        ? "- Price: on request (ask on WhatsApp)"
+        : en.quantities.length
         ? `- Price options: ${en.quantities.map((q) => `${q.label} — ${q.price} TRY`).join("; ")}`
         : isProductOnSale(row.price, row.sale_price)
           ? `- Price: ${price} TRY (was ${row.price} TRY)`

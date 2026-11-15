@@ -101,6 +101,8 @@ export interface ProductRecord {
   description_tr: string;
   price: number;
   sale_price: number | null;
+  /** No public price: designs show a WhatsApp call-to-action, captions never mention a price. */
+  price_on_request?: boolean;
   category: string;
   has_quantities: boolean;
   has_sizes: boolean;

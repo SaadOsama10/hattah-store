@@ -192,8 +192,10 @@ export function productJsonLd(row: ProductRow, locale: Locale, category: Categor
   const price = effectivePrice(row.price, row.sale_price);
   const common = { priceCurrency: "TRY", availability: "https://schema.org/InStock", itemCondition: "https://schema.org/NewCondition", url, seller: { "@id": ORG_ID } } as const;
 
-  const offers: Product["offers"] =
-    quantities.length > 0
+  // Price on request: no offers block at all (never a price of 0).
+  const offers: Product["offers"] | undefined = row.price_on_request
+    ? undefined
+    : quantities.length > 0
       ? {
           "@type": "AggregateOffer",
           priceCurrency: "TRY",

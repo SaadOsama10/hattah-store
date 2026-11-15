@@ -99,6 +99,10 @@ function detailsHtml(s: DetailsSlide): string {
     .slice(0, 8)
     .map((o) => `<span style="display:inline-block;margin:5px 6px;padding:2px 20px 6px;border:2px solid ${C.terra};border-radius:40px;font-size:28px;color:${C.cream}">${esc(o)}</span>`)
     .join("");
+  const por = s.price <= 0;
+  const pill = por
+    ? `<div style="display:flex;flex-direction:column;align-items:center;direction:rtl;background:${C.terraDeep};color:${C.cream};padding:6px 54px 12px;border-radius:60px;box-shadow:0 14px 30px -14px rgba(160,90,44,.8);margin-top:auto;line-height:1.3"><span style="font-size:30px;font-weight:700">للطلب تواصل واتساب</span><bdi dir="ltr" style="font-family:'Playfair Display',serif;font-weight:700;font-size:40px">${esc(whatsappDisplay())}</bdi></div>`
+    : "";
   const old = s.oldPrice ? `<span style="font-family:'Playfair Display',serif;text-decoration:line-through;opacity:.6;font-size:34px;margin-inline-end:18px">${fmt(s.oldPrice)} TL</span>` : "";
   return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><style>${base(true)}</style></head><body><div class="slide"><div class="tex"></div>${arcs(true)}
 <div class="z" style="gap:16px">
@@ -108,9 +112,9 @@ function detailsHtml(s: DetailsSlide): string {
   <div class="fit name" data-max="48" data-min="26" style="height:74px;color:${C.cream}"><span>${esc(s.nameAr)}</span></div>
   <div class="fit" data-max="34" data-min="22" style="height:${s.options.length ? 360 : 440}px;line-height:1.55;color:${C.cream};font-weight:400;align-items:flex-start"><span style="display:block;width:100%;text-align:right">${lines}</span></div>
   ${chips ? `<div style="text-align:center;width:100%;direction:rtl">${chips}</div>` : ""}
-  <div style="display:flex;align-items:baseline;justify-content:center;direction:ltr;background:${C.terraDeep};color:${C.cream};padding:4px 54px 10px;border-radius:80px;box-shadow:0 14px 30px -14px rgba(160,90,44,.8);margin-top:auto">${old}<span style="font-family:'Playfair Display',serif;font-weight:700;font-size:54px">${fmt(s.price)} <span style="font-size:28px">TL</span></span></div>
+  ${por ? pill : `<div style="display:flex;align-items:baseline;justify-content:center;direction:ltr;background:${C.terraDeep};color:${C.cream};padding:4px 54px 10px;border-radius:80px;box-shadow:0 14px 30px -14px rgba(160,90,44,.8);margin-top:auto">${old}<span style="font-family:'Playfair Display',serif;font-weight:700;font-size:54px">${fmt(s.price)} <span style="font-size:28px">TL</span></span></div>`}
   ${flagBar}
-  ${waLine(s.storeUrl)}
+  ${por ? `<div class="cta"><div>اطلب من المتجر: <b>${esc(siteDisplay(s.storeUrl))}</b></div></div>` : waLine(s.storeUrl)}
   ${dots(s.index, s.total)}
 </div></div></body></html>`;
 }
