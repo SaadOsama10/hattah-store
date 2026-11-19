@@ -56,6 +56,7 @@ export function buildWhatsAppCartLink(
     size?: string;
     color?: string;
     quantityOption?: string;
+    optionLabel?: string;
   }[],
   intro: string,
   totalLine: string,
@@ -69,7 +70,7 @@ export function buildWhatsAppCartLink(
       item.name,
       sizeLabel,
       colorLabel,
-      quantityLabel,
+      item.optionLabel ?? quantityLabel,
       item.size,
       item.color,
       item.quantityOption,

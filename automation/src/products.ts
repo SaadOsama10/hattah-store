@@ -11,11 +11,15 @@ export function effectivePrice(p: {
   sale_price?: number | null;
   price_on_request?: boolean;
   product_quantities?: { price: number }[];
-}): { current: number; old: number | null } {
+}): { current: number; old: number | null; from?: boolean } {
   // Price on request → current = 0 is the "no price" signal for every renderer.
   if (p.price_on_request) return { current: 0, old: null };
   const q = p.product_quantities ?? [];
-  if (q.length) return { current: Math.min(...q.map((x) => Number(x.price))), old: null };
+  if (q.length) {
+    const prices = q.map((x) => Number(x.price));
+    // More than one differently-priced option → the figure is a "starting from" price.
+    return { current: Math.min(...prices), old: null, from: new Set(prices).size > 1 };
+  }
   const price = Number(p.price);
   const sale = p.sale_price == null ? null : Number(p.sale_price);
   if (sale != null && sale > 0 && sale < price) return { current: sale, old: price };

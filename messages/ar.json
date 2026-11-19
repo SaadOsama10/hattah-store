@@ -125,7 +125,10 @@
     "selectQuantityFirst": "الرجاء اختيار الكمية أولاً",
     "priceOnRequest": "السعر عند الطلب",
     "whatsappPriceMessage": "مرحباً، بدي أسأل عن سعر: {productName}\nالرابط: {url}",
-    "startingFrom": "يبدأ من",
+    "startingFrom": "ابتداءً من",
+    "selectOption": "اختر {label}",
+    "selectOptionFirst": "الرجاء اختيار {label} أولاً",
+    "whatsappMessageWithLink": "مرحباً، أرغب في طلب: {productName}\nالرابط: {url}",
     "discountBadge": "-{percent}%"
   },
   "admin": {

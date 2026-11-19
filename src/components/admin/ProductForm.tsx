@@ -29,6 +29,9 @@ export interface ProductFormInitialData {
   has_sizes: boolean;
   has_colors: boolean;
   has_quantities: boolean;
+  option_label_ar?: string | null;
+  option_label_en?: string | null;
+  option_label_tr?: string | null;
   image_alt_ar?: string | null;
   image_alt_en?: string | null;
   image_alt_tr?: string | null;
@@ -69,6 +72,9 @@ export function ProductForm({
     has_sizes: initialData?.has_sizes ?? false,
     has_colors: initialData?.has_colors ?? false,
     has_quantities: initialData?.has_quantities ?? false,
+    option_label_ar: initialData?.option_label_ar ?? "",
+    option_label_en: initialData?.option_label_en ?? "",
+    option_label_tr: initialData?.option_label_tr ?? "",
     image_alt_ar: initialData?.image_alt_ar ?? "",
     image_alt_en: initialData?.image_alt_en ?? "",
     image_alt_tr: initialData?.image_alt_tr ?? "",
@@ -119,7 +125,12 @@ export function ProductForm({
     formData.set("description_ar", fields.description_ar);
     formData.set("description_en", fields.description_en);
     formData.set("description_tr", fields.description_tr);
-    formData.set("price", String(fields.price_on_request ? 0 : fields.price));
+    // With priced options the base price is always the cheapest option (the "from" price).
+    const optionPrices = fields.has_quantities && !fields.price_on_request ? quantities.map((q) => Number(q.price)).filter((n) => n > 0) : [];
+    formData.set(
+      "price",
+      String(fields.price_on_request ? 0 : optionPrices.length ? Math.min(...optionPrices) : fields.price)
+    );
     formData.set(
       "sale_price",
       fields.has_quantities || fields.price_on_request ? "" : salePriceTrimmed
@@ -137,6 +148,9 @@ export function ProductForm({
     }
     if (fields.has_quantities) {
       formData.set("has_quantities", "on");
+      formData.set("option_label_ar", String(fields.option_label_ar ?? ""));
+      formData.set("option_label_en", String(fields.option_label_en ?? ""));
+      formData.set("option_label_tr", String(fields.option_label_tr ?? ""));
       formData.set("quantities_json", JSON.stringify(quantities));
     }
     const altChanged =
@@ -320,7 +334,12 @@ export function ProductForm({
             description={t("hasQuantitiesHint")}
           />
           {fields.has_quantities && (
-            <div className="mt-3">
+            <div className="mt-3 space-y-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <FormField label="اسم الخيار (اختياري، مثلاً: المقاس)" dir="rtl" value={String(fields.option_label_ar ?? "")} onChange={(v) => update("option_label_ar", v)} />
+                <FormField label="Option name (e.g. Size)" value={String(fields.option_label_en ?? "")} onChange={(v) => update("option_label_en", v)} />
+                <FormField label="Seçenek adı (örn. Boyut)" value={String(fields.option_label_tr ?? "")} onChange={(v) => update("option_label_tr", v)} />
+              </div>
               <QuantityVariantListEditor
                 items={quantities}
                 onChange={setQuantities}

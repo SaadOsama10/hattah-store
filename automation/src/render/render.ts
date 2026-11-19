@@ -65,6 +65,8 @@ export interface RenderRequest {
   categoryAr: string;
   price: number;
   oldPrice: number | null;
+  /** The price is a "starting from" figure (options with different prices). */
+  priceFrom?: boolean;
   photoUrl: string;
   text: Required<DesignText>;
   /** Store address printed on the image; falls back to SITE_URL / the default. */
@@ -160,6 +162,7 @@ export class Renderer {
       categoryAr: req.categoryAr,
       price: req.price,
       oldPrice: req.oldPrice,
+      priceFrom: req.priceFrom,
       photo: await fetchPhotoDataUri(req.photoUrl),
       swipe: req.swipeCue,
       cutout: req.removeBg ? await getCutoutDataUri(this.sb, req.photoUrl) : null,

@@ -29,6 +29,7 @@ export function CartDrawer() {
         size: i.size,
         color: i.color,
         quantityOption: i.quantityOption,
+        optionLabel: i.optionLabel,
       })),
       t("checkoutMessageIntro"),
       t("checkoutMessageTotal", { total: `${currency} ${subtotal.toLocaleString()}` }),
@@ -126,7 +127,7 @@ export function CartDrawer() {
                                     item.size && `${tProduct("sizeLabel")}: ${item.size}`,
                                     item.color && `${tProduct("colorLabel")}: ${item.color}`,
                                     item.quantityOption &&
-                                      `${tProduct("quantityLabel")}: ${item.quantityOption}`,
+                                      `${item.optionLabel ?? tProduct("quantityLabel")}: ${item.quantityOption}`,
                                   ]
                                     .filter(Boolean)
                                     .join(" · ")}

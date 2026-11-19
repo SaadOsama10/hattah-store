@@ -43,11 +43,14 @@ export function ProductPurchaseActions({
   sizes,
   colors,
   quantities,
+  optionLabel,
 }: {
   product: PurchaseProduct;
   sizes: string[];
   colors: string[];
   quantities: QuantityOption[];
+  // Custom name of the priced options (e.g. "Size"); null = default "Quantity".
+  optionLabel?: string | null;
 }) {
   const t = useTranslations("product");
   const tCart = useTranslations("cart");
@@ -61,7 +64,10 @@ export function ProductPurchaseActions({
 
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const [selectedQuantity, setSelectedQuantity] = useState<string | null>(null);
+  // A product whose options have a custom name (e.g. sizes) opens with the first one chosen.
+  const [selectedQuantity, setSelectedQuantity] = useState<string | null>(
+    optionLabel && quantities.length > 0 ? quantities[0].label : null
+  );
   const [error, setError] = useState<string | null>(null);
   const [justAdded, setJustAdded] = useState(false);
 
@@ -88,7 +94,7 @@ export function ProductPurchaseActions({
       return false;
     }
     if (hasQuantities && !selectedQuantity) {
-      setError(t("selectQuantityFirst"));
+      setError(optionLabel ? t("selectOptionFirst", { label: optionLabel }) : t("selectQuantityFirst"));
       return false;
     }
     return true;
@@ -107,6 +113,7 @@ export function ProductPurchaseActions({
       size: selectedSize ?? undefined,
       color: selectedColor ?? undefined,
       quantityOption: selectedQuantity ?? undefined,
+      optionLabel: optionLabel ?? undefined,
     });
     setJustAdded(true);
     window.setTimeout(() => setJustAdded(false), 1500);
@@ -122,7 +129,7 @@ export function ProductPurchaseActions({
     product.name,
     t("sizeLabel"),
     t("colorLabel"),
-    t("quantityLabel"),
+    optionLabel ?? t("quantityLabel"),
     selectedSize ?? undefined,
     selectedColor ?? undefined,
     selectedQuantity ?? undefined,
@@ -133,7 +140,9 @@ export function ProductPurchaseActions({
   const whatsappHref = buildWhatsAppOrderLink(
     priceOnRequest
       ? t("whatsappPriceMessage", { productName: productLabel, url: product.url ?? "" })
-      : t("whatsappMessage", { productName: productLabel })
+      : product.url
+        ? t("whatsappMessageWithLink", { productName: productLabel, url: product.url })
+        : t("whatsappMessage", { productName: productLabel })
   );
 
   return (
@@ -222,7 +231,7 @@ export function ProductPurchaseActions({
       {hasQuantities && (
         <div>
           <p className="mb-2 font-inter text-xs uppercase tracking-widest text-cream-secondary/60">
-            {t("selectQuantity")}
+            {optionLabel ? t("selectOption", { label: optionLabel }) : t("selectQuantity")}
           </p>
           <div className="flex flex-wrap gap-2">
             {quantities.map((q) => (

@@ -19,6 +19,7 @@ export interface ReelRequest {
   categoryAr: string;
   price: number;
   oldPrice: number | null;
+  priceFrom?: boolean;
   /** Every product photo (the shots cycle through them; a single photo is re-framed differently each shot). */
   photoUrls: string[];
   removeBg?: boolean;
@@ -156,7 +157,7 @@ body{font-family:'Amiri','Playfair Display',serif;color:${C.oliveDeep}}
 
 <div class="fit name" id="name" data-max="66" data-min="34" style="top:1350px;height:152px"><span>${words(displayName(req.nameAr))}</span></div>
 <div class="fit subl" id="subl" data-max="44" data-min="28" style="top:1502px;height:116px"><span>${words(req.text.subline)}</span></div>
-<div class="pricepill" id="pill" style="top:1508px">${oldHtml}${req.price <= 0 ? `<span class="price" id="price" style="direction:rtl;font-size:46px;line-height:1.3;text-align:center">للطلب تواصل واتساب<br><bdi dir="ltr" style="font-size:54px">${whatsappDisplay()}</bdi></span>` : `<span class="price" id="price">0 <small>TL</small></span>`}</div>
+<div class="pricepill" id="pill" style="top:1508px">${oldHtml}${req.price <= 0 ? `<span class="price" id="price" style="direction:rtl;font-size:46px;line-height:1.3;text-align:center">للطلب تواصل واتساب<br><bdi dir="ltr" style="font-size:54px">${whatsappDisplay()}</bdi></span>` : `${req.priceFrom ? `<small style="font-family:'Cairo','Amiri',sans-serif;direction:rtl;font-size:34px">ابتداءً من</small>` : ""}<span class="price" id="price">0 <small>TL</small></span>`}</div>
 
 <div id="end"><div class="tex"></div>
   <img class="logo" id="logo3" src="${logoDataUri()}" style="left:370px;top:420px;width:340px;height:340px;border:6px solid #FBF5E9;opacity:0">

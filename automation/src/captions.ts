@@ -166,6 +166,7 @@ function productBrief(p: ProductRecord, categoryAr: string, languages: string[])
     category: categoryAr,
     ...(por ? {} : { price_tl: price.current }),
     ...(!por && price.old != null ? { original_price_tl: price.old } : {}),
+    ...(!por && price.from ? { price_is_starting_from: true } : {}),
   };
   if (p.product_quantities.length) brief.quantity_options = p.product_quantities.map((q) => (por ? q.label_ar : `${q.label_ar} — ${q.price} TL`));
   if (p.product_sizes.length) brief.sizes = p.product_sizes.map((s) => s.label);
@@ -197,6 +198,9 @@ export function variablePart(i: PromptInput): string {
     `الزاوية: ${angle}`,
     por
       ? "منتج بدون سعر (السعر عند الطلب) — تعليمات صريحة: ممنوع منعًا باتًا ذكر السعر أو أي رقم سعر أو أي عملة (ليرة/TL/₺)، وممنوع كلمات مثل: رخيص، سعر رمزي، سعر مناسب، عرض، خصم، تخفيض، مجاني، قيمة مقابل المال — لا في العنوان ولا السطر الفرعي ولا الكابشن ولا الهاشتاغات، بأي لغة. ركّز على المنتج وقصته وتفاصيله واكتب بزاوية showcase. لا تذكر واتساب ولا الرابط في النص (تُضاف تلقائيًا في الخاتمة)."
+      : "",
+    !por && effectivePrice(i.product).from
+      ? "السعر في بيانات المنتج هو «ابتداءً من»: المنتج بعدة مقاسات/خيارات بأسعار مختلفة وهذا أقلها. إن ذكرت السعر فاكتبه دائمًا «ابتداءً من X TL» (بالتركية «X TL'den başlayan fiyatlarla»، وبالإنجليزية «from X TL») ولا تقدّمه كسعر ثابت لمقاس واحد."
       : "",
     `التركية: ${tr ? "مطلوبة" : 'غير مطلوبة (caption_tr = "")'}`,
     `بيانات المنتج: ${productBrief(i.product, i.categoryAr, i.languages)}`,

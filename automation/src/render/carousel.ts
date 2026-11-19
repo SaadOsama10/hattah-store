@@ -67,6 +67,7 @@ export interface DetailsSlide {
   categoryAr: string;
   price: number;
   oldPrice: number | null;
+  priceFrom?: boolean;
   /** Emoji-led detail lines written with the caption (material, use, care…). */
   details: string[];
   /** Short option labels (sizes, colours, quantity options). */
@@ -112,7 +113,7 @@ function detailsHtml(s: DetailsSlide): string {
   <div class="fit name" data-max="48" data-min="26" style="height:74px;color:${C.cream}"><span>${esc(s.nameAr)}</span></div>
   <div class="fit" data-max="34" data-min="22" style="height:${s.options.length ? 360 : 440}px;line-height:1.55;color:${C.cream};font-weight:400;align-items:flex-start"><span style="display:block;width:100%;text-align:right">${lines}</span></div>
   ${chips ? `<div style="text-align:center;width:100%;direction:rtl">${chips}</div>` : ""}
-  ${por ? pill : `<div style="display:flex;align-items:baseline;justify-content:center;direction:ltr;background:${C.terraDeep};color:${C.cream};padding:4px 54px 10px;border-radius:80px;box-shadow:0 14px 30px -14px rgba(160,90,44,.8);margin-top:auto">${old}<span style="font-family:'Playfair Display',serif;font-weight:700;font-size:54px">${fmt(s.price)} <span style="font-size:28px">TL</span></span></div>`}
+  ${por ? pill : `<div style="display:flex;align-items:baseline;justify-content:center;direction:ltr;background:${C.terraDeep};color:${C.cream};padding:4px 54px 10px;border-radius:80px;box-shadow:0 14px 30px -14px rgba(160,90,44,.8);margin-top:auto">${old}${s.priceFrom ? `<span style="font-family:'Cairo','Amiri',sans-serif;font-weight:700;font-size:30px;direction:rtl;margin-inline-end:14px">ابتداءً من</span>` : ""}<span style="font-family:'Playfair Display',serif;font-weight:700;font-size:54px">${fmt(s.price)} <span style="font-size:28px">TL</span></span></div>`}
   ${flagBar}
   ${por ? `<div class="cta"><div>اطلب من المتجر: <b>${esc(siteDisplay(s.storeUrl))}</b></div></div>` : waLine(s.storeUrl)}
   ${dots(s.index, s.total)}

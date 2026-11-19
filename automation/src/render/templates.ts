@@ -9,6 +9,8 @@ export interface TemplateInput {
   categoryAr: string;
   price: number;
   oldPrice: number | null;
+  /** "Starting from" price (options with different prices). */
+  priceFrom?: boolean;
   /** data: URI of the product photo (JPEG). */
   photo: string;
   /** data: URI of a background-removed PNG of the product, when remove_bg is on and succeeded. */
@@ -118,7 +120,8 @@ const priceBlock = (t: TemplateInput, size: number, color: string) => {
   const old = t.oldPrice
     ? `<span class="old" style="font-size:${Math.round(size * 0.55)}px;color:${color}">${fmt(t.oldPrice)} TL</span>`
     : "";
-  return `<div style="display:flex;align-items:baseline;justify-content:center;gap:22px;direction:ltr">${old}<span class="price" style="font-size:${size}px;color:${color}">${fmt(t.price)} <span style="font-size:${Math.round(size * 0.52)}px">TL</span></span></div>`;
+  const from = t.priceFrom ? `<span style="font-size:${Math.round(size * 0.46)}px;font-family:'Cairo','Amiri',sans-serif;font-weight:700;direction:rtl;color:${color};white-space:nowrap">ابتداءً من</span>` : "";
+  return `<div style="display:flex;align-items:baseline;justify-content:center;gap:${t.priceFrom ? 16 : 22}px;direction:rtl">${from}${old}<span class="price" dir="ltr" style="font-size:${size}px;color:${color}">${fmt(t.price)} <span style="font-size:${Math.round(size * 0.52)}px">TL</span></span></div>`;
 };
 
 const head = (t: TemplateInput, size: number, color: string, h: number) =>

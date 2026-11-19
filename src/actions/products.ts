@@ -23,6 +23,9 @@ export interface ProductFormFields {
   has_colors: boolean;
   has_quantities: boolean;
   // Only present when the admin touched the alt-text fields (needs migration 017).
+  option_label_ar: string | null;
+  option_label_en: string | null;
+  option_label_tr: string | null;
   image_alt_ar?: string | null;
   image_alt_en?: string | null;
   image_alt_tr?: string | null;
@@ -42,6 +45,9 @@ function readFields(formData: FormData): ProductFormFields {
     price: priceOnRequest ? 0 : Number(formData.get("price") ?? 0),
     sale_price: priceOnRequest ? null : salePriceRaw ? Number(salePriceRaw) : null,
     price_on_request: priceOnRequest,
+    option_label_ar: String(formData.get("option_label_ar") ?? "").trim() || null,
+    option_label_en: String(formData.get("option_label_en") ?? "").trim() || null,
+    option_label_tr: String(formData.get("option_label_tr") ?? "").trim() || null,
     category: String(formData.get("category") ?? "") as CategoryKey,
     is_featured: formData.get("is_featured") === "on",
     has_sizes: formData.get("has_sizes") === "on",

@@ -8,12 +8,16 @@
 - `src/lib/supabase/` — `public.ts` (anon)، `service.ts` (service role، سيرفر فقط)، `types.ts`.
 - `src/lib/inventory-period.ts` — حساب فلتر الفترة الزمنية (بالسنتات كأعداد صحيحة).
 - `messages/{ar,en,tr}.json` — الترجمات. واجهة الأدمن عربية فقط (نصوص مباشرة).
-- `supabase/migrations/NNN_*.sql` — الـ migrations مرقّمة (آخر واحد 035). `supabase/schema.sql` المخطط الكامل.
+- `supabase/migrations/NNN_*.sql` — الـ migrations مرقّمة (آخر واحد 036). `supabase/schema.sql` المخطط الكامل.
 - الأسرار في `.env.local` (لا تُطبع ولا تُرفع): `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`.
 
 ## منتج بدون سعر (migration 035)
 - `products.price_on_request` (boolean، افتراضي false). عند التفعيل: `price` = 0 و`sale_price` = null و`product_quantities.price` اختياري (0). الموقع يعرض شارة «السعر عند الطلب» ولا سلة (`addItem` يرفض)، والطلب واتساب برسالة فيها الاسم والرابط والخيارات، وJSON-LD بدون `offers`.
 - السوشيال: `effectivePrice` يرجع `current: 0` ⇒ القوالب/الريل/تفاصيل الكاروسيل تعرض «للطلب تواصل واتساب +رقم» بدل السعر؛ البرومت لا يستلم أي سعر وتُمنع زاوية offer؛ `porViolation` في `validate` يرفض أي سعر/عملة/رخيص/عرض/خصم فيُعاد التوليد؛ الخاتمة `POR_CTA_INDEX`.
+
+## خيارات بأسعار (migration 036)
+- الـ«كميات» (`product_quantities`) هي خيارات بسعر لكل خيار؛ الأعمدة `products.option_label_{ar,en,tr}` (اختيارية) تغيّر اسم المجموعة (مثلاً «المقاس») بدل «الكمية». عند تعبئتها: الخيار الأول مختار افتراضيًا، ورسالة واتساب فيها الاسم والخيار والسعر والرابط، والسلة تستخدم الاسم نفسه. سعر المنتج الأساسي يُحفظ = أقل سعر خيار. الكرت يعرض «ابتداءً من/From/Başlangıç».
+- السوشيال: `effectivePrice` يرجع `from: true` لمنتج بخيارات أسعارها مختلفة ⇒ القوالب/الكاروسيل/الريل تعرض «ابتداءً من X TL»، والبرومت يتلقى `price_is_starting_from`.
 
 ## دفتر البضاعة (`/admin/inventory`)
 جداول مفعّل عليها RLS بدون أي policy (service role فقط).

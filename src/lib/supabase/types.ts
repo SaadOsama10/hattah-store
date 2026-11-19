@@ -138,6 +138,10 @@ export interface ProductRow {
   // "Price on request": no public price (price column holds 0). Orders go
   // through WhatsApp only; never show a price or allow add-to-cart.
   price_on_request?: boolean;
+  // Optional custom name of the priced options (e.g. "Size"); null = "Quantity".
+  option_label_ar?: string | null;
+  option_label_en?: string | null;
+  option_label_tr?: string | null;
   category: CategoryKey;
   is_featured: boolean;
   has_sizes: boolean;
@@ -182,6 +186,8 @@ export interface LocalizedProduct {
   // True when the product has no public price — render the "price on
   // request" badge instead of any price, and WhatsApp-only ordering.
   priceOnRequest: boolean;
+  // Localized custom name of the priced options (e.g. "Size"), or null for the default "Quantity".
+  optionLabel: string | null;
   category: CategoryKey;
   createdAt: string;
   images: string[];
@@ -233,6 +239,8 @@ export function localizeProduct(
     startingPrice: hasQuantities ? Math.min(...quantities.map((q) => q.price)) : row.price,
     salePrice: hasQuantities || row.price_on_request ? null : row.sale_price,
     priceOnRequest: row.price_on_request === true,
+    optionLabel:
+      ((locale === "ar" ? row.option_label_ar : locale === "tr" ? row.option_label_tr : row.option_label_en) ?? "").trim() || null,
     category: row.category,
     createdAt: row.created_at,
     images,

@@ -126,6 +126,9 @@
     "priceOnRequest": "Fiyat için iletişime geçin",
     "whatsappPriceMessage": "Merhaba, şu ürünün fiyatını öğrenmek istiyorum: {productName}\nBağlantı: {url}",
     "startingFrom": "Başlangıç",
+    "selectOption": "{label} seçin",
+    "selectOptionFirst": "Lütfen önce {label} seçin",
+    "whatsappMessageWithLink": "Merhaba, sipariş vermek istiyorum: {productName}\nBağlantı: {url}",
     "discountBadge": "-%{percent}"
   },
   "admin": {

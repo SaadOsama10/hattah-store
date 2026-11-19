@@ -154,6 +154,7 @@ export default async function ProductDetailPage({
               sizes={localized.sizes}
               colors={localized.colors}
               quantities={localized.quantities}
+              optionLabel={localized.optionLabel}
             />
 
             {localized.description && (
