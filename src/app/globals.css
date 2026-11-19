@@ -308,7 +308,48 @@ html.theme-xfade::view-transition-new(root) {
   line-gap-override: 0%;
   size-adjust: 111.26%;
 }
+/* Arabic faces, self-hosted subsets (Arabic letters/marks/digits + basic Latin):
+   Amiri Bold for headlines, IBM Plex Sans Arabic for body text. */
+@font-face {
+  font-family: "Amiri HATTAH";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/amiri-ar-700.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Amiri HATTAH Fallback";
+  src: local("Times New Roman");
+  ascent-override: 112.4%;
+  descent-override: 63.4%;
+  line-gap-override: 0%;
+  size-adjust: 100%;
+}
+@font-face {
+  font-family: "Plex Arabic HATTAH";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/plex-ar-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Plex Arabic HATTAH";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/plex-ar-600.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Plex Arabic HATTAH Fallback";
+  src: local("Arial");
+  ascent-override: 107.29%;
+  descent-override: 41.04%;
+  line-gap-override: 0%;
+  size-adjust: 101.13%;
+}
 :root {
+  --font-amiri: "Amiri HATTAH", "Amiri HATTAH Fallback";
+  --font-ibm-plex-sans-arabic: "Plex Arabic HATTAH", "Plex Arabic HATTAH Fallback";
   --font-playfair-latin: "Playfair HATTAH", "Playfair HATTAH Fallback";
   --font-brand: "Playfair HATTAH", "Playfair HATTAH Fallback";
 }
@@ -416,10 +457,10 @@ body {
 /* ── Scroll reveal (see components/ui/Reveal.tsx) ──
    Only hidden when JS is running (html.js is set by the theme init
    script), so content is never lost without JS. */
-/* Starts at 1% (not 0) so the browser counts the content as painted on arrival —
-   a reveal never delays the Largest Contentful Paint. Visually identical to 0. */
+/* Content that can be the LCP element (hero headline, the About intro) is
+   never wrapped in a reveal — it uses .fade-soft below instead. */
 html.js .reveal {
-  opacity: 0.01;
+  opacity: 0;
   transform: translateY(14px);
   transition:
     opacity 0.6s var(--ease-soft),
@@ -1227,6 +1268,23 @@ html.js .reveal.is-visible .kufiya-divider svg {
   background-size:
     34px 1px, 1px 34px, 34px 1px, 1px 34px,
     34px 1px, 1px 34px, 34px 1px, 1px 34px;
+}
+
+/* Soft fade for above-the-fold text: starts at 1% opacity (counted as painted, so
+   it never delays the LCP) and is fully opaque well before any audit runs. */
+.fade-soft {
+  animation: fade-soft 0.7s var(--ease-soft) 0.1s both;
+}
+@keyframes fade-soft {
+  from {
+    opacity: 0.01;
+    transform: translateY(10px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fade-soft {
+    animation: none;
+  }
 }
 
 /* ── Scroll-lit words (Our story); without JS / reduced motion they're simply fully visible ── */

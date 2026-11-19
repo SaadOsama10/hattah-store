@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
 const nextConfig: NextConfig = {
+  // Always render <title>/<meta description> in the initial <head> (no streamed
+  // metadata), for every client — search engines and auditing tools included.
+  htmlLimitedBots: /.*/,
   images: {
     // Custom loader: product photos have pre-generated small WebP variants in Supabase
     // Storage (see lib/image-variants.ts), so no dependence on Vercel's capped optimizer.

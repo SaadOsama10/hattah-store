@@ -138,9 +138,8 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
           <Reveal blur>
             <SectionHeading id="about-who" eyebrow="HATTAH · حَطّة" title={t("whoTitle")} align="center" className="!mb-7" />
           </Reveal>
-          <Reveal delay={80}>
-            <p className="font-inter text-lg leading-loose text-cream-secondary">{t("who")}</p>
-          </Reveal>
+          {/* often the LCP element on phones → CSS fade, not a scroll reveal */}
+          <p className="fade-soft font-inter text-lg leading-loose text-cream-secondary">{t("who")}</p>
         </div>
       </Band>
 
