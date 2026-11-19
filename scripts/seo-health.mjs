@@ -72,7 +72,6 @@ const productUrl = urls.find((u) => /\/en\/product\//.test(u));
 const checks = [
   { url: `${SITE}/en`, label: "home", test: (n) => types(n).some((t) => ["Organization", "LocalBusiness"].includes(t)) && n.name && n.telephone, need: "Organization/LocalBusiness with name+telephone" },
   { url: `${SITE}/en/faq`, label: "faq", test: (n) => types(n).includes("FAQPage") && n.mainEntity?.length > 0, need: "FAQPage with questions" },
-  { url: productUrl, label: "product", test: (n) => types(n).includes("Product") && n.name && n.image?.length && (n.offers?.price || n.offers?.lowPrice) && n.offers?.priceCurrency === "TRY", need: "Product with name, image, TRY offer" },
   { url: productUrl, label: "product breadcrumb", test: (n) => types(n).includes("BreadcrumbList") && n.itemListElement?.length >= 2, need: "BreadcrumbList" },
 ];
 for (const c of checks) {
@@ -83,6 +82,29 @@ for (const c of checks) {
   if (!/<link rel="canonical"/.test(page.text)) problem("seo", `${c.url} has no canonical link`);
   if (!/hrefLang|hreflang/.test(page.text)) problem("seo", `${c.url} has no hreflang links`);
   if ((page.text.match(/<h1[\s>]/g) ?? []).length !== 1) problem("seo", `${c.url} should have exactly one <h1>`);
+}
+/* Every product page: a priced product needs name + image + TRY offer; a "price on request" product
+ * (an intentional choice, no public price) needs only name + image and must NOT carry an offer. */
+// Which products are "price on request" comes from the database (page text can't tell: every page ships all translations).
+const porIds = new Set();
+if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  const r = await fetch(`${process.env.SUPABASE_URL}/rest/v1/products?price_on_request=eq.true&select=id`, {
+    headers: { apikey: process.env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}` },
+  });
+  if (r.ok) for (const x of await r.json()) porIds.add(String(x.id).slice(0, 8).toLowerCase());
+  else problem("schema", `could not read price_on_request products (${r.status})`);
+}
+const productUrls = urls.filter((u) => /\/en\/product\//.test(u));
+for (const url of productUrls) {
+  const page = await get(url);
+  if (page.status !== 200) { problem("page", `${url} returned ${page.status}`); continue; }
+  const por = porIds.has(url.slice(-8));
+  const nodes = jsonLdOf(page.text).filter((n) => types(n).includes("Product"));
+  const base = (n) => n.name && n.image?.length;
+  const ok = por
+    ? nodes.some((n) => base(n) && !n.offers)
+    : nodes.some((n) => base(n) && (n.offers?.price || n.offers?.lowPrice) && n.offers?.priceCurrency === "TRY");
+  if (!ok) problem("schema", `product (${url}) is missing ${por ? "Product with name, image (no offer, price on request)" : "Product with name, image, TRY offer"}`);
 }
 const nf = await fetch(`${SITE}/en/this-page-does-not-exist`, { redirect: "manual" });
 if (nf.status !== 404) problem("seo", `unknown URLs return ${nf.status} instead of 404`);
