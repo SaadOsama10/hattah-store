@@ -368,6 +368,142 @@ html.js .reveal.is-visible {
   scroll-snap-align: start;
 }
 
+/* ── Hero ── */
+@keyframes hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes draw-in {
+  from {
+    clip-path: inset(0 50% 0 50%);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes net-drift {
+  to {
+    transform: translate3d(28px, 28px, 0);
+  }
+}
+@keyframes progress {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+.hero-in,
+.hero-word {
+  animation: hero-in 0.75s var(--ease-soft) both;
+}
+.hero-draw {
+  animation: draw-in 0.9s var(--ease-soft) both;
+}
+.hero-net {
+  animation: net-drift 60s linear infinite;
+}
+.hero-slide {
+  opacity: 0;
+  transition: opacity 1.2s var(--ease-in-out-soft);
+}
+.hero-slide.is-on {
+  opacity: 1;
+}
+/* Ken Burns: the active slide zooms slowly; once it has faded out it resets. */
+.hero-slide img {
+  transform: scale(1.02);
+  transition: transform 0s linear 1.2s;
+}
+.hero-slide.kb img {
+  transform: scale(1.1);
+  transition: transform 7.5s linear;
+}
+.hero-progress {
+  animation: progress linear forwards;
+}
+.hero-chip {
+  animation: hero-in 0.6s var(--ease-soft) both;
+}
+
+/* ── Buttons: arrow nudges on hover ── */
+.btn-arrow {
+  transition: transform var(--dur-base) var(--ease-soft);
+}
+:hover > .btn-arrow {
+  transform: translateX(4px);
+}
+[dir="rtl"] :hover > .btn-arrow {
+  transform: scaleX(-1) translateX(4px);
+}
+
+/* ── Kufiya divider draws itself (from the centre out) when its section reveals ── */
+html.js .reveal .kufiya-divider svg {
+  clip-path: inset(0 50% 0 50%);
+  transition: clip-path 1s var(--ease-soft) 0.15s;
+}
+html.js .reveal.is-visible .kufiya-divider svg {
+  clip-path: inset(0 0 0 0);
+}
+
+/* ── Tilt + sheen (ProductCard, category tiles; see components/ui/Tilt.tsx) ── */
+.tilt {
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.5s var(--ease-soft);
+  will-change: transform;
+}
+.tilt.is-tilting {
+  transition: transform 0.12s linear;
+}
+.tilt-sheen {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at var(--sx, 50%) var(--sy, 0%),
+    rgba(255, 255, 255, 0.28),
+    transparent 55%
+  );
+  opacity: 0;
+  mix-blend-mode: soft-light;
+  transition: opacity 0.4s ease;
+}
+.tilt.is-tilting .tilt-sheen {
+  opacity: 1;
+}
+
+/* ── Images fade in once loaded (no layout jump: boxes are pre-sized) ── */
+.img-fade {
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.img-fade.is-loaded {
+  opacity: 1;
+}
+
+/* ── Page fade between client navigations (see app/[locale]/(site)/template.tsx) ── */
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.page-in {
+  animation: page-in 0.45s var(--ease-soft) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -380,5 +516,15 @@ html.js .reveal.is-visible {
   html.js .reveal {
     opacity: 1;
     transform: none;
+  }
+  html.js .reveal .kufiya-divider svg {
+    clip-path: none;
+  }
+  .hero-slide.kb img,
+  .tilt {
+    transform: none !important;
+  }
+  .hero-net {
+    animation: none;
   }
 }

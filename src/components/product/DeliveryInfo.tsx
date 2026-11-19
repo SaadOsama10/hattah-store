@@ -1,17 +1,13 @@
-import { getLocale, getTranslations } from "next-intl/server";
-import { ArrowRight, MapPinned, MessageCircle, Truck } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+import { ArrowRight, Handshake, MessageCircle } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { BUSINESS } from "@/lib/site";
-import type { Locale } from "@/lib/supabase/types";
 
-/** Delivery & ordering facts shown under the buy buttons. */
+/** How ordering works, under the buy buttons — no delivery areas, fees or times. */
 export async function DeliveryInfo() {
   const t = await getTranslations("product");
-  const locale = (await getLocale()) as Locale;
   const rows = [
-    { Icon: Truck, text: t("deliveryFree", { area: BUSINESS.freeDeliveryArea[locale] }) },
-    { Icon: MapPinned, text: t("deliveryAll") },
     { Icon: MessageCircle, text: t("deliveryOrder") },
+    { Icon: Handshake, text: t("orderDetails") },
   ];
   return (
     <section aria-labelledby="delivery-info" className="rounded-card bg-bg-secondary p-4 ring-1 ring-line sm:p-5">

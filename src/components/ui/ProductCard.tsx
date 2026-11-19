@@ -11,6 +11,7 @@ import { buildWhatsAppOrderLink } from "@/lib/whatsapp";
 import { isProductOnSale, effectivePrice, discountPercent } from "@/lib/supabase/types";
 import type { CardProduct } from "@/lib/storefront";
 import { cn } from "@/lib/cn";
+import { useTilt } from "@/components/ui/Tilt";
 
 // Whether this device can hover (desktop) — decided once, shared by all cards.
 let hoverCapable: boolean | null = null;
@@ -39,6 +40,8 @@ export function ProductCard({
   const { addItem } = useCart();
   const [showSecond, setShowSecond] = useState(false);
   const [added, setAdded] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(priority);
+  const { tiltRef, handlers } = useTilt(4);
 
   useEffect(() => {
     if (!product.image2) return;
@@ -73,8 +76,10 @@ export function ProductCard({
   }
 
   return (
-    <article className={cn("group relative flex h-full flex-col", className)}>
+    <article {...handlers} className={cn("group relative flex h-full flex-col", className)}>
+      <div ref={tiltRef} className="tilt relative rounded-card">
       <div className="relative aspect-[4/5] overflow-hidden rounded-card bg-surface shadow-card ring-1 ring-line transition-shadow duration-500 ease-soft group-hover:shadow-lift">
+        {!imgLoaded && product.image && <div aria-hidden className="skeleton absolute inset-0" />}
         {product.image ? (
           <>
             <Image
@@ -84,7 +89,11 @@ export function ProductCard({
               sizes="(min-width: 1280px) 300px, (min-width: 1024px) 24vw, (min-width: 640px) 33vw, 50vw"
               priority={priority}
               fetchPriority={priority ? "high" : "auto"}
-              className="object-cover transition-transform duration-700 ease-soft group-hover:scale-[1.04]"
+              onLoad={() => setImgLoaded(true)}
+              className={cn(
+                "object-cover transition-[transform,opacity] duration-700 ease-soft group-hover:scale-[1.04]",
+                !priority && (imgLoaded ? "opacity-100" : "opacity-0")
+              )}
             />
             {showSecond && product.image2 && (
               <Image
@@ -134,6 +143,8 @@ export function ProductCard({
             </button>
           )}
         </div>
+      </div>
+      <span aria-hidden className="tilt-sheen" />
       </div>
 
       <div className="mt-3 flex flex-1 flex-col gap-1 px-0.5">

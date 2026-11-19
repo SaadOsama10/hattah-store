@@ -6,6 +6,7 @@ import { ArrowUpDown, MessageCircle, Search, SearchX, X } from "lucide-react";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { Button } from "@/components/ui/Button";
 import { KufiyaDivider } from "@/components/ui/KufiyaDivider";
+import { Reveal } from "@/components/ui/Reveal";
 import { cn } from "@/lib/cn";
 import { playClick } from "@/lib/sound";
 import { sortPrice, type CardProduct } from "@/lib/storefront";
@@ -244,11 +245,18 @@ export function ShopClient({
         ) : (
           <>
             <ul className="grid grid-cols-2 gap-x-3.5 gap-y-8 sm:grid-cols-3 sm:gap-x-5 lg:grid-cols-4">
-              {filtered.slice(0, visible).map((p, i) => (
-                <li key={p.id}>
-                  <ProductCard product={p} priority={i < 4} />
-                </li>
-              ))}
+              {filtered.slice(0, visible).map((p, i) =>
+                // The first row paints with the HTML (it holds the LCP image); later cards fade in as they scroll in.
+                i < 4 ? (
+                  <li key={p.id}>
+                    <ProductCard product={p} priority />
+                  </li>
+                ) : (
+                  <Reveal as="li" key={p.id} delay={(i % 4) * 60}>
+                    <ProductCard product={p} />
+                  </Reveal>
+                )
+              )}
             </ul>
             {visible < filtered.length && (
               <div className="mt-12 flex justify-center">

@@ -184,8 +184,8 @@ export function Header({ hasOffers = false, categories = [] }: { hasOffers?: boo
         aria-label={t("menu")}
         inert={!menuOpen}
         className={cn(
-          "fixed inset-y-0 start-0 z-50 flex w-[86%] max-w-sm flex-col bg-bg-primary shadow-lift transition-transform duration-300 ease-soft lg:hidden",
-          menuOpen ? "translate-x-0" : "-translate-x-full rtl:translate-x-full"
+          "fixed inset-y-0 start-0 z-50 flex w-[86%] max-w-sm flex-col bg-bg-primary transition-[translate,visibility,box-shadow] duration-300 ease-soft lg:hidden",
+          menuOpen ? "visible translate-x-0 shadow-lift" : "invisible -translate-x-full rtl:translate-x-full"
         )}
       >
         <div className="flex h-16 items-center justify-between border-b border-line px-4">

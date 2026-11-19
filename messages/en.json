@@ -20,7 +20,8 @@
     "returns": "Returns & exchanges",
     "contact": "Contact",
     "faq": "FAQ",
-    "mainNav": "Main navigation"
+    "mainNav": "Main navigation",
+    "howToOrder": "How to order"
   },
   "common": {
     "viewAll": "View All",
@@ -90,9 +91,9 @@
     "contactUs": "Contact Us",
     "whatsapp": "WhatsApp",
     "rights": "All rights reserved",
-    "madeWith": "Made with love from Turkey",
+    "madeWith": "Made with love",
     "aboutTitle": "About HATTAH",
-    "aboutText": "A Palestinian, Gazan store in Istanbul bringing Palestinian heritage and Gazan food to all of Türkiye.",
+    "aboutText": "A Palestinian, Gazan store bringing Palestinian heritage and Gazan food closer to you.",
     "shopTitle": "Shop",
     "contactTitle": "Contact",
     "socialTitle": "Follow us",
@@ -168,13 +169,12 @@
     "prevImage": "Previous image",
     "nextImage": "Next image",
     "imageOf": "Image {n} of {total}",
-    "deliveryTitle": "Delivery & ordering",
-    "deliveryFree": "Free delivery within {area}, Istanbul",
-    "deliveryAll": "We deliver everywhere in Türkiye; the delivery cost is confirmed with you on WhatsApp before the order is placed",
+    "deliveryTitle": "Ordering",
     "deliveryOrder": "Order on WhatsApp with a ready message containing the product, your choice and the link",
-    "deliveryMore": "Delivery details",
+    "deliveryMore": "How to order",
     "similarTitle": "Similar products",
-    "chooseOptions": "Choose options"
+    "chooseOptions": "Choose options",
+    "orderDetails": "Delivery and payment details are agreed with you on WhatsApp before the order is placed"
   },
   "admin": {
     "nav": {
@@ -471,26 +471,23 @@
     "deletion": "Data deletion"
   },
   "announce": {
-    "free": "Free delivery in {area}",
-    "everywhere": "We deliver everywhere in Türkiye",
-    "whatsapp": "Order on WhatsApp",
-    "close": "Close announcement"
+    "close": "Close announcement",
+    "items": [
+      "Authentic Palestinian products",
+      "Palestinian heritage in every detail",
+      "Discover the newest pieces in the store"
+    ]
   },
   "theme": {
     "toLight": "Switch to light mode",
     "toDark": "Switch to dark mode"
   },
   "home": {
-    "heroEyebrow": "A Palestinian store from Gaza, in Istanbul",
-    "heroTitle": "Pieces that bring Palestine home",
-    "heroSubtitle": "Embroidery, keffiyehs, artwork and figurines, plus homemade Gazan food. We deliver across Türkiye and you order with one WhatsApp message.",
+    "heroEyebrow": "A Palestinian store from Gaza",
+    "heroTitle": "Palestine's story in every piece",
+    "heroSubtitle": "Embroidery, keffiyehs, artwork and figurines, plus homemade Gazan food. Pick your piece and order it with one WhatsApp message.",
     "heroCta": "Shop now",
-    "heroPiece": "From the store",
     "trustLabel": "Why HATTAH",
-    "trustFree": "Free delivery in {area}",
-    "trustFreeSub": "Within the district, Istanbul",
-    "trustEverywhere": "We deliver everywhere",
-    "trustEverywhereSub": "All of Türkiye, cost confirmed with you",
     "trustWhatsapp": "Fast ordering on WhatsApp",
     "trustWhatsappSub": "A ready message with your product and choice",
     "trustAuthentic": "Authentic Palestinian products",
@@ -511,63 +508,47 @@
     "newSubtitle": "The latest pieces added to the store",
     "seeAll": "View all",
     "aboutEyebrow": "About HATTAH",
-    "aboutTitle": "A Palestinian store from Gaza, in Istanbul",
-    "aboutBody": "HATTAH is a Palestinian, Gazan store in Istanbul. We bring you Palestinian heritage in pieces to wear, to give and to hang on your wall, together with homemade Gazan food, so a little of Palestine stays close to you.",
+    "aboutTitle": "A Palestinian store from Gaza",
+    "aboutBody": "HATTAH is a Palestinian, Gazan store. We bring you Palestinian heritage in pieces to wear, to give and to hang on your wall, together with homemade Gazan food, so a little of Palestine stays close to you.",
     "aboutCta": "More about us",
     "ctaTitle": "A question or a special request?",
     "ctaBody": "Message us on WhatsApp and we'll help you choose the right piece and place your order.",
     "ctaButton": "Message us on WhatsApp",
     "whatsappGreeting": "Hi HATTAH! I have a question.",
-    "productsCount": "{count, plural, =0 {No products} one {# product} other {# products}}"
+    "productsCount": "{count, plural, =0 {No products} one {# product} other {# products}}",
+    "heroSlide": "Piece {n} of {total}",
+    "heroPause": "Pause slideshow",
+    "heroPlay": "Play slideshow",
+    "trustHeritage": "Authentic Gazan heritage",
+    "trustHeritageSub": "Pieces and food with the spirit of Gaza",
+    "trustCurated": "Carefully chosen pieces",
+    "trustCuratedSub": "From food to decor and clothing",
+    "heroPiece": "From the store"
   },
   "policies": {
-    "shippingTitle": "Delivery",
-    "shippingLead": "How your HATTAH order reaches you.",
+    "shippingTitle": "How to order",
+    "shippingLead": "Delivery details are agreed with you on WhatsApp when you order.",
     "shippingSections": [
       {
-        "h": "Where we deliver",
-        "p": "We deliver everywhere in Türkiye."
-      },
-      {
-        "h": "Free delivery",
-        "p": "Delivery is free within {area}, Istanbul."
-      },
-      {
-        "h": "Delivery cost elsewhere",
-        "p": "For other districts and cities we confirm the delivery cost with you on WhatsApp before the order is placed."
-      },
-      {
-        "h": "Delivery time",
-        "p": "It depends on your city and the product; we confirm the expected date with you on WhatsApp when you order."
-      },
-      {
         "h": "How to order",
-        "p": "Pick a product and tap “Order via WhatsApp”, or add it to your cart and send the order on WhatsApp, or message us directly at {phone}."
+        "p": "Pick a product and tap “Order via WhatsApp”, or add it to your cart and send the order on WhatsApp. We then go through all the details with you."
+      },
+      {
+        "h": "Delivery details",
+        "p": "The address, delivery method and its cost are confirmed with you on WhatsApp before the order is placed."
       }
     ],
     "returnsTitle": "Returns & exchanges",
-    "returnsLead": "If anything is wrong with your order, contact us and we'll agree on a solution with you.",
+    "returnsLead": "If anything about your order isn't right, contact us on WhatsApp and we'll agree on a solution with you.",
     "returnsSections": [
       {
-        "h": "Before you order",
-        "p": "If you have a question about size, details or colours, ask us on WhatsApp before placing the order so you choose the right piece."
-      },
-      {
-        "h": "On delivery",
-        "p": "Please check your order when it arrives. If a product is damaged or not what you ordered, message us on WhatsApp at {phone} with clear photos as soon as possible."
-      },
-      {
-        "h": "Return and exchange requests",
-        "p": "We look at every return or exchange request individually and agree on the next step with you on WhatsApp; what is possible depends on the type of product (for example food and made-to-order pieces)."
-      },
-      {
-        "h": "Contact",
-        "p": "WhatsApp: {phone} — Email: {email}"
+        "h": "Contact us",
+        "p": "Message us on WhatsApp at {phone} or email {email}, and we'll agree on the right next step with you."
       }
     ],
-    "seoShippingTitle": "Delivery | HATTAH",
-    "seoShippingDescription": "Delivery from HATTAH: we deliver all over Türkiye, free within {area}, Istanbul. Other areas: cost confirmed on WhatsApp.",
+    "seoShippingTitle": "How to order | HATTAH",
+    "seoShippingDescription": "How delivery works at HATTAH: order on WhatsApp and we agree the delivery details with you before the order is placed.",
     "seoReturnsTitle": "Returns & exchanges | HATTAH",
-    "seoReturnsDescription": "How to reach HATTAH if a product arrives damaged or different, and how return and exchange requests are handled."
+    "seoReturnsDescription": "Something not right with your HATTAH order? Contact us on WhatsApp and we'll agree on a solution."
   }
 }

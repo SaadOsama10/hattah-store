@@ -93,7 +93,7 @@ export async function Footer({ categories = [], hasOffers = false }: { categorie
               </li>
               <li>
                 <Link href="/shipping" className={linkClass}>
-                  {t("nav.delivery")}
+                  {t("nav.howToOrder")}
                 </Link>
               </li>
               <li>

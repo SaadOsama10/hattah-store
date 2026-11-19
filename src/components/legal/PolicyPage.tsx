@@ -9,7 +9,7 @@ import { buildWhatsAppOrderLink } from "@/lib/whatsapp";
 import type { Locale } from "@/lib/supabase/types";
 
 /** Shared layout for the simple policy pages (delivery, returns). Copy
- * lives in messages/*.json → policies; {area} {phone} {email} are filled
+ * lives in messages/*.json → policies; {phone} {email} are filled
  * from lib/site.ts so the facts have a single source. */
 export async function PolicyPage({ locale, kind }: { locale: Locale; kind: "shipping" | "returns" }) {
   const t = await getTranslations("policies");
@@ -17,7 +17,6 @@ export async function PolicyPage({ locale, kind }: { locale: Locale; kind: "ship
   const tHome = await getTranslations("home");
   const fill = (s: string) =>
     s
-      .replaceAll("{area}", BUSINESS.freeDeliveryArea[locale])
       .replaceAll("{phone}", BUSINESS.phoneDisplay)
       .replaceAll("{email}", BUSINESS.email);
   const sections = t.raw(`${kind}Sections`) as { h: string; p: string }[];

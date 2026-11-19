@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { KufiyaDivider } from "@/components/ui/KufiyaDivider";
 import { KufiyaNet } from "@/components/ui/KufiyaNet";
 import { Reveal } from "@/components/ui/Reveal";
-import { buildWhatsAppOrderLink, formatWhatsAppNumberForDisplay } from "@/lib/whatsapp";
+import { buildWhatsAppOrderLink } from "@/lib/whatsapp";
 
 /** Closing call to action before the footer: talk to us on WhatsApp. */
 export async function WhatsAppCta() {
@@ -25,9 +25,6 @@ export async function WhatsAppCta() {
             <MessageCircle size={20} />
             {t("ctaButton")}
           </Button>
-          <p dir="ltr" className="mt-3 font-inter text-sm text-muted">
-            {formatWhatsAppNumberForDisplay()}
-          </p>
         </div>
       </Reveal>
     </section>

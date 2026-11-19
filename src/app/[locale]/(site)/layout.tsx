@@ -9,7 +9,6 @@ import { MotionProvider } from "@/components/ui/MotionProvider";
 import { getCachedCategories, hasActiveOffers } from "@/lib/supabase/queries";
 import { localizeCategory, type Locale } from "@/lib/supabase/types";
 import { categoryPath } from "@/lib/seo";
-import { BUSINESS } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +23,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const navCategories: NavCategory[] = categories
     .filter((c) => !c.parent_key)
     .map((c) => ({ key: c.key, label: localizeCategory(c, locale), href: categoryPath(c.key) }));
-  const announce = [t("free", { area: BUSINESS.freeDeliveryArea[locale] }), t("everywhere"), t("whatsapp")];
+  const announce = t.raw("items") as string[];
 
   return (
     <MotionProvider>

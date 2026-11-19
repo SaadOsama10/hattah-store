@@ -22,7 +22,7 @@ export function KufiyaDivider({
   return (
     <div
       aria-hidden
-      className={cn("flex", align === "center" ? "justify-center" : "justify-start rtl:justify-start", className)}
+      className={cn("kufiya-divider flex", align === "center" ? "justify-center" : "justify-start rtl:justify-start", className)}
     >
       <svg width={w} height={w * 0.09} viewBox="0 0 200 18" fill="none" className="overflow-visible">
         <g strokeLinecap="round" strokeLinejoin="round">

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { PolicyPage } from "@/components/legal/PolicyPage";
 import { buildMetadata } from "@/lib/seo";
-import { BUSINESS } from "@/lib/site";
 import type { Locale } from "@/lib/supabase/types";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -12,7 +11,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     locale,
     path: "/shipping",
     title: t("seoShippingTitle"),
-    description: t("seoShippingDescription", { area: BUSINESS.freeDeliveryArea[locale as Locale] }),
+    description: t("seoShippingDescription"),
   });
 }
 

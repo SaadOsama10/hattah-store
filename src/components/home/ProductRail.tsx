@@ -54,8 +54,10 @@ export function ProductRail({
           ref={ref}
           className="rail gap-4 px-gutter pb-2 [grid-auto-columns:46%] sm:gap-5 sm:[grid-auto-columns:31%] lg:[grid-auto-columns:calc((100%-4*1.25rem-2*var(--spacing-gutter))/4.4)]"
         >
-          {products.map((p) => (
-            <ProductCard key={p.id} product={p} />
+          {products.map((p, i) => (
+            <Reveal key={p.id} delay={Math.min(i, 5) * 70}>
+              <ProductCard product={p} />
+            </Reveal>
           ))}
         </div>
         {products.length > 4 && (

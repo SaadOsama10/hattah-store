@@ -12,8 +12,9 @@ import "../globals.css";
 // Display / heading fonts — the brand's identity faces (same as the logo and the
 // social-media templates): Playfair Display for Latin, Amiri for Arabic.
 const playfair = Playfair_Display({
+  // latin-ext covers Turkish (ğ ş ı İ) in headings.
   subsets: ["latin", "latin-ext"],
-  weight: ["600", "700"],
+  weight: ["700"],
   variable: "--font-playfair-latin",
   display: "swap",
 });
@@ -29,7 +30,8 @@ const amiri = localFont({
 
 // Body / UI font — clean and modern: Inter (Latin) or IBM Plex Sans Arabic (Arabic).
 const inter = Inter({
-  subsets: ["latin", "latin-ext"],
+  // Latin only (as before the redesign): latin-ext would add ~85 KB of preloaded fonts on every page.
+  subsets: ["latin"],
   weight: ["400", "600"],
   variable: "--font-inter-latin",
   display: "swap",
@@ -96,6 +98,11 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} dir={dir} suppressHydrationWarning>
+      <head>
+        {/* Product photos (incl. the homepage hero, the usual LCP image) come from Supabase Storage:
+            open that connection while the HTML is still parsing. */}
+        {process.env.NEXT_PUBLIC_SUPABASE_URL && <link rel="preconnect" href={process.env.NEXT_PUBLIC_SUPABASE_URL} />}
+      </head>
       <body
         // Only the active locale's font families are applied, so /en and /tr never download (or preload)
         // the Arabic fonts and /ar never downloads the Latin ones.
