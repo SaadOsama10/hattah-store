@@ -53,16 +53,27 @@
     "skipToContent": "Skip to content"
   },
   "hero": {
-    "badge": "Living Heritage",
-    "brandName": "HATTAH",
-    "brandNameLatin": "HATTAH",
-    "taglines": [
-      "Stories from Palestine, in every detail",
-      "Heritage woven with thread and memory",
-      "Every stitch a story, every piece a homeland"
+    "badge": "PALESTINIAN HERITAGE FROM GAZA",
+    "title": "Gaza, told in details.",
+    "phrases": [
+      "Every piece carries a story of the land",
+      "Embroidery, wood, olive, memory",
+      "Made and chosen with love",
+      "Your identity, in your hands"
     ],
-    "cta": "Discover the Collection",
-    "scroll": "Scroll down"
+    "ctaPrimary": "Explore the collection",
+    "ctaSecondary": "Order on WhatsApp",
+    "pause": "Pause animation",
+    "play": "Play animation",
+    "scroll": "Go to the collection",
+    "phrase": "Line {n} of {total}",
+    "marquee": [
+      "HATTAH",
+      "حَطّة",
+      "Gaza",
+      "Heritage",
+      "Identity"
+    ]
   },
   "categories": {
     "eyebrow": "Store Categories",
@@ -483,10 +494,6 @@
     "toDark": "Switch to dark mode"
   },
   "home": {
-    "heroEyebrow": "A Palestinian store from Gaza",
-    "heroTitle": "Palestine's story in every piece",
-    "heroSubtitle": "Embroidery, keffiyehs, artwork and figurines, plus homemade Gazan food. Pick your piece and order it with one WhatsApp message.",
-    "heroCta": "Shop now",
     "trustLabel": "Why HATTAH",
     "trustWhatsapp": "Fast ordering on WhatsApp",
     "trustWhatsappSub": "A ready message with your product and choice",
@@ -516,14 +523,10 @@
     "ctaButton": "Message us on WhatsApp",
     "whatsappGreeting": "Hi HATTAH! I have a question.",
     "productsCount": "{count, plural, =0 {No products} one {# product} other {# products}}",
-    "heroSlide": "Piece {n} of {total}",
-    "heroPause": "Pause slideshow",
-    "heroPlay": "Play slideshow",
     "trustHeritage": "Authentic Gazan heritage",
     "trustHeritageSub": "Pieces and food with the spirit of Gaza",
     "trustCurated": "Carefully chosen pieces",
-    "trustCuratedSub": "From food to decor and clothing",
-    "heroPiece": "From the store"
+    "trustCuratedSub": "From food to decor and clothing"
   },
   "policies": {
     "shippingTitle": "How to order",

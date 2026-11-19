@@ -53,16 +53,27 @@
     "skipToContent": "İçeriğe geç"
   },
   "hero": {
-    "badge": "Yaşayan Miras",
-    "brandName": "HATTAH",
-    "brandNameLatin": "HATTAH",
-    "taglines": [
-      "Filistin'den hikayeler, her detayda",
-      "İplik ve hafızayla dokunan bir miras",
-      "Her dikiş bir hikaye, her parça bir vatan"
+    "badge": "GAZZE'DEN FİLİSTİN MİRASI",
+    "title": "Gazze, ayrıntılarda yaşar.",
+    "phrases": [
+      "Her parçada bir toprağın hikâyesi var",
+      "İşleme, ahşap, zeytin, hafıza",
+      "Sevgiyle yapılan ve seçilen",
+      "Kimliğin, ellerinde"
     ],
-    "cta": "Koleksiyonu Keşfet",
-    "scroll": "Aşağı kaydır"
+    "ctaPrimary": "Koleksiyonu keşfet",
+    "ctaSecondary": "WhatsApp ile sipariş ver",
+    "pause": "Animasyonu durdur",
+    "play": "Animasyonu başlat",
+    "scroll": "Koleksiyona git",
+    "phrase": "Satır {n} / {total}",
+    "marquee": [
+      "HATTAH",
+      "حَطّة",
+      "Gazze",
+      "Miras",
+      "Kimlik"
+    ]
   },
   "categories": {
     "eyebrow": "Mağaza Kategorileri",
@@ -483,10 +494,6 @@
     "toDark": "Koyu temaya geç"
   },
   "home": {
-    "heroEyebrow": "Gazzeli bir Filistin mağazası",
-    "heroTitle": "Her parçada Filistin'in hikâyesi",
-    "heroSubtitle": "Nakış, kefiyeler, tablolar ve maketler ile ev yapımı Gazze yemekleri. Parçanızı seçin, tek bir WhatsApp mesajıyla sipariş verin.",
-    "heroCta": "Alışverişe başla",
     "trustLabel": "Neden HATTAH",
     "trustWhatsapp": "WhatsApp ile hızlı sipariş",
     "trustWhatsappSub": "Ürün ve seçiminizle hazır mesaj",
@@ -516,14 +523,10 @@
     "ctaButton": "WhatsApp'tan yazın",
     "whatsappGreeting": "Merhaba HATTAH! Bir sorum var.",
     "productsCount": "{count, plural, =0 {Ürün yok} other {# ürün}}",
-    "heroSlide": "Parça {n} / {total}",
-    "heroPause": "Gösteriyi durdur",
-    "heroPlay": "Gösteriyi başlat",
     "trustHeritage": "Özgün Gazze mirası",
     "trustHeritageSub": "Gazze ruhunu taşıyan parçalar ve yemekler",
     "trustCurated": "Özenle seçilmiş parçalar",
-    "trustCuratedSub": "Yemekten dekorasyona ve giyime",
-    "heroPiece": "Mağazadan"
+    "trustCuratedSub": "Yemekten dekorasyona ve giyime"
   },
   "policies": {
     "shippingTitle": "Nasıl sipariş verilir",

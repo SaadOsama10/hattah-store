@@ -11,7 +11,7 @@ import { Reveal } from "@/components/ui/Reveal";
 export async function AboutHattah() {
   const t = await getTranslations("home");
   return (
-    <section id="our-story" aria-labelledby="home-about" className="py-section">
+    <section id="our-story" aria-labelledby="home-about" className="cv-auto py-section">
       <div className="mx-auto grid max-w-7xl items-center gap-10 px-gutter lg:grid-cols-[1fr_1.1fr] lg:gap-16">
         <Reveal className="relative mx-auto flex aspect-square w-full max-w-sm items-center justify-center overflow-hidden rounded-panel bg-olive-wash lg:max-w-md">
           <KufiyaNet className="absolute inset-0 text-olive opacity-[0.16]" />

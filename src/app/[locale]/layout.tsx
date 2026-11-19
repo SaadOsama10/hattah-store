@@ -28,6 +28,16 @@ const amiri = localFont({
   adjustFontFallback: "Times New Roman",
 });
 
+// The "HATTAH" wordmark lettering (hero, marquee) is Playfair on every locale; on /ar it isn't
+// preloaded (Arabic pages only use it for those few Latin letters, fetched on demand).
+const playfairBrand = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["700"],
+  variable: "--font-brand",
+  display: "swap",
+  preload: false,
+});
+
 // Body / UI font — clean and modern: Inter (Latin) or IBM Plex Sans Arabic (Arabic).
 const inter = Inter({
   // Latin only (as before the redesign): latin-ext would add ~85 KB of preloaded fonts on every page.
@@ -106,7 +116,7 @@ export default async function LocaleLayout({
       <body
         // Only the active locale's font families are applied, so /en and /tr never download (or preload)
         // the Arabic fonts and /ar never downloads the Latin ones.
-        className={`${isArabic ? `${amiri.variable} ${ibmPlexSansArabic.variable}` : `${playfair.variable} ${inter.variable}`} bg-bg-primary text-cream antialiased font-inter`}
+        className={`${isArabic ? `${amiri.variable} ${ibmPlexSansArabic.variable} ${playfairBrand.variable}` : `${playfair.variable} ${inter.variable} ${playfairBrand.variable}`} bg-bg-primary text-cream antialiased font-inter`}
         style={
           {
             "--font-display-current": isArabic

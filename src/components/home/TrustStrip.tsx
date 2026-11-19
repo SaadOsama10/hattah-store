@@ -14,7 +14,7 @@ export async function TrustStrip() {
   ];
 
   return (
-    <section aria-label={t("trustLabel")} className="border-y border-line bg-bg-primary">
+    <section aria-label={t("trustLabel")} className="cv-auto border-y border-line bg-bg-primary">
       <ul className="mx-auto grid max-w-7xl grid-cols-2 gap-x-4 gap-y-6 px-gutter py-7 lg:grid-cols-4 lg:divide-x lg:divide-line lg:py-8 rtl:lg:divide-x-reverse">
         {items.map(({ Icon, title, sub }, i) => (
           <Reveal as="li" key={title} delay={i * 90} className="flex items-start gap-3 lg:justify-center lg:px-4">

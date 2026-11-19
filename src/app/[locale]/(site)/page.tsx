@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { buildMetadata, categoryPath, organizationGraph, productImageAlt } from "@/lib/seo";
+import { buildMetadata, categoryPath, organizationGraph } from "@/lib/seo";
 import { Hero } from "@/components/home/Hero";
-import type { HeroSlide } from "@/components/home/HeroCarousel";
+import { Marquee } from "@/components/home/Marquee";
 import { TrustStrip } from "@/components/home/TrustStrip";
 import { CategoryTiles } from "@/components/home/CategoryTiles";
 import type { TileData } from "@/components/home/CategoryTileCard";
@@ -14,9 +14,8 @@ import { WhatsAppCta } from "@/components/home/WhatsAppCta";
 import { getAllProducts, getCachedCategories, hasActiveOffers } from "@/lib/supabase/queries";
 import { getBestSellerRanking } from "@/lib/supabase/bestsellers";
 import { buildCategoryTree, getDescendantKeys } from "@/lib/categories";
-import { HOME_SECTION_ICONS, RAIL_LIMIT, byRank, inCategories, pickHeroProducts, tileImages, toCardProduct } from "@/lib/storefront";
-import { localizeCategory, localizeProduct, type Locale, type ProductRow } from "@/lib/supabase/types";
-import { productSlug } from "@/lib/slug";
+import { HOME_SECTION_ICONS, RAIL_LIMIT, byRank, inCategories, tileImages, toCardProduct } from "@/lib/storefront";
+import { localizeCategory, type Locale, type ProductRow } from "@/lib/supabase/types";
 
 export const dynamic = "force-dynamic";
 
@@ -39,26 +38,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     getTranslations("home"),
   ]);
   const card = (p: ProductRow) => toCardProduct(p, locale, categories);
-  const catLabel = (key: string) => {
-    const c = categories.find((x) => x.key === key);
-    return c ? localizeCategory(c, locale) : "";
-  };
-
-  /* Hero: the store's most expensive priced products with a photo (live data). */
-  const slides: HeroSlide[] = pickHeroProducts(products).map((row) => {
-    const lp = localizeProduct(row, locale);
-    return {
-      id: row.id,
-      image: lp.images[0],
-      name: lp.name,
-      href: `/product/${productSlug(row)}`,
-      alt: productImageAlt(
-        lp.name,
-        catLabel(row.category),
-        locale === "ar" ? row.image_alt_ar : locale === "tr" ? row.image_alt_tr : row.image_alt_en
-      ),
-    };
-  });
 
   /* Category tiles: photos from each category's own top products. */
   const tree = buildCategoryTree(categories);
@@ -94,8 +73,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   return (
     <>
       <JsonLd data={organizationGraph(locale)} />
-      <Hero slides={slides} />
-      <TrustStrip />
+      <Hero />
+      <Marquee />
       <CategoryTiles tiles={tiles} />
       <ProductRail
         id="best"
@@ -132,6 +111,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         subtitle={t("newSubtitle")}
         action={{ href: "/shop", label: t("seeAll") }}
       />
+      <TrustStrip />
       <AboutHattah />
       <WhatsAppCta />
     </>

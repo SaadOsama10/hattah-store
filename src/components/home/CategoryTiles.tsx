@@ -12,7 +12,7 @@ export async function CategoryTiles({ tiles }: { tiles: TileData[] }) {
   if (tiles.length === 0) return null;
 
   return (
-    <section aria-labelledby="home-categories" className="py-section">
+    <section id="collection" aria-labelledby="home-categories" className="scroll-mt-20 py-section">
       <div className="mx-auto max-w-7xl px-gutter">
         <Reveal>
           <SectionHeading id="home-categories" eyebrow={t("categoriesEyebrow")} title={t("categoriesTitle")} />

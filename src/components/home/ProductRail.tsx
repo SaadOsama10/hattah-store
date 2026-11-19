@@ -43,7 +43,7 @@ export function ProductRail({
   const headingId = id ? `${id}-title` : undefined;
 
   return (
-    <section aria-labelledby={headingId} className={cn("py-section", tone === "tinted" && "bg-bg-secondary")}>
+    <section aria-labelledby={headingId} className={cn("cv-auto py-section", tone === "tinted" && "bg-bg-secondary")}>
       <div className="mx-auto max-w-7xl px-gutter">
         <Reveal>
           <SectionHeading id={headingId} eyebrow={eyebrow} title={title} subtitle={subtitle} action={action} />

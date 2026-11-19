@@ -18,7 +18,7 @@ export async function Footer({ categories = [], hasOffers = false }: { categorie
   const whatsappHref = buildWhatsAppOrderLink(t("home.whatsappGreeting"));
 
   return (
-    <footer className="relative overflow-hidden border-t border-line bg-bg-secondary">
+    <footer className="cv-auto relative overflow-hidden border-t border-line bg-bg-secondary">
       <KufiyaNet className="pointer-events-none absolute inset-x-0 top-0 h-24 text-olive opacity-[0.06]" />
       <div className="relative mx-auto max-w-7xl px-gutter pb-8 pt-14">
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
