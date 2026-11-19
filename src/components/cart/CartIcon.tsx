@@ -13,13 +13,13 @@ export function CartIcon({ className }: { className?: string }) {
       onClick={openCart}
       aria-label="Cart"
       className={cn(
-        "relative flex h-9 w-9 items-center justify-center rounded-full border border-cream/25 text-cream transition-all duration-300 hover:scale-105 hover:border-cream hover:bg-cream/5",
+        "relative flex h-11 w-11 items-center justify-center rounded-full text-cream transition-colors duration-300 hover:bg-cream/8",
         className
       )}
     >
-      <ShoppingBag size={15} />
+      <ShoppingBag size={19} strokeWidth={1.75} />
       {totalCount > 0 && (
-        <span className="absolute -end-1.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-terracotta px-1 font-inter text-[10px] font-bold leading-none text-cream">
+        <span className="absolute end-0.5 top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-terracotta px-1 font-inter text-[10px] font-bold leading-none text-on-accent">
           {totalCount > 99 ? "99+" : totalCount}
         </span>
       )}

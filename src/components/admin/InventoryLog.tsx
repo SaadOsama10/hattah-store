@@ -435,7 +435,7 @@ export function InventoryLog({
             className={cn(
               "rounded-full border px-4 py-1.5 font-inter text-xs transition-colors",
               statusFilter === value
-                ? "border-terracotta bg-terracotta text-cream"
+                ? "border-terracotta bg-terracotta text-on-accent"
                 : "border-cream/20 text-cream-secondary hover:text-cream"
             )}
           >

@@ -35,14 +35,16 @@ export function LanguageSwitcher({ variant = "light" }: { variant?: "light" | "d
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label="Change language"
+        aria-expanded={open}
+        aria-haspopup="menu"
         className={cn(
-          "flex items-center gap-1.5 rounded-full border px-3.5 py-2 font-inter text-xs uppercase tracking-widest transition-all duration-300 hover:scale-105",
+          "flex h-11 items-center gap-1.5 rounded-full px-3 font-inter text-xs font-semibold uppercase tracking-widest transition-colors duration-300",
           variant === "light"
-            ? "border-cream/25 text-cream hover:border-cream hover:bg-cream/5"
+            ? "text-cream hover:bg-cream/8"
             : "border-bg-primary/30 text-bg-primary hover:border-bg-primary hover:bg-bg-primary/5"
         )}
       >
-        <Globe size={14} />
+        <Globe size={17} strokeWidth={1.75} />
         <span>{locale.toUpperCase()}</span>
       </button>
 
@@ -50,7 +52,7 @@ export function LanguageSwitcher({ variant = "light" }: { variant?: "light" | "d
         <div
           className={cn(
             "absolute end-0 top-full z-50 mt-2 w-40 overflow-hidden rounded-2xl border shadow-xl",
-            "border-cream/15 bg-bg-secondary"
+            "border-line bg-surface shadow-lift"
           )}
         >
           {routing.locales.map((loc) => (
@@ -59,7 +61,7 @@ export function LanguageSwitcher({ variant = "light" }: { variant?: "light" | "d
               type="button"
               onClick={() => switchLocale(loc)}
               className={cn(
-                "flex w-full items-center justify-between px-4 py-2.5 text-start font-inter text-sm transition-colors duration-200 hover:bg-cream/5",
+                "flex min-h-11 w-full items-center justify-between px-4 py-2.5 text-start font-inter text-sm transition-colors duration-200 hover:bg-cream/5",
                 loc === locale ? "text-terracotta" : "text-cream"
               )}
             >

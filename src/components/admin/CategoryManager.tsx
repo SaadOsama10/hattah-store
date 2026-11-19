@@ -476,7 +476,7 @@ function CategoryTypeAndParent({
           onClick={() => onChange("")}
           className={cn(
             "rounded-full px-4 py-1.5 font-inter text-xs transition-colors",
-            !isSubcategory ? "bg-terracotta text-cream" : "text-cream-secondary hover:text-cream"
+            !isSubcategory ? "bg-terracotta text-on-accent" : "text-cream-secondary hover:text-cream"
           )}
         >
           {t("topLevelOption")}
@@ -487,7 +487,7 @@ function CategoryTypeAndParent({
           disabled={topLevelCategories.length === 0}
           className={cn(
             "rounded-full px-4 py-1.5 font-inter text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40",
-            isSubcategory ? "bg-terracotta text-cream" : "text-cream-secondary hover:text-cream"
+            isSubcategory ? "bg-terracotta text-on-accent" : "text-cream-secondary hover:text-cream"
           )}
         >
           {t("subcategoryOption")}

@@ -63,7 +63,7 @@ export function Tabs({ tab }: { tab: "upcoming" | "history" | "products" | "focu
   const item = (active: boolean) =>
     cn(
       "rounded-full px-4 py-1.5 font-inter text-sm transition-colors",
-      active ? "bg-terracotta text-cream" : "text-cream-secondary/70 hover:text-cream"
+      active ? "bg-terracotta text-on-accent" : "text-cream-secondary/70 hover:text-cream"
     );
   return (
     <div className="flex flex-wrap items-center gap-2">

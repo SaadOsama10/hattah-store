@@ -27,11 +27,11 @@ export function SoundToggle({ className }: { className?: string }) {
       aria-label={muted ? "Unmute sound" : "Mute sound"}
       suppressHydrationWarning
       className={cn(
-        "flex h-9 w-9 items-center justify-center rounded-full border border-cream/25 text-cream transition-all duration-300 hover:scale-105 hover:border-cream hover:bg-cream/5",
+        "flex h-11 w-11 items-center justify-center rounded-full text-cream transition-colors duration-300 hover:bg-cream/8",
         className
       )}
     >
-      {!mounted || !muted ? <Volume2 size={15} /> : <VolumeX size={15} />}
+      {!mounted || !muted ? <Volume2 size={18} strokeWidth={1.75} /> : <VolumeX size={18} strokeWidth={1.75} />}
     </button>
   );
 }

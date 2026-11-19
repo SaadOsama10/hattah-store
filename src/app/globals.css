@@ -1,67 +1,139 @@
 @import "tailwindcss";
 
-/* ─────────────────────────────────────────────────────────────
-   Theme tokens — the fresh, vivid light look is the brand default;
-   [data-theme="dark"] overrides the same variables so every existing
-   bg-, text-, and border- utility class in the app becomes
-   theme-aware for free. Brand accents (forest / olive / terracotta)
-   stay constant across both themes, just a little more vivid than
-   the old muted earth tones.
-   ───────────────────────────────────────────────────────────── */
-:root {
-  /* Warm greige secondary — a neutral, unisex break from flat white
-     (not the earlier blush pink, which read as too soft/feminine). */
-  --t-bg-primary: #fdfbf7;
-  --t-bg-secondary: #f0ece4;
-  --t-text-primary: #201a12;
-  --t-text-secondary: #59503f;
-  --t-glow-a: rgba(23, 143, 94, 0.14);
-  --t-glow-b: rgba(210, 87, 46, 0.12);
-  --t-glow-c: rgba(91, 127, 63, 0.12);
-  --t-shadow-ambient: rgba(120, 100, 70, 0.16);
+/* ═════════════════════════════════════════════════════════════
+   HATTAH design tokens (redesign v2)
+   ─────────────────────────────────────────────────────────────
+   Every color the UI paints comes from a --t-* variable defined
+   once per theme below, then exposed to Tailwind through @theme.
+   Components never hard-code a hex value: they use bg-surface,
+   text-cream, text-terracotta, border-line, … and the theme
+   switches underneath them.
 
-  /* Category tile ambient-photo treatment (CategoryTiles.tsx) — a
-     single warm-neutral overlay color (the light theme's own text
-     color, used here as a fixed constant regardless of site theme).
-     The category accent (--tile-accent, set inline per card) only ever
-     shows as a thin border and the icon's backdrop circle — never a
-     tint over the photo itself. */
-  --tile-overlay: #201a12;
+   Naming is kept from v1 so the admin panel (which uses the same
+   classes) keeps working untouched:
+     bg-bg-primary / bg-bg-secondary  page + alternate section bg
+     text-cream / text-cream-secondary  main + secondary text
+     forest / olive / terracotta / terracotta-deep  brand accents
+   New in v2:
+     bg-surface      cards, menus, inputs (one step above the page)
+     border-line     hairline borders
+     text-muted      tertiary text (AA on every background)
+     text-on-accent  text placed on a filled brand-color button
+
+   Contrast (WCAG): every text token ≥ 4.5:1 on bg-primary,
+   bg-secondary and surface in both themes; on-accent ≥ 5.4:1 on
+   terracotta / forest / terracotta-deep fills.
+   ═════════════════════════════════════════════════════════════ */
+:root {
+  /* Light — warm cream paper, ink-brown text. */
+  --t-bg-primary: #fbf8f2;
+  --t-bg-secondary: #f2ece1;
+  --t-surface: #ffffff;
+  --t-surface-raised: #fffdf8;
+  --t-line: rgba(30, 25, 18, 0.1);
+  --t-line-strong: rgba(30, 25, 18, 0.2);
+  --t-text-primary: #1e1912;
+  --t-text-secondary: #5b5244;
+  --t-text-muted: #6d6354;
+
+  --t-forest: #12784f;
+  --t-olive: #4d6b32;
+  --t-terracotta: #b4461f;
+  --t-terracotta-deep: #bf2a3a;
+  --t-on-accent: #ffffff;
+  /* Soft tinted washes for pills/badges (bg only, never text). */
+  --t-olive-wash: #e9eddc;
+  --t-terracotta-wash: #f7e6dc;
+
+  --t-glow-a: rgba(18, 120, 79, 0.08);
+  --t-glow-b: rgba(180, 70, 31, 0.07);
+  --t-glow-c: rgba(77, 107, 50, 0.08);
+  --t-shadow-ambient: rgba(92, 70, 40, 0.14);
+  --t-shadow-tight: rgba(92, 70, 40, 0.1);
+  /* Photo scrim — fixed warm-black in both themes (text over photos is always light). */
+  --tile-overlay: #17120c;
+  --t-header-bg: rgba(251, 248, 242, 0.78);
 }
 
-[data-theme="dark"] {
-  /* A warm, neutral charcoal sitting between "not dark enough" and
-     "pitch black" — dark and luxurious without the harshness of true
-     black. Only the faintest green whisper in the undertone; the
-     brand green mainly shows up through the glows/accents. */
-  --t-bg-primary: #10120e;
-  --t-bg-secondary: #181b15;
-  --t-text-primary: #f3ead8;
-  --t-text-secondary: #ede3d0;
-  --t-glow-a: rgba(23, 143, 94, 0.2);
-  --t-glow-b: rgba(210, 87, 46, 0.16);
-  --t-glow-c: rgba(91, 127, 63, 0.17);
-  --t-shadow-ambient: rgba(0, 0, 0, 0.55);
+/* Dark — warm espresso, never pure black; ivory text; brand accents
+   lifted so they stay readable and calm on the dark ground. */
+:root[data-theme="dark"] {
+  --t-bg-primary: #1a1613;
+  --t-bg-secondary: #221d19;
+  --t-surface: #241f1a;
+  --t-surface-raised: #2b251f;
+  --t-line: rgba(243, 235, 220, 0.1);
+  --t-line-strong: rgba(243, 235, 220, 0.2);
+  --t-text-primary: #f3ebdc;
+  --t-text-secondary: #d2c7b4;
+  --t-text-muted: #a89d8a;
+
+  --t-forest: #5ec596;
+  --t-olive: #a7c483;
+  --t-terracotta: #e8805a;
+  --t-terracotta-deep: #f17d87;
+  --t-on-accent: #1a1410;
+  --t-olive-wash: #2c3022;
+  --t-terracotta-wash: #3a261d;
+
+  --t-glow-a: rgba(94, 197, 150, 0.07);
+  --t-glow-b: rgba(232, 128, 90, 0.06);
+  --t-glow-c: rgba(167, 196, 131, 0.06);
+  --t-shadow-ambient: rgba(0, 0, 0, 0.5);
+  --t-shadow-tight: rgba(0, 0, 0, 0.35);
+  --t-header-bg: rgba(26, 22, 19, 0.78);
 }
 
 @theme {
+  /* ── Color ── */
   --color-bg-primary: var(--t-bg-primary);
   --color-bg-secondary: var(--t-bg-secondary);
+  --color-surface: var(--t-surface);
+  --color-surface-raised: var(--t-surface-raised);
+  --color-line: var(--t-line);
+  --color-line-strong: var(--t-line-strong);
   --color-cream: var(--t-text-primary);
   --color-cream-secondary: var(--t-text-secondary);
-  /* Unlike --color-cream (which flips to near-black in light mode), this
-     stays a fixed light tone — for text placed directly over a
-     deliberately-darkened photo (e.g. category tile backgrounds), which
-     is dark regardless of site theme and needs light text either way. */
-  --color-cream-fixed: #f3ead8;
-  --color-forest: #178f5e;
-  --color-olive: #5b7f3f;
-  --color-terracotta: #d2572e;
-  --color-terracotta-deep: #d6293a;
+  --color-muted: var(--t-text-muted);
+  /* Always-light text for use over a darkened photo, in either theme. */
+  --color-cream-fixed: #f6efe2;
+  --color-forest: var(--t-forest);
+  --color-olive: var(--t-olive);
+  --color-terracotta: var(--t-terracotta);
+  --color-terracotta-deep: var(--t-terracotta-deep);
+  --color-on-accent: var(--t-on-accent);
+  --color-olive-wash: var(--t-olive-wash);
+  --color-terracotta-wash: var(--t-terracotta-wash);
 
+  /* ── Type scale (fluid display sizes; body uses Tailwind defaults) ── */
+  --text-display: clamp(2.4rem, 1.4rem + 4.6vw, 4.6rem);
+  --text-display--line-height: 1.08;
+  --text-h2: clamp(1.75rem, 1.25rem + 2vw, 2.75rem);
+  --text-h2--line-height: 1.2;
+  --text-h3: clamp(1.15rem, 1rem + 0.5vw, 1.4rem);
+  --text-h3--line-height: 1.35;
+  --text-eyebrow: 0.75rem;
+  --text-eyebrow--line-height: 1rem;
+
+  /* ── Space ── */
+  --spacing-section: clamp(3.5rem, 2.5rem + 4vw, 6.5rem);
+  --spacing-gutter: clamp(1rem, 0.6rem + 1.6vw, 2rem);
+
+  /* ── Radius ── */
+  --radius-card: 1.25rem;
+  --radius-tile: 1.75rem;
+  --radius-panel: 2rem;
+
+  /* ── Shadow (theme-aware tint) ── */
   --shadow-soft: 0 24px 60px -24px var(--t-shadow-ambient);
-  --shadow-glow-terracotta: 0 10px 36px -10px rgba(210, 87, 46, 0.45);
-  --shadow-glow-forest: 0 10px 36px -10px rgba(23, 143, 94, 0.45);
+  --shadow-card: 0 1px 2px var(--t-shadow-tight), 0 8px 24px -12px var(--t-shadow-ambient);
+  --shadow-lift: 0 2px 4px var(--t-shadow-tight), 0 22px 48px -18px var(--t-shadow-ambient);
+  --shadow-glow-terracotta: 0 10px 30px -12px color-mix(in srgb, var(--t-terracotta) 55%, transparent);
+  --shadow-glow-forest: 0 10px 30px -12px color-mix(in srgb, var(--t-forest) 55%, transparent);
+
+  /* ── Motion ── */
+  --ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
 
   --animate-fade-up: fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   --animate-fade-in: fade-in 1s ease forwards;
@@ -71,6 +143,7 @@
   --animate-float: float 9s ease-in-out infinite;
   --animate-float-slow: float 13s ease-in-out infinite reverse;
   --animate-kenburns: kenburns 18s ease-in-out infinite alternate;
+  --animate-shimmer: shimmer 1.6s ease-in-out infinite;
 
   @keyframes fade-up {
     from {
@@ -132,22 +205,36 @@
       transform: scale(1.08);
     }
   }
+  @keyframes shimmer {
+    0%,
+    100% {
+      opacity: 0.55;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
 }
 
-/* Smooth cross-fade between page navigations where supported
-   (Chrome/Edge). Purely progressive enhancement — no-op elsewhere. */
+/* Motion durations (plain vars; used in custom CSS below). */
+:root {
+  --dur-fast: 160ms;
+  --dur-base: 300ms;
+  --dur-slow: 650ms;
+  /* Height of the sticky header (+ announcement bar is above it and scrolls away). */
+  --header-h: 4rem;
+}
+
 @view-transition {
   navigation: auto;
 }
 
-/* Locale-aware font utilities. Written as plain CSS (rather than
-   inside @theme) because Tailwind v4 won't generate a utility class
-   for a --font-* theme value that itself contains a var() reference —
-   these keep the original class names (font-playfair, font-inter) so
-   no component needed renaming; --font-display-current /
-   --font-body-current are set per-locale on <body> in the root layout. */
+/* Locale-aware font utilities. --font-display-current /
+   --font-body-current are set per-locale on <body> in the root layout:
+   display = Playfair Display (Latin) / Amiri (Arabic),
+   body    = Inter (Latin) / IBM Plex Sans Arabic (Arabic). */
 .font-playfair {
-  font-family: var(--font-display-current), sans-serif;
+  font-family: var(--font-display-current), serif;
 }
 .font-inter {
   font-family: var(--font-body-current), sans-serif;
@@ -156,6 +243,7 @@
 html {
   scroll-behavior: smooth;
   color-scheme: light;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html[data-theme="dark"] {
@@ -170,10 +258,13 @@ body {
     color 0.4s ease;
 }
 
-/* Subtle film-grain texture — replaces the old repeating keffiyeh
-   pattern as the ambient background texture. It's noise, not a
-   discernible repeating motif, so it reads as depth/atmosphere rather
-   than a "pattern", and needs no light/dark variant since it's neutral. */
+/* Visible keyboard focus everywhere (mouse clicks don't show it). */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-terracotta);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
 .bg-grain {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-repeat: repeat;
@@ -184,19 +275,9 @@ body {
 .divider-ornate {
   position: relative;
   height: 1px;
-  background: linear-gradient(
-    to right,
-    transparent,
-    var(--color-olive) 50%,
-    transparent
-  );
+  background: linear-gradient(to right, transparent, var(--color-olive) 50%, transparent);
 }
 
-/* Thin gradient (olive → terracotta) border for premium accents.
-   Usage: wrap an element with position:relative and class
-   "border-gradient" — the ring fades in on hover by default via
-   the .group-hover variant below, or stays visible with
-   "border-gradient-visible". */
 .border-gradient {
   position: relative;
 }
@@ -206,12 +287,7 @@ body {
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(
-    135deg,
-    var(--color-olive),
-    var(--color-terracotta) 50%,
-    var(--color-olive)
-  );
+  background: linear-gradient(135deg, var(--color-olive), var(--color-terracotta) 50%, var(--color-olive));
   -webkit-mask:
     linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
@@ -231,10 +307,9 @@ body {
 
 ::selection {
   background: var(--color-terracotta);
-  color: #fdfbf7;
+  color: var(--color-on-accent);
 }
 
-/* Custom scrollbar for a refined feel */
 ::-webkit-scrollbar {
   width: 10px;
 }
@@ -242,7 +317,7 @@ body {
   background: var(--color-bg-primary);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-olive);
+  background: color-mix(in srgb, var(--color-olive) 70%, transparent);
   border-radius: 999px;
 }
 
@@ -254,6 +329,45 @@ body {
   display: none;
 }
 
+/* ── Scroll reveal (see components/ui/Reveal.tsx) ──
+   Only hidden when JS is running (html.js is set by the theme init
+   script), so content is never lost without JS. */
+html.js .reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity var(--dur-slow) var(--ease-soft),
+    transform var(--dur-slow) var(--ease-soft);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+html.js .reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Skeleton block */
+.skeleton {
+  background: color-mix(in srgb, var(--color-cream) 8%, transparent);
+  animation: var(--animate-shimmer);
+}
+
+/* Horizontal product rails: momentum scroll + snap, hidden bar. */
+.rail {
+  display: grid;
+  grid-auto-flow: column;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--spacing-gutter);
+  scrollbar-width: none;
+}
+.rail::-webkit-scrollbar {
+  display: none;
+}
+.rail > * {
+  scroll-snap-align: start;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -262,5 +376,9 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  html.js .reveal {
+    opacity: 1;
+    transform: none;
   }
 }

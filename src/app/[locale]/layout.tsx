@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Sora, Inter } from "next/font/google";
+import { Playfair_Display, Inter } from "next/font/google";
 import localFont from "next/font/local";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -9,38 +9,33 @@ import { SITE_URL } from "@/lib/site";
 import { THEME_INIT_SCRIPT, ThemeSync } from "@/components/ui/ThemeToggle";
 import "../globals.css";
 
-// Display / heading font — bold, modern, geometric. Used for both
-// languages via the --font-playfair CSS variable, which resolves to
-// Sora (Latin) or Noto Kufi Arabic (Arabic) — see globals.css.
-const sora = Sora({
-  subsets: ["latin"],
-  weight: ["700", "800"],
-  variable: "--font-sora",
+// Display / heading fonts — the brand's identity faces (same as the logo and the
+// social-media templates): Playfair Display for Latin, Amiri for Arabic.
+const playfair = Playfair_Display({
+  subsets: ["latin", "latin-ext"],
+  weight: ["600", "700"],
+  variable: "--font-playfair-latin",
   display: "swap",
 });
 
-// Arabic fonts are self-hosted subsets (Arabic block + basic Latin/digits/punctuation), ~25 KB per weight
-// instead of the full 124 KB Google file. Only the weights painted above the fold are preloaded.
-const notoKufiArabic = localFont({
-  src: [
-    { path: "../fonts/kufi-ar-700.woff2", weight: "700", style: "normal" },
-    { path: "../fonts/kufi-ar-800.woff2", weight: "800", style: "normal" },
-  ],
-  variable: "--font-noto-kufi-arabic",
+// Amiri Bold, self-hosted subset (Arabic letters/marks/digits + basic punctuation, the
+// shaping features Arabic needs; ornamental alternates dropped) — 40 KB vs 100 KB for Google's file.
+const amiri = localFont({
+  src: [{ path: "../fonts/amiri-ar-700.woff2", weight: "700", style: "normal" }],
+  variable: "--font-amiri",
   display: "swap",
-  adjustFontFallback: "Arial",
+  adjustFontFallback: "Times New Roman",
 });
 
-// Body / UI font — clean and modern. Used via the --font-inter CSS
-// variable, which resolves to Inter (Latin) or IBM Plex Sans Arabic
-// (Arabic).
+// Body / UI font — clean and modern: Inter (Latin) or IBM Plex Sans Arabic (Arabic).
 const inter = Inter({
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   weight: ["400", "600"],
   variable: "--font-inter-latin",
   display: "swap",
 });
 
+// Self-hosted subset (Arabic block + basic Latin/digits/punctuation), ~25 KB per weight.
 const ibmPlexSansArabic = localFont({
   src: [
     { path: "../fonts/plex-ar-400.woff2", weight: "400", style: "normal" },
@@ -104,12 +99,12 @@ export default async function LocaleLayout({
       <body
         // Only the active locale's font families are applied, so /en and /tr never download (or preload)
         // the Arabic fonts and /ar never downloads the Latin ones.
-        className={`${isArabic ? `${notoKufiArabic.variable} ${ibmPlexSansArabic.variable}` : `${sora.variable} ${inter.variable}`} bg-bg-primary text-cream antialiased font-inter`}
+        className={`${isArabic ? `${amiri.variable} ${ibmPlexSansArabic.variable}` : `${playfair.variable} ${inter.variable}`} bg-bg-primary text-cream antialiased font-inter`}
         style={
           {
             "--font-display-current": isArabic
-              ? "var(--font-noto-kufi-arabic)"
-              : "var(--font-sora)",
+              ? "var(--font-amiri)"
+              : "var(--font-playfair-latin)",
             "--font-body-current": isArabic
               ? "var(--font-ibm-plex-sans-arabic)"
               : "var(--font-inter-latin)",

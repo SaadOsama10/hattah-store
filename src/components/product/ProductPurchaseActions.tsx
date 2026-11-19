@@ -188,7 +188,7 @@ export function ProductPurchaseActions({
                 className={cn(
                   "rounded-full border px-4 py-2 font-inter text-sm transition-all duration-300",
                   selectedSize === size
-                    ? "border-terracotta bg-terracotta text-cream shadow-glow-terracotta"
+                    ? "border-terracotta bg-terracotta text-on-accent shadow-glow-terracotta"
                     : "border-cream/20 text-cream-secondary hover:border-cream/50"
                 )}
               >
@@ -217,7 +217,7 @@ export function ProductPurchaseActions({
                 className={cn(
                   "rounded-full border px-4 py-2 font-inter text-sm transition-all duration-300",
                   selectedColor === color
-                    ? "border-terracotta bg-terracotta text-cream shadow-glow-terracotta"
+                    ? "border-terracotta bg-terracotta text-on-accent shadow-glow-terracotta"
                     : "border-cream/20 text-cream-secondary hover:border-cream/50"
                 )}
               >
@@ -246,7 +246,7 @@ export function ProductPurchaseActions({
                 className={cn(
                   "rounded-full border px-4 py-2 font-inter text-sm transition-all duration-300",
                   selectedQuantity === q.label
-                    ? "border-terracotta bg-terracotta text-cream shadow-glow-terracotta"
+                    ? "border-terracotta bg-terracotta text-on-accent shadow-glow-terracotta"
                     : "border-cream/20 text-cream-secondary hover:border-cream/50"
                 )}
               >

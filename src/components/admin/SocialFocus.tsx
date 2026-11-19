@@ -114,12 +114,12 @@ export function SocialFocus({ rows, categories }: { rows: SocialFocusRow[]; cate
       "rounded-full px-3 py-1 font-inter text-xs transition-colors disabled:opacity-60",
       active
         ? w === 0
-          ? "bg-terracotta-deep text-cream"
+          ? "bg-terracotta-deep text-on-accent"
           : w === 0.5
             ? "bg-amber-700/70 text-cream"
             : w === 1
             ? "bg-cream/25 text-cream"
-            : "bg-forest text-cream"
+            : "bg-forest text-on-accent"
         : "border border-cream/20 text-cream-secondary/80 hover:text-cream",
     );
 

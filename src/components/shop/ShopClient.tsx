@@ -107,7 +107,7 @@ export function ShopClient({
               className={cn(
                 "rounded-full border px-4 py-2 font-inter text-xs uppercase tracking-widest transition-all duration-300 hover:-translate-y-0.5",
                 activeParent === "all"
-                  ? "border-terracotta bg-terracotta text-cream shadow-glow-terracotta"
+                  ? "border-terracotta bg-terracotta text-on-accent shadow-glow-terracotta"
                   : "border-cream/20 text-cream-secondary hover:border-cream/50"
               )}
             >
@@ -121,7 +121,7 @@ export function ShopClient({
                 className={cn(
                   "rounded-full border px-4 py-2 font-inter text-xs uppercase tracking-widest transition-all duration-300 hover:-translate-y-0.5",
                   activeParent === cat.key
-                    ? "border-terracotta bg-terracotta text-cream shadow-glow-terracotta"
+                    ? "border-terracotta bg-terracotta text-on-accent shadow-glow-terracotta"
                     : "border-cream/20 text-cream-secondary hover:border-cream/50"
                 )}
               >
