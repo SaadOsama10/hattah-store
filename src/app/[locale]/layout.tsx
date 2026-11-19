@@ -83,7 +83,13 @@ export default async function LocaleLayout({
             <link rel="preload" href="/fonts/plex-ar-400.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
           </>
         ) : (
-          <link rel="preload" href="/fonts/playfair-700-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+          <>
+            <link rel="preload" href="/fonts/playfair-700-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+            {/* Turkish headlines need ğ ş ı İ from the Latin-extended file */}
+            {locale === "tr" && (
+              <link rel="preload" href="/fonts/playfair-700-latin-ext.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+            )}
+          </>
         )}
       </head>
       <body
