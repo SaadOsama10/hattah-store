@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Band } from "@/components/ui/Band";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { KufiyaNetDraw, LogoRing, Seal } from "@/components/ui/BrandArt";
+import { KufiyaNetDraw, LogoRing } from "@/components/ui/BrandArt";
 import { InstagramIcon, FacebookIcon } from "@/components/ui/SocialIcons";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { BUSINESS } from "@/lib/site";
@@ -132,16 +132,14 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
         </div>
       </section>
 
-      {/* ── Who we are ── */}
+      {/* ── Who we are: one centred reading column ── */}
       <Band tone="plain" labelledBy="about-who" className="py-section">
-        <div className="mx-auto grid max-w-7xl items-center gap-12 px-gutter lg:grid-cols-[1.2fr_1fr] lg:gap-20">
+        <div className="mx-auto max-w-[45rem] px-gutter text-center">
           <Reveal blur>
-            <SectionHeading id="about-who" eyebrow="HATTAH · حَطّة" title={t("whoTitle")} className="!mb-6" />
-            <p className="max-w-2xl font-inter text-lg leading-loose text-cream-secondary">{t("who")}</p>
+            <SectionHeading id="about-who" eyebrow="HATTAH · حَطّة" title={t("whoTitle")} align="center" className="!mb-7" />
           </Reveal>
-          <Reveal delay={120} className="relative mx-auto aspect-square w-full max-w-xs">
-            <div aria-hidden className="absolute inset-[10%] rounded-full bg-[radial-gradient(circle,var(--t-gold-glow),transparent_65%)]" />
-            <Seal id="about-seal" className="spin-slow relative h-full w-full" />
+          <Reveal delay={80}>
+            <p className="font-inter text-lg leading-loose text-cream-secondary">{t("who")}</p>
           </Reveal>
         </div>
       </Band>

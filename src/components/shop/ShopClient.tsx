@@ -215,6 +215,8 @@ export function ShopClient({
 
       {/* ── Results ── */}
       <div className="mx-auto max-w-7xl px-gutter pb-section pt-5">
+        {/* keeps the heading outline h1 → h2 → product h3 */}
+        <h2 className="sr-only">{t("title")}</h2>
         <p className="mb-4 font-inter text-sm text-muted" aria-live="polite">
           {t("count", { count: filtered.length })}
         </p>

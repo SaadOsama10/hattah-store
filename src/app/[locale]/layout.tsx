@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
+import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -11,18 +11,6 @@ import "../globals.css";
 
 // Display / heading fonts — the brand's identity faces (same as the logo and the
 // social-media templates): Playfair Display for Latin, Amiri for Arabic.
-// next/font preloads every font declared here on every page, whatever the language. To keep
-// the critical path light only the Arabic faces (default locale) are preloaded; the Latin
-// faces load on demand with metric-matched fallbacks (no layout shift).
-const playfair = Playfair_Display({
-  // latin-ext covers Turkish (ğ ş ı İ) in headings.
-  subsets: ["latin", "latin-ext"],
-  weight: ["700"],
-  variable: "--font-playfair-latin",
-  display: "swap",
-  preload: false,
-});
-
 // Amiri Bold, self-hosted subset (Arabic letters/marks/digits + basic punctuation, the
 // shaping features Arabic needs; ornamental alternates dropped) — 40 KB vs 100 KB for Google's file.
 const amiri = localFont({
@@ -30,16 +18,6 @@ const amiri = localFont({
   variable: "--font-amiri",
   display: "swap",
   adjustFontFallback: "Times New Roman",
-});
-
-// The "HATTAH" wordmark lettering (hero, marquee) is Playfair on every locale; on /ar it isn't
-// preloaded (Arabic pages only use it for those few Latin letters, fetched on demand).
-const playfairBrand = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["700"],
-  variable: "--font-brand",
-  display: "swap",
-  preload: false,
 });
 
 // Body / UI font — clean and modern: Inter (Latin) or IBM Plex Sans Arabic (Arabic).
@@ -117,11 +95,16 @@ export default async function LocaleLayout({
         {/* Product photos (incl. the homepage hero, the usual LCP image) come from Supabase Storage:
             open that connection while the HTML is still parsing. */}
         {process.env.NEXT_PUBLIC_SUPABASE_URL && <link rel="preconnect" href={process.env.NEXT_PUBLIC_SUPABASE_URL} />}
+        {/* Playfair Display (self-hosted, see globals.css) is the headline font on /en and /tr:
+            preloaded there only, so Arabic pages don't pay for it. */}
+        {!isArabic && (
+          <link rel="preload" href="/fonts/playfair-700-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        )}
       </head>
       <body
         // Only the active locale's font families are applied, so /en and /tr never download (or preload)
         // the Arabic fonts and /ar never downloads the Latin ones.
-        className={`${isArabic ? `${amiri.variable} ${ibmPlexSansArabic.variable} ${playfairBrand.variable}` : `${playfair.variable} ${inter.variable} ${playfairBrand.variable}`} bg-bg-primary text-cream antialiased font-inter`}
+        className={`${isArabic ? `${amiri.variable} ${ibmPlexSansArabic.variable}` : inter.variable} bg-bg-primary text-cream antialiased font-inter`}
         style={
           {
             "--font-display-current": isArabic
