@@ -148,31 +148,31 @@ export function ProductPurchaseActions({
   return (
     <div className="space-y-5">
       {priceOnRequest ? (
-        <p className="inline-block rounded-full border border-terracotta/40 bg-terracotta/10 px-4 py-1.5 font-inter text-base font-semibold text-terracotta">
+        <p className="inline-flex rounded-full bg-terracotta-wash px-4 py-2 font-inter text-base font-semibold text-terracotta">
           {t("priceOnRequest")}
         </p>
       ) : isOnSale ? (
         <div className="flex flex-wrap items-baseline gap-3">
-          <p className="font-inter text-lg text-cream-secondary/50 line-through">
+          <p className="font-inter text-lg text-muted line-through">
             {currency} {product.price.toLocaleString()}
           </p>
-          <p className="font-inter text-2xl font-semibold text-terracotta">
+          <p className="font-inter text-3xl font-bold text-terracotta" aria-live="polite">
             {currency} {displayPrice.toLocaleString()}
           </p>
-          <span className="rounded-full bg-terracotta/15 px-3 py-1 font-inter text-xs font-bold uppercase tracking-widest text-terracotta">
+          <span className="rounded-full bg-terracotta px-3 py-1 font-inter text-xs font-bold text-on-accent">
             {t("discountBadge", { percent: discountPercent(product.price, displayPrice) })}
           </span>
         </div>
       ) : (
-        <p className="font-inter text-2xl text-cream-secondary">
-          {showStartingFrom && <span className="me-1.5 text-sm text-cream-secondary/70">{t("startingFrom")}</span>}
+        <p className="font-inter text-3xl font-bold text-cream" aria-live="polite">
+          {showStartingFrom && <span className="me-1.5 text-base font-normal text-muted">{t("startingFrom")}</span>}
           {currency} {displayPrice.toLocaleString()}
         </p>
       )}
 
       {hasSizes && (
         <div>
-          <p className="mb-2 font-inter text-xs uppercase tracking-widest text-cream-secondary/60">
+          <p className="mb-2.5 font-inter text-sm font-semibold text-cream">
             {t("selectSize")}
           </p>
           <div className="flex flex-wrap gap-2">
@@ -186,10 +186,10 @@ export function ProductPurchaseActions({
                   setError(null);
                 }}
                 className={cn(
-                  "rounded-full border px-4 py-2 font-inter text-sm transition-all duration-300",
+                  "min-h-11 rounded-full px-4 py-2 font-inter text-sm transition-colors duration-200",
                   selectedSize === size
-                    ? "border-terracotta bg-terracotta text-on-accent shadow-glow-terracotta"
-                    : "border-cream/20 text-cream-secondary hover:border-cream/50"
+                    ? "bg-cream font-semibold text-bg-primary"
+                    : "bg-surface text-cream ring-1 ring-line hover:ring-line-strong"
                 )}
               >
                 {size}
@@ -201,7 +201,7 @@ export function ProductPurchaseActions({
 
       {hasColors && (
         <div>
-          <p className="mb-2 font-inter text-xs uppercase tracking-widest text-cream-secondary/60">
+          <p className="mb-2.5 font-inter text-sm font-semibold text-cream">
             {t("selectColor")}
           </p>
           <div className="flex flex-wrap gap-2">
@@ -215,10 +215,10 @@ export function ProductPurchaseActions({
                   setError(null);
                 }}
                 className={cn(
-                  "rounded-full border px-4 py-2 font-inter text-sm transition-all duration-300",
+                  "min-h-11 rounded-full px-4 py-2 font-inter text-sm transition-colors duration-200",
                   selectedColor === color
-                    ? "border-terracotta bg-terracotta text-on-accent shadow-glow-terracotta"
-                    : "border-cream/20 text-cream-secondary hover:border-cream/50"
+                    ? "bg-cream font-semibold text-bg-primary"
+                    : "bg-surface text-cream ring-1 ring-line hover:ring-line-strong"
                 )}
               >
                 {color}
@@ -230,7 +230,7 @@ export function ProductPurchaseActions({
 
       {hasQuantities && (
         <div>
-          <p className="mb-2 font-inter text-xs uppercase tracking-widest text-cream-secondary/60">
+          <p className="mb-2.5 font-inter text-sm font-semibold text-cream">
             {optionLabel ? t("selectOption", { label: optionLabel }) : t("selectQuantity")}
           </p>
           <div className="flex flex-wrap gap-2">
@@ -244,10 +244,10 @@ export function ProductPurchaseActions({
                   setError(null);
                 }}
                 className={cn(
-                  "rounded-full border px-4 py-2 font-inter text-sm transition-all duration-300",
+                  "min-h-11 rounded-full px-4 py-2 font-inter text-sm transition-colors duration-200",
                   selectedQuantity === q.label
-                    ? "border-terracotta bg-terracotta text-on-accent shadow-glow-terracotta"
-                    : "border-cream/20 text-cream-secondary hover:border-cream/50"
+                    ? "bg-cream font-semibold text-bg-primary"
+                    : "bg-surface text-cream ring-1 ring-line hover:ring-line-strong"
                 )}
               >
                 {priceOnRequest || q.price <= 0 ? q.label : `${q.label} — ${currency} ${q.price.toLocaleString()}`}
@@ -257,16 +257,20 @@ export function ProductPurchaseActions({
         </div>
       )}
 
-      {error && <p className="font-inter text-sm text-terracotta-deep">{error}</p>}
+      {error && (
+        <p role="alert" className="font-inter text-sm font-semibold text-terracotta-deep">
+          {error}
+        </p>
+      )}
 
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <div className="flex flex-col gap-2.5">
         <Button
           href={whatsappHref}
           target="_blank"
           rel="noopener noreferrer"
           variant="whatsapp"
           size="lg"
-          className="w-full sm:w-auto"
+          className="w-full"
           onClick={handleWhatsAppClick}
         >
           <MessageCircle size={20} />
@@ -277,7 +281,7 @@ export function ProductPurchaseActions({
             variant="secondary"
             size="lg"
             onClick={handleAddToCart}
-            className="w-full sm:w-auto"
+            className="w-full"
           >
             {justAdded ? <Check size={20} /> : <ShoppingBag size={20} />}
             {justAdded ? tCart("added") : tCart("addToCart")}

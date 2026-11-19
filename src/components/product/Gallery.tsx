@@ -1,111 +1,208 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { m, AnimatePresence, type PanInfo } from "framer-motion";
-import { ImageOff, ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { ChevronLeft, ChevronRight, ImageOff, Maximize2, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 
+/**
+ * Product gallery: a swipeable main image (native scroll-snap — smooth on
+ * phones, no gesture library), thumbnails, arrow buttons on desktop, and
+ * a full-screen zoom (lightbox) with swipe, arrows, ← → keys and Esc.
+ * Alt text: the first image uses `alt`, the others "alt - 2", "alt - 3" …
+ */
 export function Gallery({ images, alt }: { images: string[]; alt: string }) {
+  const t = useTranslations("product");
   const [index, setIndex] = useState(0);
-  // Adapts the frame to each image's real proportions instead of forcing a
-  // fixed square — starts at 1 (square) until the current image's actual
-  // dimensions are known, then keeps the previous ratio during a switch
-  // rather than flashing back to square while the next one loads.
-  const [ratio, setRatio] = useState(1);
-  const hasImages = images.length > 0;
+  const [zoom, setZoom] = useState(false);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const zoomTrackRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const openerRef = useRef<HTMLButtonElement>(null);
+  const n = images.length;
+  const altFor = (i: number) => (i > 0 ? `${alt} - ${i + 1}` : alt);
 
-  function go(delta: number) {
-    if (!hasImages) return;
-    setIndex((i) => (i + delta + images.length) % images.length);
+  const scrollTo = useCallback((track: HTMLDivElement | null, i: number, smooth = true) => {
+    if (!track) return;
+    const slide = track.children[i] as HTMLElement | undefined;
+    if (!slide) return;
+    track.scrollTo({ left: slide.offsetLeft - track.offsetLeft, behavior: smooth ? "smooth" : "auto" });
+  }, []);
+
+  const go = useCallback(
+    (i: number) => {
+      const next = (i + n) % n;
+      setIndex(next);
+      scrollTo(trackRef.current, next);
+      scrollTo(zoomTrackRef.current, next);
+    },
+    [n, scrollTo]
+  );
+
+  // Keep `index` in sync with swipes.
+  const onScroll = (track: HTMLDivElement | null) => {
+    if (!track) return;
+    const w = track.clientWidth;
+    if (!w) return;
+    const i = Math.round(Math.abs(track.scrollLeft) / w);
+    if (i !== index && i >= 0 && i < n) setIndex(i);
+  };
+
+  useEffect(() => {
+    if (!zoom) return;
+    scrollTo(zoomTrackRef.current, index, false);
+    closeRef.current?.focus();
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const rtl = document.documentElement.dir === "rtl";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setZoom(false);
+      if (e.key === "ArrowRight") go(index + (rtl ? -1 : 1));
+      if (e.key === "ArrowLeft") go(index + (rtl ? 1 : -1));
+    };
+    document.addEventListener("keydown", onKey);
+    const opener = openerRef.current;
+    return () => {
+      document.body.style.overflow = prev;
+      document.removeEventListener("keydown", onKey);
+      opener?.focus();
+    };
+    // index intentionally included so arrow keys use the current slide
+  }, [zoom, index, go, scrollTo]);
+
+  if (n === 0) {
+    return (
+      <div className="flex aspect-[4/5] items-center justify-center rounded-panel bg-surface text-muted ring-1 ring-line">
+        <ImageOff size={44} strokeWidth={1.25} />
+      </div>
+    );
   }
 
-  function handleDragEnd(_: unknown, info: PanInfo) {
-    const threshold = 60;
-    const isRtl = document.documentElement.dir === "rtl";
-    if (info.offset.x < -threshold) go(isRtl ? -1 : 1);
-    else if (info.offset.x > threshold) go(isRtl ? 1 : -1);
-  }
+  const arrowCls =
+    "absolute top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-surface/90 text-cream shadow-card ring-1 ring-line backdrop-blur-sm transition-colors hover:text-terracotta sm:flex";
 
   return (
-    <div className="flex flex-col gap-4">
-      <div
-        className="relative w-full max-h-[75vh] overflow-hidden rounded-2xl bg-bg-secondary transition-[aspect-ratio] duration-300"
-        style={{ aspectRatio: ratio }}
-      >
-        {hasImages ? (
-          <AnimatePresence mode="wait" initial={false}>
-            <m.div
-              key={index}
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.6}
-              onDragEnd={handleDragEnd}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute inset-0 cursor-grab active:cursor-grabbing"
+    <div className="flex flex-col gap-3">
+      <div className="relative overflow-hidden rounded-panel bg-surface ring-1 ring-line">
+        <div
+          ref={trackRef}
+          onScroll={() => onScroll(trackRef.current)}
+          className="scrollbar-none flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain"
+          aria-roledescription="carousel"
+          aria-label={t("gallery")}
+        >
+          {images.map((src, i) => (
+            <div
+              key={src + i}
+              className="relative aspect-[4/5] w-full shrink-0 snap-center"
+              role="group"
+              aria-roledescription="slide"
+              aria-label={t("imageOf", { n: i + 1, total: n })}
             >
               <Image
-                src={images[index]}
-                alt={index > 0 ? `${alt} - ${index + 1}` : alt}
+                src={src}
+                alt={altFor(i)}
                 fill
                 sizes="(min-width: 1024px) 50vw, 100vw"
-                className="pointer-events-none select-none object-contain"
-                priority
-                onLoad={(e) => {
-                  const img = e.currentTarget;
-                  if (img.naturalWidth && img.naturalHeight) {
-                    setRatio(img.naturalWidth / img.naturalHeight);
-                  }
-                }}
+                priority={i === 0}
+                fetchPriority={i === 0 ? "high" : "auto"}
+                className="select-none object-contain"
+                draggable={false}
               />
-            </m.div>
-          </AnimatePresence>
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-cream/20">
-            <ImageOff size={48} />
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
 
-        {images.length > 1 && (
+        <button
+          ref={openerRef}
+          type="button"
+          onClick={() => setZoom(true)}
+          aria-label={t("zoom")}
+          className="absolute end-3 top-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-surface/90 text-cream shadow-card ring-1 ring-line backdrop-blur-sm transition-colors hover:text-terracotta"
+        >
+          <Maximize2 size={18} />
+        </button>
+
+        {n > 1 && (
           <>
-            <button
-              type="button"
-              onClick={() => go(-1)}
-              aria-label="Previous image"
-              className="absolute start-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-bg-primary/60 text-cream backdrop-blur-sm transition-colors hover:bg-bg-primary/90"
-            >
-              <ChevronLeft size={18} className="rtl:-scale-x-100" />
+            <button type="button" onClick={() => go(index - 1)} aria-label={t("prevImage")} className={cn(arrowCls, "start-3")}>
+              <ChevronLeft size={20} className="rtl:-scale-x-100" />
             </button>
-            <button
-              type="button"
-              onClick={() => go(1)}
-              aria-label="Next image"
-              className="absolute end-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-bg-primary/60 text-cream backdrop-blur-sm transition-colors hover:bg-bg-primary/90"
-            >
-              <ChevronRight size={18} className="rtl:-scale-x-100" />
+            <button type="button" onClick={() => go(index + 1)} aria-label={t("nextImage")} className={cn(arrowCls, "end-3")}>
+              <ChevronRight size={20} className="rtl:-scale-x-100" />
             </button>
+            {/* dots (phones) */}
+            <div className="absolute inset-x-0 bottom-3 flex justify-center gap-1.5 sm:hidden" aria-hidden>
+              {images.map((_, i) => (
+                <span key={i} className={cn("h-1.5 rounded-full transition-all", i === index ? "w-5 bg-terracotta" : "w-1.5 bg-cream/35")} />
+              ))}
+            </div>
           </>
         )}
       </div>
 
-      {images.length > 1 && (
-        <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
-          {images.map((img, i) => (
+      {n > 1 && (
+        <div className="scrollbar-none flex gap-2.5 overflow-x-auto pb-1">
+          {images.map((src, i) => (
             <button
-              key={img + i}
+              key={src + i}
               type="button"
-              onClick={() => setIndex(i)}
+              onClick={() => go(i)}
+              aria-label={t("imageOf", { n: i + 1, total: n })}
+              aria-current={i === index ? "true" : undefined}
               className={cn(
-                "relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border-2 transition-colors duration-300",
-                i === index ? "border-terracotta" : "border-transparent opacity-60 hover:opacity-100"
+                "relative h-[72px] w-[60px] shrink-0 overflow-hidden rounded-xl bg-surface ring-2 transition-all duration-300 sm:h-20 sm:w-16",
+                i === index ? "ring-terracotta" : "opacity-70 ring-transparent hover:opacity-100"
               )}
             >
-              <Image src={img} alt={i > 0 ? `${alt} - ${i + 1}` : alt} fill sizes="80px" className="object-cover" />
+              <Image src={src} alt="" fill sizes="64px" className="object-cover" />
             </button>
           ))}
+        </div>
+      )}
+
+      {/* ── Lightbox ── */}
+      {zoom && (
+        <div role="dialog" aria-modal="true" aria-label={t("gallery")} className="fixed inset-0 z-[70] flex flex-col bg-[var(--tile-overlay)]/95 backdrop-blur-sm">
+          <div className="flex h-16 items-center justify-between px-3 text-cream-fixed">
+            <p className="px-2 font-inter text-sm" aria-live="polite">
+              {t("imageOf", { n: index + 1, total: n })}
+            </p>
+            <button
+              ref={closeRef}
+              type="button"
+              onClick={() => setZoom(false)}
+              aria-label={t("closeZoom")}
+              className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-white/10"
+            >
+              <X size={24} />
+            </button>
+          </div>
+          <div className="relative min-h-0 flex-1">
+            <div
+              ref={zoomTrackRef}
+              onScroll={() => onScroll(zoomTrackRef.current)}
+              className="scrollbar-none flex h-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain"
+            >
+              {images.map((src, i) => (
+                <div key={src + i} className="relative h-full w-full shrink-0 snap-center">
+                  <Image src={src} alt={altFor(i)} fill sizes="100vw" className="object-contain" draggable={false} />
+                </div>
+              ))}
+            </div>
+            {n > 1 && (
+              <>
+                <button type="button" onClick={() => go(index - 1)} aria-label={t("prevImage")} className={cn(arrowCls, "start-4 !flex")}>
+                  <ChevronLeft size={20} className="rtl:-scale-x-100" />
+                </button>
+                <button type="button" onClick={() => go(index + 1)} aria-label={t("nextImage")} className={cn(arrowCls, "end-4 !flex")}>
+                  <ChevronRight size={20} className="rtl:-scale-x-100" />
+                </button>
+              </>
+            )}
+          </div>
+          <div className="h-6" />
         </div>
       )}
     </div>

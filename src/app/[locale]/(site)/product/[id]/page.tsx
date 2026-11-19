@@ -5,6 +5,11 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Gallery } from "@/components/product/Gallery";
 import { ProductPurchaseActions } from "@/components/product/ProductPurchaseActions";
 import { RelatedProducts } from "@/components/product/RelatedProducts";
+import { DeliveryInfo } from "@/components/product/DeliveryInfo";
+import { KufiyaDivider } from "@/components/ui/KufiyaDivider";
+import { getBestSellerRanking } from "@/lib/supabase/bestsellers";
+import { getDescendantKeys } from "@/lib/categories";
+import { RAIL_LIMIT, byRank } from "@/lib/storefront";
 import { Link } from "@/i18n/navigation";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { isUuid, productSlug, shortIdFromSlug } from "@/lib/slug";
@@ -22,7 +27,7 @@ import {
 import {
   getProductById,
   getProductByShortId,
-  getRelatedProducts,
+  getAllProducts,
   getCategories,
 } from "@/lib/supabase/queries";
 import { localizeProduct, localizeCategory, type Locale } from "@/lib/supabase/types";
@@ -75,13 +80,16 @@ export default async function ProductDetailPage({
   const canonical = productSlug(product);
   if (id !== canonical) permanentRedirect(`/${locale}/product/${canonical}`);
 
-  const [related, categories] = await Promise.all([
-    getRelatedProducts(product.category, product.id, 4),
-    getCategories(),
-  ]);
+  const [allProducts, categories, ranking] = await Promise.all([getAllProducts(), getCategories(), getBestSellerRanking()]);
+  // Similar products: same category first, then the rest of the parent category.
+  const sameCat = allProducts.filter((p) => p.category === product.category && p.id !== product.id);
+  const parentKey = categories.find((c) => c.key === product.category)?.parent_key;
+  const siblings = parentKey
+    ? allProducts.filter((p) => p.id !== product.id && p.category !== product.category && getDescendantKeys(categories, parentKey).includes(p.category))
+    : [];
+  const related = [...byRank(sameCat, ranking), ...byRank(siblings, ranking)].slice(0, RAIL_LIMIT);
 
   const t = await getTranslations("product");
-  const tCommon = await getTranslations("common");
   const localized = localizeProduct(product, locale as Locale);
   const categoryRow = categories.find((c) => c.key === product.category);
   const categoryLabel = categoryRow ? localizeCategory(categoryRow, locale as Locale) : "";
@@ -94,7 +102,7 @@ export default async function ProductDetailPage({
   );
 
   return (
-    <div className="pt-6 sm:pt-8">
+    <div className="pt-4 sm:pt-6">
       <JsonLd
         data={[
           productJsonLd(product, locale as Locale, categoryRow),
@@ -106,72 +114,84 @@ export default async function ProductDetailPage({
           ]),
         ]}
       />
-      <div className="mx-auto max-w-7xl px-5 sm:px-8">
-        <nav aria-label="Breadcrumb" className="mb-4 flex flex-wrap items-center gap-1.5 font-inter text-xs text-cream-secondary/70">
-          <Link href="/" className="hover:text-terracotta">{tSeo("home")}</Link>
-          <span aria-hidden>/</span>
-          <Link href="/shop" className="hover:text-terracotta">{tSeo("shop")}</Link>
-          {categoryRow && (
-            <>
-              <span aria-hidden>/</span>
-              <Link href={categoryPath(categoryRow.key) as "/category/[key]"} className="hover:text-terracotta">{categoryLabel}</Link>
-            </>
-          )}
+      <div className="mx-auto max-w-7xl px-gutter">
+        <nav aria-label="Breadcrumb" className="mb-3">
+          <ol className="flex flex-wrap items-center gap-1 font-inter text-sm text-muted">
+            <li>
+              <Link href="/" className="inline-flex min-h-9 items-center hover:text-terracotta">{tSeo("home")}</Link>
+            </li>
+            <li aria-hidden><ChevronLeft size={14} className="ltr:rotate-180" /></li>
+            <li>
+              <Link href="/shop" className="inline-flex min-h-9 items-center hover:text-terracotta">{tSeo("shop")}</Link>
+            </li>
+            {categoryRow && (
+              <>
+                <li aria-hidden><ChevronLeft size={14} className="ltr:rotate-180" /></li>
+                <li>
+                  <Link href={categoryPath(categoryRow.key) as "/category/[key]"} className="inline-flex min-h-9 items-center hover:text-terracotta">
+                    {categoryLabel}
+                  </Link>
+                </li>
+              </>
+            )}
+            <li aria-hidden className="hidden sm:block"><ChevronLeft size={14} className="ltr:rotate-180" /></li>
+            <li aria-current="page" className="hidden max-w-[16rem] truncate text-cream-secondary sm:block">{localized.name}</li>
+          </ol>
         </nav>
-        <Link
-          href="/shop"
-          className="mb-8 inline-flex items-center gap-2 font-inter text-xs uppercase tracking-widest text-cream-secondary/70 transition-colors hover:text-terracotta"
-        >
-          <ChevronLeft size={14} className="rtl:-scale-x-100" />
-          {tCommon("backToShop")}
-        </Link>
 
-        <div className="grid grid-cols-1 gap-10 pb-20 lg:grid-cols-2 lg:gap-16">
-          <Gallery images={localized.images} alt={imageAlt} />
-
-          <div className="flex flex-col justify-center">
-            {categoryLabel && (
-              <span className="mb-3 font-inter text-xs uppercase tracking-[0.25em] text-terracotta">
-                {categoryLabel}
-              </span>
-            )}
-            <h1 className="font-playfair text-3xl font-bold leading-tight text-cream sm:text-4xl">
-              {localized.name}
-            </h1>
-
-            <div className="my-8 h-px w-full max-w-xs bg-gradient-to-r from-olive/50 to-transparent" />
-
-            <ProductPurchaseActions
-              product={{
-                id: localized.id,
-                name: localized.name,
-                price: localized.price,
-                salePrice: localized.salePrice,
-                priceOnRequest: localized.priceOnRequest,
-                url: absoluteUrl(pagePath(locale, productPath(product))),
-                image: localized.images[0],
-              }}
-              sizes={localized.sizes}
-              colors={localized.colors}
-              quantities={localized.quantities}
-              optionLabel={localized.optionLabel}
-            />
-
-            {localized.description && (
-              <div className="mt-8">
-                <h2 className="mb-2 font-inter text-xs uppercase tracking-widest text-cream-secondary/50">
-                  {t("description")}
-                </h2>
-                <p className="whitespace-pre-line font-inter leading-loose text-cream-secondary/90">
-                  {localized.description}
-                </p>
-              </div>
-            )}
+        <div className="grid grid-cols-1 gap-8 pb-section lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-x-14">
+          <div className="lg:col-start-1 lg:row-start-1">
+            <Gallery images={localized.images} alt={imageAlt} />
           </div>
+
+          {/* Buy box — sticky beside the gallery on desktop */}
+          <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1">
+            <div className="flex flex-col gap-6 lg:sticky lg:top-24">
+              <div>
+                {categoryRow && (
+                  <Link
+                    href={categoryPath(categoryRow.key) as "/category/[key]"}
+                    className="font-inter text-eyebrow font-semibold uppercase tracking-[0.16em] text-terracotta hover:text-cream"
+                  >
+                    {categoryLabel}
+                  </Link>
+                )}
+                <h1 className="mt-2 font-playfair text-h2 font-bold text-cream text-balance">{localized.name}</h1>
+                <KufiyaDivider align="start" size="sm" className="mt-3" />
+              </div>
+
+              <ProductPurchaseActions
+                product={{
+                  id: localized.id,
+                  name: localized.name,
+                  price: localized.price,
+                  salePrice: localized.salePrice,
+                  priceOnRequest: localized.priceOnRequest,
+                  url: absoluteUrl(pagePath(locale, productPath(product))),
+                  image: localized.images[0],
+                }}
+                sizes={localized.sizes}
+                colors={localized.colors}
+                quantities={localized.quantities}
+                optionLabel={localized.optionLabel}
+              />
+
+              <DeliveryInfo />
+            </div>
+          </div>
+
+          {localized.description && (
+            <section aria-labelledby="product-description" className="lg:col-start-1 lg:row-start-2">
+              <h2 id="product-description" className="font-playfair text-h3 font-bold text-cream">
+                {t("description")}
+              </h2>
+              <p className="mt-3 whitespace-pre-line font-inter leading-loose text-cream-secondary">{localized.description}</p>
+            </section>
+          )}
         </div>
       </div>
 
-      <RelatedProducts products={related} categories={categories} />
+      <RelatedProducts products={related} categories={categories} categoryKey={categoryRow?.key} />
     </div>
   );
 }
