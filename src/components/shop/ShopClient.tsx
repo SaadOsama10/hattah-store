@@ -7,6 +7,7 @@ import { m, AnimatePresence } from "framer-motion";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
+import { toCardProduct } from "@/lib/storefront";
 import { playClick } from "@/lib/sound";
 import { buildCategoryTree, getDescendantKeys } from "@/lib/categories";
 import {
@@ -84,12 +85,9 @@ export function ShopClient({
   }, [localized, activeParent, activeChild, categories, query]);
 
   const visible = filtered.slice(0, visibleCount);
-  const categoryLabelByKey = Object.fromEntries(
-    categories.map((c) => [c.key, localizeCategory(c, locale)])
-  );
 
   return (
-    <div className="mx-auto max-w-7xl px-5 pb-24 pt-32 sm:px-8 sm:pt-36">
+    <div className="mx-auto max-w-7xl px-gutter pb-section pt-10 sm:pt-14">
       <div className="mb-12 text-center">
         <h1 className="font-playfair text-4xl font-bold text-cream sm:text-5xl">{t("title")}</h1>
         <p className="mx-auto mt-3 max-w-xl font-inter text-cream-secondary/70">
@@ -201,22 +199,7 @@ export function ShopClient({
         <>
           <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
             {visible.map((product, index) => (
-              <ProductCard
-                key={product.id}
-                priority={index < 4}
-                id={product.id}
-                slug={product.slug}
-                name={product.name}
-                price={product.startingPrice}
-                salePrice={product.salePrice}
-                priceOnRequest={product.priceOnRequest}
-                startingFrom={product.quantities.length > 0}
-                image={product.images[0]}
-                categoryLabel={categoryLabelByKey[product.category]}
-                hasVariants={
-                  product.sizes.length > 0 || product.colors.length > 0 || product.quantities.length > 0
-                }
-              />
+              <ProductCard key={product.id} priority={index < 4} product={toCardProduct(products.find((r) => r.id === product.id)!, locale, categories)} />
             ))}
           </div>
 

@@ -9,6 +9,7 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { buildCategoryTree, getDescendantKeys } from "@/lib/categories";
 import { getAllProducts, getCategories } from "@/lib/supabase/queries";
 import { localizeCategory, localizeCategoryDescription, localizeProduct, type Locale } from "@/lib/supabase/types";
+import { toCardProduct } from "@/lib/storefront";
 import { breadcrumbJsonLd, buildMetadata, categoryPath, itemListJsonLd, pagePath, productPath } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -46,12 +47,11 @@ export default async function CategoryPage({ params }: { params: Promise<{ local
   const keys = new Set(getDescendantKeys(categories, key));
   const rows = products.filter((p) => keys.has(p.category));
   const localized = rows.map((p) => localizeProduct(p, locale as Locale));
-  const labelByKey = Object.fromEntries(categories.map((c) => [c.key, localizeCategory(c, locale as Locale)]));
   const children = buildCategoryTree(categories).find((n) => n.key === key)?.children ?? [];
   const description = localizeCategoryDescription(cat, locale as Locale);
 
   return (
-    <div className="mx-auto max-w-7xl px-5 pb-24 pt-32 sm:px-8 sm:pt-36">
+    <div className="mx-auto max-w-7xl px-gutter pb-section pt-10 sm:pt-14">
       <JsonLd
         data={[
           breadcrumbJsonLd([
@@ -91,20 +91,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ local
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
-          {localized.map((p) => (
-            <ProductCard
-              key={p.id}
-              id={p.id}
-              slug={p.slug}
-              name={p.name}
-              price={p.startingPrice}
-              salePrice={p.salePrice}
-              priceOnRequest={p.priceOnRequest}
-              image={p.images[0]}
-              categoryLabel={labelByKey[p.category]}
-              startingFrom={p.quantities.length > 0}
-              hasVariants={p.sizes.length > 0 || p.colors.length > 0 || p.quantities.length > 0}
-            />
+          {rows.map((row) => (
+            <ProductCard key={row.id} product={toCardProduct(row, locale as Locale, categories)} />
           ))}
         </div>
       )}

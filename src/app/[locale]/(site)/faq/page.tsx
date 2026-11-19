@@ -23,7 +23,7 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
   }));
 
   return (
-    <div className="mx-auto max-w-3xl px-5 pb-24 pt-32 sm:px-8 sm:pt-36">
+    <div className="mx-auto max-w-3xl px-gutter pb-section pt-10 sm:pt-14">
       <JsonLd
         data={[
           faqJsonLd(items),

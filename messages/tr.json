@@ -12,7 +12,15 @@
     "decor": "Dekor",
     "games": "Oyun & Hediye",
     "about": "Hikayemiz",
-    "admin": "Yönetim"
+    "admin": "Yönetim",
+    "menu": "Menü",
+    "closeMenu": "Menüyü kapat",
+    "categories": "Kategoriler",
+    "delivery": "Teslimat",
+    "returns": "İade ve değişim",
+    "contact": "İletişim",
+    "faq": "SSS",
+    "mainNav": "Ana menü"
   },
   "common": {
     "viewAll": "Tümünü Gör",
@@ -38,7 +46,10 @@
     "logout": "Çıkış Yap",
     "errorTitle": "Bir şeyler ters gitti",
     "errorBody": "Sayfa yüklenirken geçici bir sorun oluştu. Lütfen tekrar deneyin.",
-    "retry": "Tekrar Dene"
+    "retry": "Tekrar Dene",
+    "previous": "Önceki",
+    "next": "Sonraki",
+    "skipToContent": "İçeriğe geç"
   },
   "hero": {
     "badge": "Yaşayan Miras",
@@ -79,7 +90,15 @@
     "contactUs": "Bize Ulaşın",
     "whatsapp": "WhatsApp",
     "rights": "Tüm hakları saklıdır",
-    "madeWith": "Türkiye'den sevgiyle yapıldı"
+    "madeWith": "Türkiye'den sevgiyle yapıldı",
+    "aboutTitle": "HATTAH hakkında",
+    "aboutText": "İstanbul'da, Filistin mirasını ve Gazze yemeklerini tüm Türkiye'ye ulaştıran Gazzeli bir Filistin mağazası.",
+    "shopTitle": "Alışveriş",
+    "contactTitle": "İletişim",
+    "socialTitle": "Bizi takip edin",
+    "policiesTitle": "Bilgi",
+    "email": "E-posta",
+    "allProducts": "Tüm ürünler"
   },
   "shop": {
     "title": "Mağaza",
@@ -89,7 +108,19 @@
     "noProducts": "Aramanızla eşleşen ürün yok",
     "loadMore": "Daha Fazla Yükle",
     "resultsCount": "ürün",
-    "allSubcategories": "Tümünü Gör"
+    "allSubcategories": "Tümünü Gör",
+    "sortLabel": "Sırala",
+    "sortNewest": "En yeni",
+    "sortBest": "En çok satan",
+    "sortPriceAsc": "Fiyat: artan",
+    "sortPriceDesc": "Fiyat: azalan",
+    "emptyTitle": "Eşleşen ürün bulunamadı",
+    "emptyHint": "Başka bir kelime ya da kategori deneyin veya aradığınız parçayı WhatsApp'tan bize sorun.",
+    "clearFilters": "Filtreleri temizle",
+    "askWhatsapp": "WhatsApp'tan sor",
+    "count": "{count, plural, =0 {Ürün yok} other {# ürün}}",
+    "categoryFilter": "Kategoriye göre filtrele",
+    "clearSearch": "Aramayı temizle"
   },
   "offers": {
     "title": "Güncel Fırsatlar",
@@ -129,7 +160,21 @@
     "selectOption": "{label} seçin",
     "selectOptionFirst": "Lütfen önce {label} seçin",
     "whatsappMessageWithLink": "Merhaba, sipariş vermek istiyorum: {productName}\nBağlantı: {url}",
-    "discountBadge": "-%{percent}"
+    "discountBadge": "-%{percent}",
+    "quickWhatsapp": "“{name}” ürününü WhatsApp'tan sipariş et",
+    "quickAdd": "“{name}” ürününü sepete ekle",
+    "zoom": "Görseli büyüt",
+    "closeZoom": "Kapat",
+    "prevImage": "Önceki görsel",
+    "nextImage": "Sonraki görsel",
+    "imageOf": "Görsel {n} / {total}",
+    "deliveryTitle": "Teslimat ve sipariş",
+    "deliveryFree": "İstanbul {area} içinde ücretsiz teslimat",
+    "deliveryAll": "Türkiye'nin her yerine teslimat yapıyoruz; teslimat ücreti sipariş onaylanmadan önce WhatsApp'tan sizinle teyit edilir",
+    "deliveryOrder": "Ürün, seçiminiz ve bağlantıyı içeren hazır mesajla WhatsApp'tan sipariş",
+    "deliveryMore": "Teslimat ayrıntıları",
+    "similarTitle": "Benzer ürünler",
+    "chooseOptions": "Seçenekleri seç"
   },
   "admin": {
     "nav": {
@@ -424,5 +469,105 @@
     "seoDeletionDescription": "HATTAH'tan verilerinizin silinmesini nasıl talep edersiniz: hattah.store.co@gmail.com adresine e-posta veya WhatsApp.",
     "privacy": "Gizlilik",
     "deletion": "Veri silme"
+  },
+  "announce": {
+    "free": "{area} içinde ücretsiz teslimat",
+    "everywhere": "Türkiye'nin her yerine teslimat",
+    "whatsapp": "WhatsApp ile sipariş",
+    "close": "Duyuruyu kapat"
+  },
+  "theme": {
+    "toLight": "Açık temaya geç",
+    "toDark": "Koyu temaya geç"
+  },
+  "home": {
+    "heroEyebrow": "İstanbul'da Gazzeli bir Filistin mağazası",
+    "heroTitle": "Filistin'i evinize taşıyan parçalar",
+    "heroSubtitle": "Nakış, kefiyeler, tablolar ve maketler ile ev yapımı Gazze yemekleri. Türkiye'nin her yerine teslimat, sipariş tek bir WhatsApp mesajıyla.",
+    "heroCta": "Alışverişe başla",
+    "heroPiece": "Mağazadan",
+    "trustLabel": "Neden HATTAH",
+    "trustFree": "{area} içinde ücretsiz teslimat",
+    "trustFreeSub": "İstanbul'da ilçe içinde",
+    "trustEverywhere": "Her yere teslimat",
+    "trustEverywhereSub": "Tüm Türkiye, ücret sizinle teyit edilir",
+    "trustWhatsapp": "WhatsApp ile hızlı sipariş",
+    "trustWhatsappSub": "Ürün ve seçiminizle hazır mesaj",
+    "trustAuthentic": "Özgün Filistin ürünleri",
+    "trustAuthenticSub": "Filistin mirası ve Gazze yemekleri",
+    "categoriesEyebrow": "Kategoriler",
+    "categoriesTitle": "Kategoriye göre alışveriş",
+    "bestEyebrow": "Müşterilerimizin siparişlerinden",
+    "bestTitle": "En çok sipariş edilenler",
+    "bestSubtitle": "Müşterilerimizin en çok sipariş ettiği parçalar",
+    "foodEyebrow": "Gazze mutfağı",
+    "foodTitle": "Gazze'den evinize",
+    "foodSubtitle": "Gazze usulü ev yapımı Filistin yemekleri ve tatlıları",
+    "giftsEyebrow": "Hediye için",
+    "giftsTitle": "Filistin'i taşıyan hediyeler",
+    "giftsSubtitle": "Memleketi anlatan tablolar, maketler ve aksesuarlar",
+    "newEyebrow": "Yeni",
+    "newTitle": "Yeni gelenler",
+    "newSubtitle": "Mağazaya en son eklenen parçalar",
+    "seeAll": "Tümünü gör",
+    "aboutEyebrow": "HATTAH hakkında",
+    "aboutTitle": "İstanbul'da Gazzeli bir Filistin mağazası",
+    "aboutBody": "HATTAH, İstanbul'da Gazzeli bir Filistin mağazasıdır. Filistin mirasını giyilecek, hediye edilecek ve duvara asılacak parçalarla, ev yapımı Gazze yemekleriyle birlikte size getiriyoruz; Filistin'den bir parça hep yakınınızda kalsın diye.",
+    "aboutCta": "Bizi daha yakından tanıyın",
+    "ctaTitle": "Bir sorunuz ya da özel bir isteğiniz mi var?",
+    "ctaBody": "Bize WhatsApp'tan yazın, doğru parçayı seçip sipariş vermenize yardımcı olalım.",
+    "ctaButton": "WhatsApp'tan yazın",
+    "whatsappGreeting": "Merhaba HATTAH! Bir sorum var.",
+    "productsCount": "{count, plural, =0 {Ürün yok} other {# ürün}}"
+  },
+  "policies": {
+    "shippingTitle": "Teslimat",
+    "shippingLead": "HATTAH siparişiniz size nasıl ulaşır.",
+    "shippingSections": [
+      {
+        "h": "Teslimat bölgeleri",
+        "p": "Türkiye'nin her yerine teslimat yapıyoruz."
+      },
+      {
+        "h": "Ücretsiz teslimat",
+        "p": "İstanbul {area} içinde teslimat ücretsizdir."
+      },
+      {
+        "h": "Diğer bölgeler için ücret",
+        "p": "Diğer ilçe ve şehirler için teslimat ücretini sipariş onaylanmadan önce WhatsApp'tan sizinle teyit ediyoruz."
+      },
+      {
+        "h": "Teslimat süresi",
+        "p": "Süre şehrinize ve ürüne göre değişir; tahmini tarihi sipariş sırasında WhatsApp'tan bildiriyoruz."
+      },
+      {
+        "h": "Nasıl sipariş verilir",
+        "p": "Ürünü seçip “WhatsApp ile sipariş ver”e dokunun, ya da sepete ekleyip siparişi WhatsApp'tan gönderin veya doğrudan {phone} numarasına yazın."
+      }
+    ],
+    "returnsTitle": "İade ve değişim",
+    "returnsLead": "Siparişinizde bir sorun olursa bize ulaşın, çözümü birlikte belirleyelim.",
+    "returnsSections": [
+      {
+        "h": "Sipariş öncesi",
+        "p": "Beden, ayrıntılar veya renklerle ilgili sorunuz varsa doğru parçayı seçmek için sipariş vermeden önce WhatsApp'tan sorun."
+      },
+      {
+        "h": "Teslim alırken",
+        "p": "Lütfen siparişinizi teslim alırken kontrol edin. Ürün hasarlı ya da sipariş ettiğinizden farklıysa en kısa sürede net fotoğraflarla {phone} numarasına WhatsApp'tan yazın."
+      },
+      {
+        "h": "İade ve değişim talepleri",
+        "p": "Her iade veya değişim talebini ayrı ayrı değerlendirip sonraki adımı WhatsApp'tan sizinle birlikte belirliyoruz; olanaklar ürün türüne göre değişir (örneğin yiyecekler ve siparişe özel üretilen parçalar)."
+      },
+      {
+        "h": "İletişim",
+        "p": "WhatsApp: {phone} — E-posta: {email}"
+      }
+    ],
+    "seoShippingTitle": "Teslimat | HATTAH",
+    "seoShippingDescription": "HATTAH teslimatı: Türkiye'nin her yerine, İstanbul {area} içinde ücretsiz. Diğer bölgeler için ücret WhatsApp'tan teyit edilir.",
+    "seoReturnsTitle": "İade ve değişim | HATTAH",
+    "seoReturnsDescription": "Ürün hasarlı veya farklı gelirse HATTAH'a nasıl ulaşılır ve iade/değişim talepleri nasıl ele alınır."
   }
 }

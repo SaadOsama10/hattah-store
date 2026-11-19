@@ -12,7 +12,15 @@
     "decor": "Decor",
     "games": "Games & Gifts",
     "about": "Our Story",
-    "admin": "Admin"
+    "admin": "Admin",
+    "menu": "Menu",
+    "closeMenu": "Close menu",
+    "categories": "Categories",
+    "delivery": "Delivery",
+    "returns": "Returns & exchanges",
+    "contact": "Contact",
+    "faq": "FAQ",
+    "mainNav": "Main navigation"
   },
   "common": {
     "viewAll": "View All",
@@ -38,7 +46,10 @@
     "logout": "Log Out",
     "errorTitle": "Something went wrong",
     "errorBody": "There was a temporary problem loading this page. Please try again.",
-    "retry": "Try Again"
+    "retry": "Try Again",
+    "previous": "Previous",
+    "next": "Next",
+    "skipToContent": "Skip to content"
   },
   "hero": {
     "badge": "Living Heritage",
@@ -79,7 +90,15 @@
     "contactUs": "Contact Us",
     "whatsapp": "WhatsApp",
     "rights": "All rights reserved",
-    "madeWith": "Made with love from Turkey"
+    "madeWith": "Made with love from Turkey",
+    "aboutTitle": "About HATTAH",
+    "aboutText": "A Palestinian, Gazan store in Istanbul bringing Palestinian heritage and Gazan food to all of Türkiye.",
+    "shopTitle": "Shop",
+    "contactTitle": "Contact",
+    "socialTitle": "Follow us",
+    "policiesTitle": "Information",
+    "email": "Email",
+    "allProducts": "All products"
   },
   "shop": {
     "title": "Shop",
@@ -89,7 +108,19 @@
     "noProducts": "No products match your search",
     "loadMore": "Load More",
     "resultsCount": "products",
-    "allSubcategories": "Shop All"
+    "allSubcategories": "Shop All",
+    "sortLabel": "Sort",
+    "sortNewest": "Newest",
+    "sortBest": "Best selling",
+    "sortPriceAsc": "Price: low to high",
+    "sortPriceDesc": "Price: high to low",
+    "emptyTitle": "No matching pieces",
+    "emptyHint": "Try another word or category, or ask us on WhatsApp about the piece you're looking for.",
+    "clearFilters": "Clear filters",
+    "askWhatsapp": "Ask on WhatsApp",
+    "count": "{count, plural, =0 {No products} one {# product} other {# products}}",
+    "categoryFilter": "Filter by category",
+    "clearSearch": "Clear search"
   },
   "offers": {
     "title": "Current Offers",
@@ -129,7 +160,21 @@
     "selectOption": "Select {label}",
     "selectOptionFirst": "Please select {label} first",
     "whatsappMessageWithLink": "Hi, I'd like to order: {productName}\nLink: {url}",
-    "discountBadge": "-{percent}%"
+    "discountBadge": "-{percent}%",
+    "quickWhatsapp": "Order “{name}” on WhatsApp",
+    "quickAdd": "Add “{name}” to cart",
+    "zoom": "Zoom image",
+    "closeZoom": "Close",
+    "prevImage": "Previous image",
+    "nextImage": "Next image",
+    "imageOf": "Image {n} of {total}",
+    "deliveryTitle": "Delivery & ordering",
+    "deliveryFree": "Free delivery within {area}, Istanbul",
+    "deliveryAll": "We deliver everywhere in Türkiye; the delivery cost is confirmed with you on WhatsApp before the order is placed",
+    "deliveryOrder": "Order on WhatsApp with a ready message containing the product, your choice and the link",
+    "deliveryMore": "Delivery details",
+    "similarTitle": "Similar products",
+    "chooseOptions": "Choose options"
   },
   "admin": {
     "nav": {
@@ -424,5 +469,105 @@
     "seoDeletionDescription": "How to request deletion of your data from HATTAH: email hattah.store.co@gmail.com or message us on WhatsApp.",
     "privacy": "Privacy",
     "deletion": "Data deletion"
+  },
+  "announce": {
+    "free": "Free delivery in {area}",
+    "everywhere": "We deliver everywhere in Türkiye",
+    "whatsapp": "Order on WhatsApp",
+    "close": "Close announcement"
+  },
+  "theme": {
+    "toLight": "Switch to light mode",
+    "toDark": "Switch to dark mode"
+  },
+  "home": {
+    "heroEyebrow": "A Palestinian store from Gaza, in Istanbul",
+    "heroTitle": "Pieces that bring Palestine home",
+    "heroSubtitle": "Embroidery, keffiyehs, artwork and figurines, plus homemade Gazan food. We deliver across Türkiye and you order with one WhatsApp message.",
+    "heroCta": "Shop now",
+    "heroPiece": "From the store",
+    "trustLabel": "Why HATTAH",
+    "trustFree": "Free delivery in {area}",
+    "trustFreeSub": "Within the district, Istanbul",
+    "trustEverywhere": "We deliver everywhere",
+    "trustEverywhereSub": "All of Türkiye, cost confirmed with you",
+    "trustWhatsapp": "Fast ordering on WhatsApp",
+    "trustWhatsappSub": "A ready message with your product and choice",
+    "trustAuthentic": "Authentic Palestinian products",
+    "trustAuthenticSub": "Palestinian heritage and Gazan food",
+    "categoriesEyebrow": "Categories",
+    "categoriesTitle": "Shop by category",
+    "bestEyebrow": "From our customers' orders",
+    "bestTitle": "Most ordered",
+    "bestSubtitle": "The pieces our customers order most",
+    "foodEyebrow": "Gazan kitchen",
+    "foodTitle": "From Gaza to your home",
+    "foodSubtitle": "Homemade Palestinian dishes and sweets, the Gazan way",
+    "giftsEyebrow": "To give",
+    "giftsTitle": "Gifts that carry Palestine",
+    "giftsSubtitle": "Artwork, figurines and accessories that tell of home",
+    "newEyebrow": "New in",
+    "newTitle": "Just arrived",
+    "newSubtitle": "The latest pieces added to the store",
+    "seeAll": "View all",
+    "aboutEyebrow": "About HATTAH",
+    "aboutTitle": "A Palestinian store from Gaza, in Istanbul",
+    "aboutBody": "HATTAH is a Palestinian, Gazan store in Istanbul. We bring you Palestinian heritage in pieces to wear, to give and to hang on your wall, together with homemade Gazan food, so a little of Palestine stays close to you.",
+    "aboutCta": "More about us",
+    "ctaTitle": "A question or a special request?",
+    "ctaBody": "Message us on WhatsApp and we'll help you choose the right piece and place your order.",
+    "ctaButton": "Message us on WhatsApp",
+    "whatsappGreeting": "Hi HATTAH! I have a question.",
+    "productsCount": "{count, plural, =0 {No products} one {# product} other {# products}}"
+  },
+  "policies": {
+    "shippingTitle": "Delivery",
+    "shippingLead": "How your HATTAH order reaches you.",
+    "shippingSections": [
+      {
+        "h": "Where we deliver",
+        "p": "We deliver everywhere in Türkiye."
+      },
+      {
+        "h": "Free delivery",
+        "p": "Delivery is free within {area}, Istanbul."
+      },
+      {
+        "h": "Delivery cost elsewhere",
+        "p": "For other districts and cities we confirm the delivery cost with you on WhatsApp before the order is placed."
+      },
+      {
+        "h": "Delivery time",
+        "p": "It depends on your city and the product; we confirm the expected date with you on WhatsApp when you order."
+      },
+      {
+        "h": "How to order",
+        "p": "Pick a product and tap “Order via WhatsApp”, or add it to your cart and send the order on WhatsApp, or message us directly at {phone}."
+      }
+    ],
+    "returnsTitle": "Returns & exchanges",
+    "returnsLead": "If anything is wrong with your order, contact us and we'll agree on a solution with you.",
+    "returnsSections": [
+      {
+        "h": "Before you order",
+        "p": "If you have a question about size, details or colours, ask us on WhatsApp before placing the order so you choose the right piece."
+      },
+      {
+        "h": "On delivery",
+        "p": "Please check your order when it arrives. If a product is damaged or not what you ordered, message us on WhatsApp at {phone} with clear photos as soon as possible."
+      },
+      {
+        "h": "Return and exchange requests",
+        "p": "We look at every return or exchange request individually and agree on the next step with you on WhatsApp; what is possible depends on the type of product (for example food and made-to-order pieces)."
+      },
+      {
+        "h": "Contact",
+        "p": "WhatsApp: {phone} — Email: {email}"
+      }
+    ],
+    "seoShippingTitle": "Delivery | HATTAH",
+    "seoShippingDescription": "Delivery from HATTAH: we deliver all over Türkiye, free within {area}, Istanbul. Other areas: cost confirmed on WhatsApp.",
+    "seoReturnsTitle": "Returns & exchanges | HATTAH",
+    "seoReturnsDescription": "How to reach HATTAH if a product arrives damaged or different, and how return and exchange requests are handled."
   }
 }

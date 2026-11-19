@@ -94,7 +94,7 @@ export default async function ProductDetailPage({
   );
 
   return (
-    <div className="pt-28 sm:pt-32">
+    <div className="pt-6 sm:pt-8">
       <JsonLd
         data={[
           productJsonLd(product, locale as Locale, categoryRow),

@@ -17,7 +17,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
   const sections = t.raw("privacySections") as { h: string; p: string }[];
 
   return (
-    <div className="mx-auto max-w-3xl px-5 pb-24 pt-32 sm:px-8 sm:pt-36">
+    <div className="mx-auto max-w-3xl px-gutter pb-section pt-10 sm:pt-14">
       <JsonLd
         data={breadcrumbJsonLd([
           { name: tSeo("home"), path: pagePath(locale) },

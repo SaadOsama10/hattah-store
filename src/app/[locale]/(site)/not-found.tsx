@@ -7,7 +7,7 @@ export default async function SiteNotFound() {
   const t = await getTranslations("notFoundPage");
   const tSeo = await getTranslations("seo");
   return (
-    <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 pt-24 text-center">
+    <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 py-16 text-center">
       <p className="font-inter text-sm uppercase tracking-[0.3em] text-terracotta">404</p>
       <h1 className="mt-3 font-playfair text-4xl font-bold text-cream">{t("title")}</h1>
       <Divider className="my-6" />

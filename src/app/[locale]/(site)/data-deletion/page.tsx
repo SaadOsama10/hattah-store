@@ -18,7 +18,7 @@ export default async function DataDeletionPage({ params }: { params: Promise<{ l
   const steps = t.raw("deletionSteps") as string[];
 
   return (
-    <div className="mx-auto max-w-3xl px-5 pb-24 pt-32 sm:px-8 sm:pt-36">
+    <div className="mx-auto max-w-3xl px-gutter pb-section pt-10 sm:pt-14">
       <JsonLd
         data={breadcrumbJsonLd([
           { name: tSeo("home"), path: pagePath(locale) },

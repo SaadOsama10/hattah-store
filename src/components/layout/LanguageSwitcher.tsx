@@ -7,7 +7,14 @@ import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing, localeLabels, type AppLocale } from "@/i18n/routing";
 import { cn } from "@/lib/cn";
 
-export function LanguageSwitcher({ variant = "light" }: { variant?: "light" | "dark" }) {
+export function LanguageSwitcher({
+  variant = "light",
+  placement = "down",
+}: {
+  variant?: "light" | "dark";
+  /** "up" opens the list above the button (used at the bottom of the phone menu). */
+  placement?: "down" | "up";
+}) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const locale = useLocale() as AppLocale;
@@ -51,7 +58,8 @@ export function LanguageSwitcher({ variant = "light" }: { variant?: "light" | "d
       {open && (
         <div
           className={cn(
-            "absolute end-0 top-full z-50 mt-2 w-40 overflow-hidden rounded-2xl border shadow-xl",
+            "absolute z-50 w-44 overflow-hidden rounded-2xl border shadow-xl",
+            placement === "up" ? "bottom-full start-0 mb-2" : "end-0 top-full mt-2",
             "border-line bg-surface shadow-lift"
           )}
         >

@@ -1,9 +1,8 @@
 import { getTranslations, getLocale } from "next-intl/server";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { Divider } from "@/components/ui/Divider";
+import { toCardProduct } from "@/lib/storefront";
 import {
-  localizeProduct,
-  localizeCategory,
   type ProductRow,
   type CategoryRow,
   type Locale,
@@ -20,9 +19,6 @@ export async function RelatedProducts({
 
   const t = await getTranslations("product");
   const locale = (await getLocale()) as Locale;
-  const categoryLabelByKey = Object.fromEntries(
-    categories.map((c) => [c.key, localizeCategory(c, locale)])
-  );
 
   return (
     <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
@@ -33,26 +29,9 @@ export async function RelatedProducts({
         <Divider className="mt-5" />
       </div>
       <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-4">
-        {products.map((product) => {
-          const localized = localizeProduct(product, locale);
-          return (
-            <ProductCard
-              key={product.id}
-              id={localized.id}
-                slug={localized.slug}
-              name={localized.name}
-              price={localized.startingPrice}
-              salePrice={localized.salePrice}
-              priceOnRequest={localized.priceOnRequest}
-              startingFrom={localized.quantities.length > 0}
-              image={localized.images[0]}
-              categoryLabel={categoryLabelByKey[localized.category]}
-              hasVariants={
-                localized.sizes.length > 0 || localized.colors.length > 0 || localized.quantities.length > 0
-              }
-            />
-          );
-        })}
+        {products.map((product) => (
+          <ProductCard key={product.id} product={toCardProduct(product, locale, categories)} />
+        ))}
       </div>
     </section>
   );

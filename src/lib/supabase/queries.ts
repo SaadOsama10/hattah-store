@@ -202,3 +202,10 @@ export async function getCategoryCoverImages(
     return {};
   }
 }
+
+// Cached category list for the storefront chrome (header menu, footer) and listing pages.
+// Category writes call revalidateTag("products"), so edits show immediately.
+export const getCachedCategories = unstable_cache(getCategories, ["categories-v1"], {
+  tags: ["products"],
+  revalidate: 300,
+});

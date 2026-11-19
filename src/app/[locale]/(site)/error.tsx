@@ -25,7 +25,7 @@ export default function StorefrontError({
   }, []);
 
   return (
-    <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 pt-24 text-center">
+    <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 py-16 text-center">
       <h1 className="font-playfair text-4xl font-bold text-cream">{t("errorTitle")}</h1>
       <Divider className="my-6" />
       <p className="max-w-md font-inter text-cream-secondary/70">{t("errorBody")}</p>
