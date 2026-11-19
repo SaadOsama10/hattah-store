@@ -49,7 +49,7 @@ export function Gallery({ images, alt }: { images: string[]; alt: string }) {
             >
               <Image
                 src={images[index]}
-                alt={alt}
+                alt={index > 0 ? `${alt} - ${index + 1}` : alt}
                 fill
                 sizes="(min-width: 1024px) 50vw, 100vw"
                 className="pointer-events-none select-none object-contain"
@@ -103,7 +103,7 @@ export function Gallery({ images, alt }: { images: string[]; alt: string }) {
                 i === index ? "border-terracotta" : "border-transparent opacity-60 hover:opacity-100"
               )}
             >
-              <Image src={img} alt={`${alt} ${i + 1}`} fill sizes="80px" className="object-cover" />
+              <Image src={img} alt={i > 0 ? `${alt} - ${i + 1}` : alt} fill sizes="80px" className="object-cover" />
             </button>
           ))}
         </div>
