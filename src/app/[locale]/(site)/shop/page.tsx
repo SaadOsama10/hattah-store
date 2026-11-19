@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { buildMetadata } from "@/lib/seo";
 import { ShopClient } from "@/components/shop/ShopClient";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { getAllProducts, getCachedCategories } from "@/lib/supabase/queries";
 import { getBestSellerRanking } from "@/lib/supabase/bestsellers";
 import { buildShopCategories, buildShopItems, parseSort } from "@/lib/shop-data";
@@ -33,14 +34,16 @@ export default async function ShopPage({
     getBestSellerRanking(),
     getTranslations("shop"),
   ]);
+  const tSeo = await getTranslations("seo");
   const validCategory = categories.some((c) => c.key === category) ? category! : "all";
 
   return (
     <>
-      <div className="mx-auto max-w-7xl px-gutter pb-4 pt-8 sm:pt-10">
-        <h1 className="font-playfair text-h2 font-bold text-cream">{t("title")}</h1>
-        <p className="mt-1.5 max-w-xl font-inter text-sm text-cream-secondary sm:text-base">{t("subtitle")}</p>
-      </div>
+      <PageHeader
+        title={t("title")}
+        description={t("subtitle")}
+        crumbs={[{ label: tSeo("home"), href: "/" }, { label: t("title") }]}
+      />
       <ShopClient
         items={buildShopItems(products, categories, ranking, locale as Locale)}
         categories={buildShopCategories(categories, locale as Locale)}

@@ -16,6 +16,9 @@ export interface TileData {
   iconKey: string;
   /** Main photos of the category's top products (up to 3), best first. */
   images: string[];
+  /** Real number of products in the category (incl. subcategories). */
+  count: number;
+  countLabel: string;
 }
 
 const PERIOD = 5200;
@@ -102,7 +105,7 @@ export function CategoryTileCard({ tile, big, order }: { tile: TileData; big: bo
                   fill
                   sizes={big ? "(min-width: 1024px) 50vw, 100vw" : "(min-width: 1024px) 25vw, 50vw"}
                   className={cn(
-                    "object-cover transition-[opacity,transform] duration-[1200ms] ease-soft group-hover:scale-[1.05]",
+                    "object-cover transition-[opacity,transform] duration-[1400ms] ease-soft group-hover:scale-[1.06]",
                     i === index ? "opacity-100" : "opacity-0"
                   )}
                 />
@@ -110,14 +113,15 @@ export function CategoryTileCard({ tile, big, order }: { tile: TileData; big: bo
             )}
             <div
               aria-hidden
-              className="absolute inset-0 bg-gradient-to-t from-[var(--tile-overlay)]/80 via-[var(--tile-overlay)]/20 to-transparent"
+              className="absolute inset-0 bg-gradient-to-t from-[var(--tile-overlay)]/85 via-[var(--tile-overlay)]/25 to-transparent"
             />
           </>
         ) : (
           <KufiyaNet className="absolute inset-0 text-olive opacity-15" />
         )}
+        <span aria-hidden className="gold-corners" />
         <span className="absolute end-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-surface/85 text-cream shadow-card backdrop-blur-sm transition-[transform,background-color,color] duration-500 ease-soft group-hover:-translate-y-0.5 group-hover:bg-terracotta group-hover:text-on-accent">
-          <ArrowUpRight size={18} className="transition-transform duration-500 group-hover:scale-110 rtl:-scale-x-100" />
+          <ArrowUpRight size={18} className="transition-transform duration-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover:-translate-x-0.5" />
         </span>
         <div className="relative">
           <Icon size={20} strokeWidth={1.5} className={hasImage ? "text-cream-fixed/85" : "text-olive"} />
@@ -130,6 +134,9 @@ export function CategoryTileCard({ tile, big, order }: { tile: TileData; big: bo
           >
             {tile.label}
           </h3>
+          {tile.count > 0 && (
+            <p className={cn("mt-1 font-inter text-xs tracking-wide", hasImage ? "text-cream-fixed/80" : "text-muted")}>{tile.countLabel}</p>
+          )}
         </div>
         <span aria-hidden className="tilt-sheen" />
       </div>

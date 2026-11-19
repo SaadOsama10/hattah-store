@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Check, MessageCircle, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -122,8 +122,27 @@ export function ProductPurchaseActions({
   function handleWhatsAppClick(e: React.MouseEvent) {
     if (!validate()) {
       e.preventDefault();
+      // from the sticky bar: bring the options (and the error) into view
+      optionsRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }
+
+  // Phones: a sticky order bar appears once the main buttons have scrolled out of view.
+  const optionsRef = useRef<HTMLDivElement>(null);
+  const actionsRef = useRef<HTMLDivElement>(null);
+  const [showBar, setShowBar] = useState(false);
+  useEffect(() => {
+    const el = actionsRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setShowBar(!e.isIntersecting && e.boundingClientRect.top < 0));
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  useEffect(() => {
+    const mobile = window.matchMedia("(max-width: 1023px)").matches;
+    document.documentElement.style.setProperty("--bottom-bar", showBar && mobile ? "4.75rem" : "0px");
+    return () => document.documentElement.style.setProperty("--bottom-bar", "0px");
+  }, [showBar]);
 
   const productLabel = formatProductWithVariants(
     product.name,
@@ -146,7 +165,7 @@ export function ProductPurchaseActions({
   );
 
   return (
-    <div className="space-y-5">
+    <div ref={optionsRef} className="space-y-5">
       {priceOnRequest ? (
         <p className="inline-flex rounded-full bg-terracotta-wash px-4 py-2 font-inter text-base font-semibold text-terracotta">
           {t("priceOnRequest")}
@@ -186,10 +205,10 @@ export function ProductPurchaseActions({
                   setError(null);
                 }}
                 className={cn(
-                  "min-h-11 rounded-full px-4 py-2 font-inter text-sm transition-colors duration-200",
+                  "min-h-11 rounded-xl px-4 py-2 font-inter text-sm transition-[box-shadow,background-color,color] duration-200",
                   selectedSize === size
-                    ? "bg-cream font-semibold text-bg-primary"
-                    : "bg-surface text-cream ring-1 ring-line hover:ring-line-strong"
+                    ? "bg-surface font-semibold text-cream shadow-glow-gold ring-2 ring-gold-line"
+                    : "bg-surface text-cream-secondary ring-1 ring-line hover:text-cream hover:ring-gold-line/60"
                 )}
               >
                 {size}
@@ -215,10 +234,10 @@ export function ProductPurchaseActions({
                   setError(null);
                 }}
                 className={cn(
-                  "min-h-11 rounded-full px-4 py-2 font-inter text-sm transition-colors duration-200",
+                  "min-h-11 rounded-xl px-4 py-2 font-inter text-sm transition-[box-shadow,background-color,color] duration-200",
                   selectedColor === color
-                    ? "bg-cream font-semibold text-bg-primary"
-                    : "bg-surface text-cream ring-1 ring-line hover:ring-line-strong"
+                    ? "bg-surface font-semibold text-cream shadow-glow-gold ring-2 ring-gold-line"
+                    : "bg-surface text-cream-secondary ring-1 ring-line hover:text-cream hover:ring-gold-line/60"
                 )}
               >
                 {color}
@@ -244,10 +263,10 @@ export function ProductPurchaseActions({
                   setError(null);
                 }}
                 className={cn(
-                  "min-h-11 rounded-full px-4 py-2 font-inter text-sm transition-colors duration-200",
+                  "min-h-11 rounded-xl px-4 py-2 font-inter text-sm transition-[box-shadow,background-color,color] duration-200",
                   selectedQuantity === q.label
-                    ? "bg-cream font-semibold text-bg-primary"
-                    : "bg-surface text-cream ring-1 ring-line hover:ring-line-strong"
+                    ? "bg-surface font-semibold text-cream shadow-glow-gold ring-2 ring-gold-line"
+                    : "bg-surface text-cream-secondary ring-1 ring-line hover:text-cream hover:ring-gold-line/60"
                 )}
               >
                 {priceOnRequest || q.price <= 0 ? q.label : `${q.label} — ${currency} ${q.price.toLocaleString()}`}
@@ -263,7 +282,7 @@ export function ProductPurchaseActions({
         </p>
       )}
 
-      <div className="flex flex-col gap-2.5">
+      <div ref={actionsRef} className="flex flex-col gap-2.5">
         <Button
           href={whatsappHref}
           target="_blank"
@@ -287,6 +306,41 @@ export function ProductPurchaseActions({
             {justAdded ? tCart("added") : tCart("addToCart")}
           </Button>
         )}
+      </div>
+
+      {/* Sticky order bar (phones) */}
+      <div
+        inert={!showBar}
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-40 border-t border-line bg-[var(--t-header-bg)] px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl backdrop-saturate-150 transition-[translate,opacity] duration-300 ease-soft lg:hidden",
+          showBar ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-full opacity-0"
+        )}
+      >
+        <div className="mx-auto flex max-w-xl items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-inter text-xs text-muted">{product.name}</p>
+            {priceOnRequest ? (
+              <p className="font-inter text-sm font-semibold text-gold">{t("priceOnRequest")}</p>
+            ) : (
+              <p className="font-inter text-base font-bold text-cream">
+                {showStartingFrom && <span className="me-1 text-xs font-normal text-muted">{t("startingFrom")}</span>}
+                {currency} {displayPrice.toLocaleString()}
+              </p>
+            )}
+          </div>
+          <Button
+            href={whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="whatsapp"
+            size="md"
+            className="shrink-0"
+            onClick={handleWhatsAppClick}
+          >
+            <MessageCircle size={18} />
+            {priceOnRequest ? t("askPrice") : t("orderWhatsapp")}
+          </Button>
+        </div>
       </div>
     </div>
   );

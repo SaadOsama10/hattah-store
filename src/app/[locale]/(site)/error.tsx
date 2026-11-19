@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
-import { Divider } from "@/components/ui/Divider";
+import { BrandStatus } from "@/components/ui/BrandStatus";
 
 /** Catches any server-side rendering failure on a storefront page (e.g. a
  * transient Supabase timeout) so visitors see a friendly retry screen
@@ -25,15 +25,10 @@ export default function StorefrontError({
   }, []);
 
   return (
-    <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 py-16 text-center">
-      <h1 className="font-playfair text-4xl font-bold text-cream">{t("errorTitle")}</h1>
-      <Divider className="my-6" />
-      <p className="max-w-md font-inter text-cream-secondary/70">{t("errorBody")}</p>
-      <div className="mt-10">
-        <Button onClick={() => reset()} variant="primary">
-          {t("retry")}
-        </Button>
-      </div>
-    </div>
+    <BrandStatus title={t("errorTitle")} body={t("errorBody")}>
+      <Button onClick={() => reset()} variant="primary" size="lg">
+        {t("retry")}
+      </Button>
+    </BrandStatus>
   );
 }

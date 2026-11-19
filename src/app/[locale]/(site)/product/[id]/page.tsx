@@ -146,7 +146,7 @@ export default async function ProductDetailPage({
 
           {/* Buy box — sticky beside the gallery on desktop */}
           <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1">
-            <div className="flex flex-col gap-6 lg:sticky lg:top-24">
+            <div className="flex flex-col gap-6 lg:sticky lg:top-[calc(var(--header-offset,4rem)+1.5rem)] lg:transition-[top] lg:duration-300">
               <div>
                 {categoryRow && (
                   <Link

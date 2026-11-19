@@ -50,7 +50,8 @@
     "retry": "Tekrar Dene",
     "previous": "Önceki",
     "next": "Sonraki",
-    "skipToContent": "İçeriğe geç"
+    "skipToContent": "İçeriğe geç",
+    "backToTop": "Başa dön"
   },
   "hero": {
     "badge": "GAZZE'DEN FİLİSTİN MİRASI",
@@ -110,7 +111,9 @@
     "socialTitle": "Bizi takip edin",
     "policiesTitle": "Bilgi",
     "email": "E-posta",
-    "allProducts": "Tüm ürünler"
+    "allProducts": "Tüm ürünler",
+    "categoriesTitle": "Kategoriler",
+    "linksTitle": "Faydalı bağlantılar"
   },
   "shop": {
     "title": "Mağaza",
@@ -185,7 +188,10 @@
     "deliveryMore": "Nasıl sipariş verilir",
     "similarTitle": "Benzer ürünler",
     "chooseOptions": "Seçenekleri seç",
-    "orderDetails": "Teslimat ve ödeme ayrıntıları sipariş onaylanmadan önce WhatsApp'tan sizinle belirlenir"
+    "orderDetails": "Teslimat ve ödeme ayrıntıları sipariş onaylanmadan önce WhatsApp'tan sizinle belirlenir",
+    "badgeNew": "Yeni",
+    "badgeFeatured": "Öne çıkan",
+    "askPrice": "Fiyatı sor"
   },
   "admin": {
     "nav": {
@@ -526,7 +532,38 @@
     "trustHeritage": "Özgün Gazze mirası",
     "trustHeritageSub": "Gazze ruhunu taşıyan parçalar ve yemekler",
     "trustCurated": "Özenle seçilmiş parçalar",
-    "trustCuratedSub": "Yemekten dekorasyona ve giyime"
+    "trustCuratedSub": "Yemekten dekorasyona ve giyime",
+    "featuredEyebrow": "Seçki",
+    "featuredTitle": "HATTAH seçkisi",
+    "featuredSubtitle": "Mağazadan seçilmiş parçalar",
+    "storyEyebrow": "Hikâyemiz",
+    "storyTitle": "Adını kefiyeden alan bir isim",
+    "storyBody": "Hattah, Filistinlilerin kefiyeye verdiği isimdir. Bu adı, Gazze'den taşıdıklarımızı bir araya getirdiği için seçtik: giyilecek, hediye edilecek ve duvara asılacak parçalarda Filistin mirası ve ev tadında yemekler.",
+    "storyLine": "Filistin'i ayrıntılarda taşıyoruz",
+    "storyCta": "Koleksiyonu keşfet",
+    "whyEyebrow": "Neden HATTAH",
+    "whyTitle": "Parçalarımızı farklı kılan",
+    "why": [
+      {
+        "t": "Özgün miras",
+        "d": "Filistin ve Gazze hafızasından semboller ve desenler"
+      },
+      {
+        "t": "Zanaat ayrıntılarda",
+        "d": "Nakış, oyma ve bitişteki küçük ayrıntılara özen gösteriyoruz"
+      },
+      {
+        "t": "Özenle seçilmiş ürünler",
+        "d": "Mağazadaki her parçayı özenle seçtik"
+      },
+      {
+        "t": "WhatsApp ile kolay sipariş",
+        "d": "Parçanı seç, hazır bir mesajla sipariş ver"
+      }
+    ],
+    "finalTitle": "Filistin'i yakınında tut",
+    "finalBody": "Parçanı seç, tek bir WhatsApp mesajıyla sipariş ver.",
+    "finalButton": "WhatsApp ile sipariş ver"
   },
   "policies": {
     "shippingTitle": "Nasıl sipariş verilir",

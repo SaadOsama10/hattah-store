@@ -12,12 +12,13 @@ export async function CategoryTiles({ tiles }: { tiles: TileData[] }) {
   if (tiles.length === 0) return null;
 
   return (
-    <section id="collection" aria-labelledby="home-categories" className="scroll-mt-20 py-section">
+    <section id="collection" aria-labelledby="home-categories" className="scroll-mt-20 pb-section pt-[calc(var(--spacing-section)*0.8)]">
       <div className="mx-auto max-w-7xl px-gutter">
-        <Reveal>
+        <Reveal blur>
           <SectionHeading id="home-categories" eyebrow={t("categoriesEyebrow")} title={t("categoriesTitle")} />
         </Reveal>
-        <ul className="grid auto-rows-[minmax(0,1fr)] grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:grid-rows-2">
+        {/* phones: horizontal snap slider with a peek of the next card; desktop: asymmetric bento */}
+        <ul className="scrollbar-none -mx-gutter flex snap-x snap-mandatory gap-3 overflow-x-auto px-gutter pb-2 [scroll-padding-inline:var(--spacing-gutter)] lg:mx-0 lg:grid lg:auto-rows-[minmax(0,1fr)] lg:grid-cols-4 lg:grid-rows-2 lg:gap-4 lg:overflow-visible lg:px-0 lg:pb-0">
           {tiles.map((tile, i) => {
             const big = i === 0;
             return (
@@ -25,7 +26,10 @@ export async function CategoryTiles({ tiles }: { tiles: TileData[] }) {
                 as="li"
                 key={tile.key}
                 delay={Math.min(i, 5) * 90}
-                className={cn(big ? "col-span-2 aspect-[16/10] lg:row-span-2 lg:aspect-auto" : "aspect-[4/5] lg:aspect-[5/4]")}
+                className={cn(
+                  "w-[78%] shrink-0 snap-start sm:w-[44%] lg:w-auto",
+                  big ? "aspect-[4/5] lg:col-span-2 lg:row-span-2 lg:aspect-auto" : "aspect-[4/5] lg:aspect-[5/4]"
+                )}
               >
                 <CategoryTileCard tile={tile} big={big} order={i} />
               </Reveal>

@@ -78,7 +78,7 @@ export function ProductCard({
   return (
     <article {...handlers} className={cn("group relative flex h-full flex-col", className)}>
       <div ref={tiltRef} className="tilt relative rounded-card">
-      <div className="relative aspect-[4/5] overflow-hidden rounded-card bg-surface shadow-card ring-1 ring-line transition-shadow duration-500 ease-soft group-hover:shadow-lift">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-card bg-[color-mix(in_srgb,var(--color-surface)_70%,var(--color-olive-wash))] shadow-card ring-1 ring-line transition-shadow duration-500 ease-soft group-hover:shadow-glow-gold">
         {!imgLoaded && product.image && <div aria-hidden className="skeleton absolute inset-0" />}
         {product.image ? (
           <>
@@ -112,14 +112,26 @@ export function ProductCard({
           </div>
         )}
 
-        {onSale && (
-          <span className="absolute start-2.5 top-2.5 rounded-full bg-terracotta px-2.5 py-1 font-inter text-[11px] font-bold text-on-accent">
-            {tProduct("discountBadge", { percent: discountPercent(price, salePrice as number) })}
-          </span>
-        )}
+        {/* Badges only from real data: sale price, admin "featured" flag, added recently. */}
+        <div className="absolute start-2.5 top-2.5 flex flex-col items-start gap-1">
+          {onSale && (
+            <span className="rounded-full bg-terracotta px-2.5 py-1 font-inter text-[11px] font-bold text-on-accent">
+              {tProduct("discountBadge", { percent: discountPercent(price, salePrice as number) })}
+            </span>
+          )}
+          {product.isNew ? (
+            <span className="rounded-full bg-surface/90 px-2.5 py-1 font-inter text-[10px] font-bold uppercase tracking-[0.14em] text-gold ring-1 ring-gold-line/40 backdrop-blur-sm">
+              {tProduct("badgeNew")}
+            </span>
+          ) : product.featured ? (
+            <span className="rounded-full bg-surface/90 px-2.5 py-1 font-inter text-[10px] font-bold uppercase tracking-[0.14em] text-gold ring-1 ring-gold-line/40 backdrop-blur-sm">
+              {tProduct("badgeFeatured")}
+            </span>
+          ) : null}
+        </div>
 
         {/* Quick actions sit above the card's stretched link. */}
-        <div className="absolute bottom-2.5 end-2.5 z-10 flex gap-1.5">
+        <div className="card-actions absolute bottom-2.5 end-2.5 z-10 flex gap-1.5">
           <a
             href={whatsappHref}
             target="_blank"
@@ -161,9 +173,20 @@ export function ProductCard({
         </h3>
         <div className="mt-auto pt-1">
           {priceOnRequest ? (
-            <span className="inline-flex rounded-full bg-terracotta-wash px-2.5 py-1 font-inter text-xs font-semibold text-terracotta">
-              {tProduct("priceOnRequest")}
-            </span>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span className="font-playfair text-sm italic text-cream-secondary">{tProduct("priceOnRequest")}</span>
+              {/* above the stretched link */}
+              <a
+                href={whatsappHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => playClick()}
+                className="relative z-10 inline-flex min-h-9 items-center gap-1 font-inter text-xs font-semibold text-gold underline-offset-4 hover:underline"
+              >
+                <MessageCircle size={14} />
+                {tProduct("askPrice")}
+              </a>
+            </div>
           ) : onSale ? (
             <p className="flex flex-wrap items-baseline gap-x-2 font-inter text-sm">
               <span className="font-bold text-terracotta">
@@ -174,7 +197,7 @@ export function ProductCard({
               </span>
             </p>
           ) : (
-            <p className="font-inter text-sm font-bold text-cream">
+            <p className="font-inter text-[15px] font-bold tracking-tight text-cream">
               {product.startingFrom && <span className="me-1 text-xs font-normal text-muted">{tProduct("startingFrom")}</span>}
               {t("currency")} {price.toLocaleString()}
             </p>

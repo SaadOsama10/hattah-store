@@ -50,7 +50,8 @@
     "retry": "Try Again",
     "previous": "Previous",
     "next": "Next",
-    "skipToContent": "Skip to content"
+    "skipToContent": "Skip to content",
+    "backToTop": "Back to top"
   },
   "hero": {
     "badge": "PALESTINIAN HERITAGE FROM GAZA",
@@ -110,7 +111,9 @@
     "socialTitle": "Follow us",
     "policiesTitle": "Information",
     "email": "Email",
-    "allProducts": "All products"
+    "allProducts": "All products",
+    "categoriesTitle": "Categories",
+    "linksTitle": "Useful links"
   },
   "shop": {
     "title": "Shop",
@@ -185,7 +188,10 @@
     "deliveryMore": "How to order",
     "similarTitle": "Similar products",
     "chooseOptions": "Choose options",
-    "orderDetails": "Delivery and payment details are agreed with you on WhatsApp before the order is placed"
+    "orderDetails": "Delivery and payment details are agreed with you on WhatsApp before the order is placed",
+    "badgeNew": "New",
+    "badgeFeatured": "Featured",
+    "askPrice": "Ask for the price"
   },
   "admin": {
     "nav": {
@@ -526,7 +532,38 @@
     "trustHeritage": "Authentic Gazan heritage",
     "trustHeritageSub": "Pieces and food with the spirit of Gaza",
     "trustCurated": "Carefully chosen pieces",
-    "trustCuratedSub": "From food to decor and clothing"
+    "trustCuratedSub": "From food to decor and clothing",
+    "featuredEyebrow": "Selection",
+    "featuredTitle": "The HATTAH selection",
+    "featuredSubtitle": "Pieces selected from the store",
+    "storyEyebrow": "Our story",
+    "storyTitle": "A name taken from the keffiyeh",
+    "storyBody": "Hattah is what Palestinians call the keffiyeh. We chose it because it holds what we carry from Gaza: Palestinian heritage in pieces to wear, to give and to hang on the wall, and food that tastes of home.",
+    "storyLine": "We carry Palestine in the details",
+    "storyCta": "Shop the collection",
+    "whyEyebrow": "Why HATTAH",
+    "whyTitle": "What sets our pieces apart",
+    "why": [
+      {
+        "t": "Authentic heritage",
+        "d": "Symbols and patterns from Palestinian and Gazan memory"
+      },
+      {
+        "t": "Craftsmanship in the details",
+        "d": "We care about the small details of embroidery, engraving and finish"
+      },
+      {
+        "t": "Carefully chosen products",
+        "d": "Every piece in the store was chosen with care"
+      },
+      {
+        "t": "Easy ordering on WhatsApp",
+        "d": "Pick your piece and order it with a ready message"
+      }
+    ],
+    "finalTitle": "Keep Palestine close",
+    "finalBody": "Pick your piece and order it with a single WhatsApp message.",
+    "finalButton": "Order on WhatsApp"
   },
   "policies": {
     "shippingTitle": "How to order",

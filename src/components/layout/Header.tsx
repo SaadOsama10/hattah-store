@@ -30,6 +30,8 @@ export function Header({ hasOffers = false, categories = [] }: { hasOffers?: boo
   const tHome = useTranslations("home");
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const menuOpenRef = useRef(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [catsOpen, setCatsOpen] = useState(false);
   const catsRef = useRef<HTMLDivElement>(null);
@@ -44,11 +46,40 @@ export function Header({ hasOffers = false, categories = [] }: { hasOffers?: boo
   ] as const;
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
+    // Shrinks + turns glass once scrolled; hides while scrolling down, comes back on the
+    // way up. --header-offset tells sticky elements below (shop filters, buy box) where to sit.
+    let lastY = window.scrollY;
+    let frame = 0;
+    const root = document.documentElement;
+    const apply = () => {
+      frame = 0;
+      const y = window.scrollY;
+      const dy = y - lastY;
+      setScrolled(y > 8);
+      if (Math.abs(dy) > 6) {
+        const hide = dy > 0 && y > 160 && !menuOpenRef.current;
+        setHidden(hide);
+        root.style.setProperty("--header-offset", hide ? "0px" : y > 8 ? "3.5rem" : "4rem");
+        lastY = y;
+      } else if (y <= 8) {
+        root.style.setProperty("--header-offset", "4rem");
+      }
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(apply);
+    };
+    apply();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(frame);
+    };
   }, []);
+
+  useEffect(() => {
+    menuOpenRef.current = menuOpen;
+    if (menuOpen) setHidden(false);
+  }, [menuOpen]);
 
   useEffect(() => {
     setMenuOpen(false);
@@ -89,13 +120,19 @@ export function Header({ hasOffers = false, categories = [] }: { hasOffers?: boo
     <>
       <header
         className={cn(
-          "sticky top-0 z-40 transition-[background-color,box-shadow,backdrop-filter] duration-300",
+          "sticky top-0 z-40 transition-[background-color,box-shadow,backdrop-filter,translate] duration-300 ease-soft",
+          hidden && "-translate-y-full",
           scrolled
             ? "bg-[var(--t-header-bg)] shadow-[0_1px_0_var(--t-line)] backdrop-blur-xl backdrop-saturate-150"
             : "bg-transparent"
         )}
       >
-        <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-3 sm:px-gutter">
+        <div
+          className={cn(
+            "mx-auto flex max-w-7xl items-center gap-2 px-3 transition-[height] duration-300 ease-soft sm:px-gutter",
+            scrolled ? "h-14" : "h-16"
+          )}
+        >
           {/* phone: menu button (start) */}
           <button
             ref={menuButtonRef}

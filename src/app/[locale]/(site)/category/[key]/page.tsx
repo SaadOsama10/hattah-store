@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { ChevronLeft } from "lucide-react";
 import { ShopClient } from "@/components/shop/ShopClient";
-import { KufiyaDivider } from "@/components/ui/KufiyaDivider";
-import { Link } from "@/i18n/navigation";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { getDescendantKeys } from "@/lib/categories";
 import { buildShopCategories, buildShopItems, parseSort } from "@/lib/shop-data";
@@ -78,32 +76,17 @@ export default async function CategoryPage({
           itemListJsonLd(label, rows.slice(0, 50).map((p, i) => ({ name: localized[i].name, path: pagePath(locale, productPath(p)) }))),
         ]}
       />
-      <div className="mx-auto max-w-7xl px-gutter pb-4 pt-6 sm:pt-8">
-        <nav aria-label="Breadcrumb">
-          <ol className="flex flex-wrap items-center gap-1 font-inter text-sm text-muted">
-            <li>
-              <Link href="/" className="inline-flex min-h-9 items-center hover:text-terracotta">{tSeo("home")}</Link>
-            </li>
-            <li aria-hidden><ChevronLeft size={14} className="ltr:rotate-180" /></li>
-            <li>
-              <Link href="/shop" className="inline-flex min-h-9 items-center hover:text-terracotta">{tSeo("shop")}</Link>
-            </li>
-            {parent && (
-              <>
-                <li aria-hidden><ChevronLeft size={14} className="ltr:rotate-180" /></li>
-                <li>
-                  <Link href={categoryPath(parent.key) as "/category/[key]"} className="inline-flex min-h-9 items-center hover:text-terracotta">
-                    {localizeCategory(parent, loc)}
-                  </Link>
-                </li>
-              </>
-            )}
-          </ol>
-        </nav>
-        <h1 className="mt-2 font-playfair text-h2 font-bold text-cream">{label}</h1>
-        <KufiyaDivider align="start" size="sm" className="mt-3" />
-        {description && <p className="mt-3 max-w-xl font-inter text-sm text-cream-secondary sm:text-base">{description}</p>}
-      </div>
+      <PageHeader
+        title={label}
+        eyebrow={parent ? localizeCategory(parent, loc) : tSeo("categories")}
+        description={description}
+        crumbs={[
+          { label: tSeo("home"), href: "/" },
+          { label: tSeo("shop"), href: "/shop" },
+          ...(parent ? [{ label: localizeCategory(parent, loc), href: categoryPath(parent.key) }] : []),
+          { label },
+        ]}
+      />
       <ShopClient
         items={buildShopItems(rows, categories, ranking, loc)}
         categories={[scopeNode]}

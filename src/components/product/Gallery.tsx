@@ -16,6 +16,9 @@ export function Gallery({ images, alt }: { images: string[]; alt: string }) {
   const t = useTranslations("product");
   const [index, setIndex] = useState(0);
   const [zoom, setZoom] = useState(false);
+  // Desktop hover-zoom: the photo magnifies toward the cursor.
+  const [lens, setLens] = useState<{ x: number; y: number } | null>(null);
+  const fineRef = useRef<boolean | null>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const zoomTrackRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -100,16 +103,33 @@ export function Gallery({ images, alt }: { images: string[]; alt: string }) {
               aria-roledescription="slide"
               aria-label={t("imageOf", { n: i + 1, total: n })}
             >
-              <Image
-                src={src}
-                alt={altFor(i)}
-                fill
-                sizes="(min-width: 1024px) 50vw, 100vw"
-                priority={i === 0}
-                fetchPriority={i === 0 ? "high" : "auto"}
-                className="select-none object-contain"
-                draggable={false}
-              />
+              <div
+                className="absolute inset-0 cursor-zoom-in overflow-hidden"
+                onClick={() => setZoom(true)}
+                onPointerMove={(e) => {
+                  if (fineRef.current === null) fineRef.current = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+                  if (e.pointerType !== "mouse" || !fineRef.current || i !== index) return;
+                  const r = e.currentTarget.getBoundingClientRect();
+                  setLens({ x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100 });
+                }}
+                onPointerLeave={() => setLens(null)}
+              >
+                <Image
+                  src={src}
+                  alt={altFor(i)}
+                  fill
+                  sizes="(min-width: 1024px) 50vw, 100vw"
+                  priority={i === 0}
+                  fetchPriority={i === 0 ? "high" : "auto"}
+                  className="select-none object-contain transition-transform duration-300 ease-out motion-reduce:transition-none"
+                  style={
+                    lens && i === index
+                      ? { transform: "scale(1.9)", transformOrigin: `${lens.x}% ${lens.y}%` }
+                      : undefined
+                  }
+                  draggable={false}
+                />
+              </div>
             </div>
           ))}
         </div>

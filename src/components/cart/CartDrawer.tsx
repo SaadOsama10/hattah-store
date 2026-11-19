@@ -51,25 +51,25 @@ export function CartDrawer() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
             onClick={closeCart}
-            className="fixed inset-0 z-[60] bg-bg-primary/70 backdrop-blur-sm"
+            className="fixed inset-0 z-[60] bg-[var(--tile-overlay)]/45 backdrop-blur-sm"
           />
           <m.div
             initial={{ x: locale === "ar" ? "-100%" : "100%" }}
             animate={{ x: 0 }}
             exit={{ x: locale === "ar" ? "-100%" : "100%" }}
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-y-0 end-0 z-[70] flex w-full max-w-md flex-col border-s border-cream/10 bg-bg-secondary shadow-2xl"
+            className="fixed inset-y-0 end-0 z-[70] flex w-full max-w-md flex-col border-s border-gold-line/30 bg-bg-primary shadow-lift"
           >
-            <div className="flex items-center justify-between border-b border-cream/10 px-6 py-5">
+            <div className="relative flex items-center justify-between border-b border-line px-6 py-5">
               <h2 className="flex items-center gap-2 font-playfair text-xl font-bold text-cream">
-                <ShoppingBag size={20} className="text-terracotta" />
+                <ShoppingBag size={20} className="text-gold" />
                 {t("title")}
               </h2>
               <button
                 type="button"
                 onClick={closeCart}
                 aria-label={tCommon("close")}
-                className="flex h-9 w-9 items-center justify-center rounded-full text-cream-secondary transition-colors hover:bg-cream/10 hover:text-cream"
+                className="flex h-11 w-11 items-center justify-center rounded-full text-cream-secondary transition-colors hover:bg-cream/8 hover:text-cream"
               >
                 <X size={18} />
               </button>
@@ -77,9 +77,9 @@ export function CartDrawer() {
 
             {items.length === 0 ? (
               <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
-                <ShoppingBag size={40} className="text-cream-secondary/25" />
-                <p className="font-inter text-cream">{t("empty")}</p>
-                <p className="font-inter text-sm text-cream-secondary/60">{t("emptyHint")}</p>
+                <span className="flex h-20 w-20 items-center justify-center rounded-full bg-bg-secondary ring-1 ring-gold-line/40"><ShoppingBag size={32} strokeWidth={1.25} className="text-gold" /></span>
+                <p className="font-playfair text-xl font-bold text-cream">{t("empty")}</p>
+                <p className="font-inter text-sm text-muted">{t("emptyHint")}</p>
                 <Button
                   variant="secondary"
                   size="md"
@@ -98,7 +98,7 @@ export function CartDrawer() {
                         <Link
                           href={`/product/${item.id}`}
                           onClick={closeCart}
-                          className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-bg-primary"
+                          className="relative h-24 w-20 shrink-0 overflow-hidden rounded-xl bg-bg-secondary ring-1 ring-line"
                         >
                           {item.image && (
                             <Image
@@ -117,12 +117,12 @@ export function CartDrawer() {
                               <Link
                                 href={`/product/${item.id}`}
                                 onClick={closeCart}
-                                className="font-inter text-sm font-semibold text-cream transition-colors hover:text-terracotta"
+                                className="font-inter text-sm font-semibold text-cream transition-colors hover:text-gold"
                               >
                                 {item.name}
                               </Link>
                               {(item.size || item.color || item.quantityOption) && (
-                                <span className="mt-0.5 font-inter text-xs text-cream-secondary/60">
+                                <span className="mt-0.5 font-inter text-xs text-muted">
                                   {[
                                     item.size && `${tProduct("sizeLabel")}: ${item.size}`,
                                     item.color && `${tProduct("colorLabel")}: ${item.color}`,
@@ -138,19 +138,19 @@ export function CartDrawer() {
                               type="button"
                               onClick={() => removeItem(item.lineId)}
                               aria-label={t("remove")}
-                              className="shrink-0 text-cream-secondary/50 transition-colors hover:text-terracotta-deep"
+                              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted transition-colors hover:text-terracotta-deep"
                             >
                               <Trash2 size={15} />
                             </button>
                           </div>
 
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2 rounded-full border border-cream/15 px-2 py-1">
+                            <div className="flex items-center gap-1 rounded-full border border-line-strong px-1 py-0.5">
                               <button
                                 type="button"
                                 onClick={() => setQuantity(item.lineId, item.quantity - 1)}
                                 aria-label={t("decreaseQuantity")}
-                                className="flex h-6 w-6 items-center justify-center rounded-full text-cream-secondary transition-colors hover:bg-cream/10 hover:text-cream"
+                                className="flex h-9 w-9 items-center justify-center rounded-full text-cream-secondary transition-colors hover:bg-cream/8 hover:text-cream"
                               >
                                 <Minus size={12} />
                               </button>
@@ -161,14 +161,14 @@ export function CartDrawer() {
                                 type="button"
                                 onClick={() => setQuantity(item.lineId, item.quantity + 1)}
                                 aria-label={t("increaseQuantity")}
-                                className="flex h-6 w-6 items-center justify-center rounded-full text-cream-secondary transition-colors hover:bg-cream/10 hover:text-cream"
+                                className="flex h-9 w-9 items-center justify-center rounded-full text-cream-secondary transition-colors hover:bg-cream/8 hover:text-cream"
                               >
                                 <Plus size={12} />
                               </button>
                             </div>
                             <span className="flex items-baseline gap-1.5 font-inter text-sm">
                               {item.originalPrice != null && (
-                                <span className="text-cream-secondary/40 line-through">
+                                <span className="text-muted line-through">
                                   {currency} {(item.originalPrice * item.quantity).toLocaleString()}
                                 </span>
                               )}
@@ -189,12 +189,12 @@ export function CartDrawer() {
                   </ul>
                 </div>
 
-                <div className="border-t border-cream/10 px-6 py-5">
+                <div className="border-t border-line bg-bg-secondary px-6 py-5">
                   <div className="mb-4 flex items-center justify-between font-inter text-cream">
-                    <span className="text-sm uppercase tracking-widest text-cream-secondary/60">
+                    <span className="text-eyebrow font-semibold uppercase tracking-[0.2em] text-gold">
                       {t("subtotal")}
                     </span>
-                    <span className="text-lg font-bold">
+                    <span className="font-playfair text-2xl font-bold">
                       {currency} {subtotal.toLocaleString()}
                     </span>
                   </div>

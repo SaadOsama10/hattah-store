@@ -43,6 +43,11 @@
   --t-on-accent: #ffffff;
   /* Soft tinted washes for pills/badges (bg only, never text). */
   --t-olive-wash: #e9eddc;
+  --t-gold: #835410; /* gold for text: AA on cream */
+  --t-gold-line: #b8893a; /* gold for hairlines / icons */
+  --t-gold-glow: rgba(214, 160, 72, 0.35);
+  --t-btn-gold: linear-gradient(180deg, #9a6418, #7a4c0e);
+  --t-btn-gold-fg: #fff8ec;
   --t-terracotta-wash: #f7e6dc;
 
   --t-glow-a: rgba(18, 120, 79, 0.08);
@@ -57,7 +62,8 @@
 
 /* Dark — warm espresso, never pure black; ivory text; brand accents
    lifted so they stay readable and calm on the dark ground. */
-:root[data-theme="dark"] {
+:root[data-theme="dark"],
+[data-theme="dark"] {
   --t-bg-primary: #1a1613;
   --t-bg-secondary: #221d19;
   --t-surface: #241f1a;
@@ -74,6 +80,11 @@
   --t-terracotta-deep: #f17d87;
   --t-on-accent: #1a1410;
   --t-olive-wash: #2c3022;
+  --t-gold: #e8b965;
+  --t-gold-line: #d4a659;
+  --t-gold-glow: rgba(226, 168, 78, 0.3);
+  --t-btn-gold: linear-gradient(180deg, #f0c77d, #d39e45);
+  --t-btn-gold-fg: #1d130a;
   --t-terracotta-wash: #3a261d;
 
   --t-glow-a: rgba(94, 197, 150, 0.07);
@@ -102,14 +113,16 @@
   --color-terracotta: var(--t-terracotta);
   --color-terracotta-deep: var(--t-terracotta-deep);
   --color-on-accent: var(--t-on-accent);
+  --color-gold: var(--t-gold);
+  --color-gold-line: var(--t-gold-line);
   --color-olive-wash: var(--t-olive-wash);
   --color-terracotta-wash: var(--t-terracotta-wash);
 
   /* ── Type scale (fluid display sizes; body uses Tailwind defaults) ── */
   --text-display: clamp(2.4rem, 1.4rem + 4.6vw, 4.6rem);
   --text-display--line-height: 1.08;
-  --text-h2: clamp(1.75rem, 1.25rem + 2vw, 2.75rem);
-  --text-h2--line-height: 1.2;
+  --text-h2: clamp(1.9rem, 1.25rem + 2.6vw, 3.3rem);
+  --text-h2--line-height: 1.18;
   --text-h3: clamp(1.15rem, 1rem + 0.5vw, 1.4rem);
   --text-h3--line-height: 1.35;
   --text-eyebrow: 0.75rem;
@@ -126,8 +139,10 @@
 
   /* ── Shadow (theme-aware tint) ── */
   --shadow-soft: 0 24px 60px -24px var(--t-shadow-ambient);
-  --shadow-card: 0 1px 2px var(--t-shadow-tight), 0 8px 24px -12px var(--t-shadow-ambient);
-  --shadow-lift: 0 2px 4px var(--t-shadow-tight), 0 22px 48px -18px var(--t-shadow-ambient);
+  /* warm, layered (never flat grey) */
+  --shadow-card: 0 1px 1px var(--t-shadow-tight), 0 4px 10px -4px var(--t-shadow-tight), 0 14px 30px -18px var(--t-shadow-ambient);
+  --shadow-lift: 0 1px 2px var(--t-shadow-tight), 0 10px 20px -10px var(--t-shadow-tight), 0 30px 60px -28px var(--t-shadow-ambient);
+  --shadow-glow-gold: 0 0 0 1px color-mix(in srgb, var(--t-gold-line) 45%, transparent), 0 18px 44px -18px var(--t-gold-glow);
   --shadow-glow-terracotta: 0 10px 30px -12px color-mix(in srgb, var(--t-terracotta) 55%, transparent);
   --shadow-glow-forest: 0 10px 30px -12px color-mix(in srgb, var(--t-forest) 55%, transparent);
 
@@ -214,6 +229,35 @@
       opacity: 1;
     }
   }
+}
+
+/* Any element carrying data-theme (the <html>, or a section forced to the
+   dark palette such as the "deep" bands) re-derives the Tailwind colour
+   variables from its own --t-* values — custom properties resolve where
+   they're declared, so without this a nested scope would inherit the
+   root's already-resolved colours. */
+[data-theme] {
+  --color-bg-primary: var(--t-bg-primary);
+  --color-bg-secondary: var(--t-bg-secondary);
+  --color-surface: var(--t-surface);
+  --color-surface-raised: var(--t-surface-raised);
+  --color-line: var(--t-line);
+  --color-line-strong: var(--t-line-strong);
+  --color-cream: var(--t-text-primary);
+  --color-cream-secondary: var(--t-text-secondary);
+  --color-muted: var(--t-text-muted);
+  --color-forest: var(--t-forest);
+  --color-olive: var(--t-olive);
+  --color-terracotta: var(--t-terracotta);
+  --color-terracotta-deep: var(--t-terracotta-deep);
+  --color-on-accent: var(--t-on-accent);
+  --color-olive-wash: var(--t-olive-wash);
+  --color-terracotta-wash: var(--t-terracotta-wash);
+  --color-gold: var(--t-gold);
+  --color-gold-line: var(--t-gold-line);
+  --shadow-card: 0 1px 1px var(--t-shadow-tight), 0 4px 10px -4px var(--t-shadow-tight), 0 14px 30px -18px var(--t-shadow-ambient);
+  --shadow-lift: 0 1px 2px var(--t-shadow-tight), 0 10px 20px -10px var(--t-shadow-tight), 0 30px 60px -28px var(--t-shadow-ambient);
+  --shadow-glow-gold: 0 0 0 1px color-mix(in srgb, var(--t-gold-line) 45%, transparent), 0 18px 44px -18px var(--t-gold-glow);
 }
 
 /* Motion durations (plain vars; used in custom CSS below). */
@@ -334,10 +378,11 @@ body {
    script), so content is never lost without JS. */
 html.js .reveal {
   opacity: 0;
-  transform: translateY(18px);
+  transform: translateY(14px);
   transition:
-    opacity var(--dur-slow) var(--ease-soft),
-    transform var(--dur-slow) var(--ease-soft);
+    opacity 0.6s var(--ease-soft),
+    transform 0.6s var(--ease-soft),
+    filter 0.6s var(--ease-soft);
   transition-delay: var(--reveal-delay, 0ms);
 }
 html.js .reveal.is-visible {
@@ -347,8 +392,21 @@ html.js .reveal.is-visible {
 
 /* Skeleton block */
 .skeleton {
-  background: color-mix(in srgb, var(--color-cream) 8%, transparent);
-  animation: var(--animate-shimmer);
+  /* warm shimmer sweep */
+  background:
+    linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--t-gold-line) 16%, transparent) 50%, transparent 70%) no-repeat,
+    color-mix(in srgb, var(--color-cream) 7%, var(--color-surface));
+  background-size: 220% 100%, auto;
+  animation: skeleton-sweep 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-sweep {
+  from {
+    background-position: 120% 0, 0 0;
+  }
+  to {
+    background-position: -120% 0, 0 0;
+  }
 }
 
 /* Horizontal product rails: momentum scroll + snap, hidden bar. */
@@ -906,7 +964,7 @@ html.bh-seen .bh-glow-wrap {
 .marquee-track {
   display: flex;
   width: max-content;
-  animation: marquee-ltr 42s linear infinite;
+  animation: marquee-ltr 70s linear infinite;
 }
 [dir="rtl"] .marquee-track {
   animation-name: marquee-rtl;
@@ -929,6 +987,78 @@ html.bh-seen .bh-glow-wrap {
 .cv-auto {
   content-visibility: auto;
   contain-intrinsic-size: auto 720px;
+}
+
+/* ── Section bands ── */
+.band-deep {
+  background:
+    radial-gradient(ellipse 80% 70% at 50% 0%, #2c1e13 0%, transparent 70%),
+    radial-gradient(ellipse 70% 60% at 50% 100%, #24180f 0%, transparent 70%),
+    #120c08;
+}
+.band-pattern {
+  opacity: 0.07;
+  -webkit-mask-image: radial-gradient(ellipse 60% 70% at 50% 50%, #000, transparent 75%);
+  mask-image: radial-gradient(ellipse 60% 70% at 50% 50%, #000, transparent 75%);
+}
+.band-deep .band-pattern {
+  opacity: 0.1;
+}
+.band-grain {
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px;
+}
+
+/* ── Gold rule under section headings: draws when its Reveal becomes visible ── */
+.gold-rule {
+  display: block;
+  width: 4.5rem;
+  height: 1px;
+  background: linear-gradient(90deg, var(--color-gold-line), color-mix(in srgb, var(--color-gold-line) 20%, transparent));
+  transform-origin: left center;
+}
+[dir="rtl"] .gold-rule {
+  transform-origin: right center;
+  background: linear-gradient(-90deg, var(--color-gold-line), color-mix(in srgb, var(--color-gold-line) 20%, transparent));
+}
+html.js .reveal .gold-rule {
+  transform: scaleX(0);
+  transition: transform 0.9s var(--ease-soft) 0.25s;
+}
+html.js .reveal.is-visible .gold-rule {
+  transform: scaleX(1);
+}
+/* blur → sharp variant of Reveal */
+html.js .reveal.reveal-blur {
+  filter: blur(8px);
+}
+html.js .reveal.reveal-blur.is-visible {
+  filter: none;
+}
+
+/* ── Buttons: shine sweep (primary + WhatsApp) ── */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.btn-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.38) 48%, transparent 66%);
+  translate: -130% 0;
+  transition: translate 0s;
+}
+.btn-shine:hover::after {
+  translate: 130% 0;
+  transition: translate 0.9s var(--ease-soft);
+}
+.bg-gold-btn {
+  background: var(--t-btn-gold);
+  color: var(--t-btn-gold-fg);
 }
 
 /* ── Buttons: arrow nudges on hover ── */
@@ -965,17 +1095,133 @@ html.js .reveal.is-visible .kufiya-divider svg {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: radial-gradient(
-    circle at var(--sx, 50%) var(--sy, 0%),
-    rgba(255, 255, 255, 0.28),
-    transparent 55%
-  );
+  /* warm gold spotlight that follows the cursor (mouse/pen only) */
+  background:
+    radial-gradient(circle 140px at var(--sx, 50%) var(--sy, 0%), color-mix(in srgb, var(--t-gold-line) 34%, transparent), transparent 70%),
+    radial-gradient(circle at var(--sx, 50%) var(--sy, 0%), rgba(255, 255, 255, 0.16), transparent 50%);
   opacity: 0;
   mix-blend-mode: soft-light;
   transition: opacity 0.4s ease;
 }
 .tilt.is-tilting .tilt-sheen {
   opacity: 1;
+}
+
+/* ── Gold frame drawing in from the four corners on hover (category tiles) ── */
+.gold-corners {
+  pointer-events: none;
+  position: absolute;
+  inset: 10px;
+  border-radius: calc(var(--radius-tile) - 8px);
+  --c: var(--t-gold-line);
+  background:
+    linear-gradient(var(--c), var(--c)) top left / 0 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) top left / 1px 0 no-repeat,
+    linear-gradient(var(--c), var(--c)) top right / 0 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) top right / 1px 0 no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom left / 0 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom left / 1px 0 no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom right / 0 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom right / 1px 0 no-repeat;
+  transition: background-size 0.6s var(--ease-soft);
+}
+.group:hover .gold-corners,
+.group:focus-visible .gold-corners {
+  background-size:
+    34px 1px, 1px 34px, 34px 1px, 1px 34px,
+    34px 1px, 1px 34px, 34px 1px, 1px 34px;
+}
+
+/* ── Scroll-lit words (Our story); without JS / reduced motion they're simply fully visible ── */
+html.js .scroll-word {
+  opacity: 0.18;
+  transition: opacity 0.25s linear;
+}
+@media (prefers-reduced-motion: reduce) {
+  html.js .scroll-word {
+    opacity: 1 !important;
+  }
+}
+/* slow rotation for seals / rings */
+.spin-slow {
+  animation: bh-spin 90s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .spin-slow {
+    animation: none;
+  }
+}
+
+/* final CTA: a warm glow drifting very slowly behind the panel content */
+.cta-glow {
+  inset: -30%;
+  background:
+    radial-gradient(circle at 30% 40%, rgba(226, 168, 78, 0.28), transparent 45%),
+    radial-gradient(circle at 70% 60%, rgba(94, 197, 150, 0.12), transparent 40%);
+  animation: cta-drift 18s ease-in-out infinite alternate;
+}
+@keyframes cta-drift {
+  to {
+    transform: translate3d(6%, -4%, 0) rotate(8deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cta-glow {
+    animation: none;
+  }
+}
+
+/* ── Navigation progress (layout/NavProgress.tsx) ── */
+.nav-progress {
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  z-index: 80;
+  height: 2px;
+  transform-origin: left center;
+  background: linear-gradient(90deg, var(--t-gold-line), #f0c77d);
+  box-shadow: 0 0 10px var(--t-gold-glow);
+  transform: scaleX(0);
+  opacity: 0;
+  pointer-events: none;
+}
+[dir="rtl"] .nav-progress {
+  transform-origin: right center;
+}
+.nav-progress[data-state="loading"] {
+  opacity: 1;
+  animation: nav-progress 8s cubic-bezier(0.1, 0.6, 0.2, 1) forwards;
+}
+.nav-progress[data-state="done"] {
+  opacity: 0;
+  transform: scaleX(1);
+  transition:
+    transform 0.2s ease,
+    opacity 0.35s ease 0.15s;
+}
+@keyframes nav-progress {
+  from {
+    transform: scaleX(0.05);
+  }
+  to {
+    transform: scaleX(0.9);
+  }
+}
+
+/* ── Card quick actions: revealed on hover/focus where a mouse exists, always shown on touch ── */
+@media (hover: hover) and (pointer: fine) {
+  .card-actions {
+    opacity: 0;
+    translate: 0 6px;
+    transition:
+      opacity 0.3s var(--ease-soft),
+      translate 0.3s var(--ease-soft);
+  }
+  .group:hover .card-actions,
+  .group:focus-within .card-actions {
+    opacity: 1;
+    translate: 0 0;
+  }
 }
 
 /* ── Images fade in once loaded (no layout jump: boxes are pre-sized) ── */
@@ -1033,6 +1279,12 @@ html.js .reveal.is-visible .kufiya-divider svg {
   .bh-scroll-dot,
   .marquee-track {
     animation: none !important;
+  }
+  html.js .reveal .gold-rule {
+    transform: none;
+  }
+  html.js .reveal.reveal-blur {
+    filter: none;
   }
   .bh-particles {
     display: none;

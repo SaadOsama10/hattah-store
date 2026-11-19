@@ -139,7 +139,7 @@ export function ShopClient({
   return (
     <div>
       {/* ── Sticky filter bar ── */}
-      <div className="sticky top-16 z-30 border-b border-line bg-[var(--t-header-bg)] backdrop-blur-xl backdrop-saturate-150">
+      <div className="sticky top-[var(--header-offset,4rem)] z-30 border-b border-line bg-[var(--t-header-bg)] backdrop-blur-xl backdrop-saturate-150 transition-[top] duration-300 ease-soft">
         <div className="mx-auto max-w-7xl px-gutter py-3">
           {!scope && (
             <div role="group" aria-label={t("categoryFilter")} className="scrollbar-none -mx-gutter flex gap-2 overflow-x-auto px-gutter">

@@ -29,11 +29,14 @@ export function Reveal({
   className,
   delay = 0,
   as: Tag = "div",
+  blur = false,
 }: {
   children: ReactNode;
   className?: string;
   delay?: number;
   as?: ElementType;
+  /** blur → sharp as it appears (section headings) */
+  blur?: boolean;
 }) {
   const ref = useRef<HTMLElement>(null);
   const [visible, setVisible] = useState(false);
@@ -57,7 +60,7 @@ export function Reveal({
   return (
     <Tag
       ref={ref}
-      className={cn("reveal", visible && "is-visible", className)}
+      className={cn("reveal", blur && "reveal-blur", visible && "is-visible", className)}
       style={delay ? { ["--reveal-delay" as string]: `${delay}ms` } : undefined}
     >
       {children}

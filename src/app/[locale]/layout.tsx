@@ -11,12 +11,16 @@ import "../globals.css";
 
 // Display / heading fonts — the brand's identity faces (same as the logo and the
 // social-media templates): Playfair Display for Latin, Amiri for Arabic.
+// next/font preloads every font declared here on every page, whatever the language. To keep
+// the critical path light only the Arabic faces (default locale) are preloaded; the Latin
+// faces load on demand with metric-matched fallbacks (no layout shift).
 const playfair = Playfair_Display({
   // latin-ext covers Turkish (ğ ş ı İ) in headings.
   subsets: ["latin", "latin-ext"],
   weight: ["700"],
   variable: "--font-playfair-latin",
   display: "swap",
+  preload: false,
 });
 
 // Amiri Bold, self-hosted subset (Arabic letters/marks/digits + basic punctuation, the
@@ -40,11 +44,12 @@ const playfairBrand = Playfair_Display({
 
 // Body / UI font — clean and modern: Inter (Latin) or IBM Plex Sans Arabic (Arabic).
 const inter = Inter({
-  // Latin only (as before the redesign): latin-ext would add ~85 KB of preloaded fonts on every page.
+  // Latin only (as before the redesign): latin-ext would add ~85 KB of fonts on every page.
   subsets: ["latin"],
   weight: ["400", "600"],
   variable: "--font-inter-latin",
   display: "swap",
+  preload: false,
 });
 
 // Self-hosted subset (Arabic block + basic Latin/digits/punctuation), ~25 KB per weight.

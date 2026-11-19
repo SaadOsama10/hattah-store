@@ -137,7 +137,8 @@ export async function Hero() {
             />
           </div>
 
-          <p className="bh-word" dir="ltr" aria-label="HATTAH">
+          <p className="bh-word" dir="ltr">
+            <span className="sr-only">HATTAH</span>
             <span aria-hidden className="bh-letters">
               {letters.map((l, i) => (
                 <span key={i} className="bh-letter bh-e" style={{ animationDelay: `${1400 + i * 80}ms` }}>

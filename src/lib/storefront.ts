@@ -56,7 +56,14 @@ export interface CardProduct {
   needsOptions: boolean;
   categoryLabel?: string;
   url: string; // absolute, for the WhatsApp message
+  /** Admin's "featured" flag (products.is_featured). */
+  featured: boolean;
+  /** Added to the store within the last NEW_DAYS days (products.created_at). */
+  isNew: boolean;
 }
+
+/** A product counts as "new" for this many days after it was added. */
+export const NEW_DAYS = 21;
 
 export function toCardProduct(row: ProductRow, locale: Locale, categories: CategoryRow[]): CardProduct {
   const p = localizeProduct(row, locale);
@@ -77,6 +84,8 @@ export function toCardProduct(row: ProductRow, locale: Locale, categories: Categ
     needsOptions: p.sizes.length > 0 || p.colors.length > 0 || p.quantities.length > 0,
     categoryLabel,
     url: absoluteUrl(`/${locale}/product/${p.slug}`),
+    featured: row.is_featured === true,
+    isNew: Date.now() - new Date(row.created_at).getTime() < NEW_DAYS * 86_400_000,
   };
 }
 

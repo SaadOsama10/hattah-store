@@ -4,13 +4,15 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { buildMetadata, categoryPath, organizationGraph } from "@/lib/seo";
 import { Hero } from "@/components/home/Hero";
 import { Marquee } from "@/components/home/Marquee";
-import { TrustStrip } from "@/components/home/TrustStrip";
+import { FeaturedGrid } from "@/components/home/FeaturedGrid";
+import { OurStory } from "@/components/home/OurStory";
+import { WhyHattah } from "@/components/home/WhyHattah";
+import { FinalCta } from "@/components/home/FinalCta";
+import { SectionDivider } from "@/components/ui/Band";
 import { CategoryTiles } from "@/components/home/CategoryTiles";
 import type { TileData } from "@/components/home/CategoryTileCard";
 import { OffersBanner } from "@/components/home/OffersBanner";
 import { ProductRail } from "@/components/home/ProductRail";
-import { AboutHattah } from "@/components/home/AboutHattah";
-import { WhatsAppCta } from "@/components/home/WhatsAppCta";
 import { getAllProducts, getCachedCategories, hasActiveOffers } from "@/lib/supabase/queries";
 import { getBestSellerRanking } from "@/lib/supabase/bestsellers";
 import { buildCategoryTree, getDescendantKeys } from "@/lib/categories";
@@ -49,6 +51,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       href: categoryPath(cat.key),
       iconKey: cat.icon_key,
       images: tileImages(products.filter((p) => keys.has(p.category)), ranking),
+      count: products.filter((p) => keys.has(p.category)).length,
+      countLabel: t("productsCount", { count: products.filter((p) => keys.has(p.category)).length }),
     };
   });
 
@@ -70,12 +74,16 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   const sectionLink = (keys: readonly string[]) => (keys.length === 1 ? categoryPath(keys[0]) : "/shop");
 
+  // Featured selection: the admin's "featured" products, best sellers first.
+  const featured = byRank(products.filter((p) => p.is_featured), ranking).slice(0, 8);
+
   return (
     <>
       <JsonLd data={organizationGraph(locale)} />
       <Hero />
       <Marquee />
       <CategoryTiles tiles={tiles} />
+      <FeaturedGrid products={featured.map(card)} />
       <ProductRail
         id="best"
         products={best.map(card)}
@@ -83,8 +91,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         title={t("bestTitle")}
         subtitle={t("bestSubtitle")}
         action={{ href: "/shop?sort=best", label: t("seeAll") }}
-        tone="tinted"
       />
+      <OurStory />
       <ProductRail
         id="food"
         products={food.map(card)}
@@ -92,6 +100,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         title={t("foodTitle")}
         subtitle={t("foodSubtitle")}
         action={{ href: sectionLink(foodKeys), label: t("seeAll") }}
+        tone="pattern"
       />
       {offersActive && <OffersBanner />}
       <ProductRail
@@ -101,8 +110,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         title={t("giftsTitle")}
         subtitle={t("giftsSubtitle")}
         action={{ href: sectionLink(giftKeys), label: t("seeAll") }}
-        tone="tinted"
+        tone="cream"
       />
+      <WhyHattah />
+      <SectionDivider />
       <ProductRail
         id="new"
         products={newest.map(card)}
@@ -111,9 +122,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         subtitle={t("newSubtitle")}
         action={{ href: "/shop", label: t("seeAll") }}
       />
-      <TrustStrip />
-      <AboutHattah />
-      <WhatsAppCta />
+      <FinalCta />
     </>
   );
 }

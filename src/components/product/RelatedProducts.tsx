@@ -25,7 +25,7 @@ export async function RelatedProducts({
       products={products.map((p) => toCardProduct(p, locale, categories))}
       title={t("similarTitle")}
       action={categoryKey ? { href: categoryPath(categoryKey), label: tHome("seeAll") } : undefined}
-      tone="tinted"
+      tone="cream"
     />
   );
 }

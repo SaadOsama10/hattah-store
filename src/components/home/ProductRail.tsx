@@ -7,7 +7,7 @@ import { ProductCard } from "@/components/ui/ProductCard";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/ui/Reveal";
 import type { CardProduct } from "@/lib/storefront";
-import { cn } from "@/lib/cn";
+import { Band, type BandTone } from "@/components/ui/Band";
 
 /** A titled, horizontally scrolling row of product cards (swipe on
  * phones, arrow buttons on desktop). Two cards and a peek of the third
@@ -26,7 +26,7 @@ export function ProductRail({
   title: string;
   subtitle?: string;
   action?: { href: string; label: string };
-  tone?: "plain" | "tinted";
+  tone?: BandTone;
   id?: string;
 }) {
   const t = useTranslations("common");
@@ -43,9 +43,9 @@ export function ProductRail({
   const headingId = id ? `${id}-title` : undefined;
 
   return (
-    <section aria-labelledby={headingId} className={cn("cv-auto py-section", tone === "tinted" && "bg-bg-secondary")}>
+    <Band tone={tone} labelledBy={headingId} className="cv-auto py-section">
       <div className="mx-auto max-w-7xl px-gutter">
-        <Reveal>
+        <Reveal blur>
           <SectionHeading id={headingId} eyebrow={eyebrow} title={title} subtitle={subtitle} action={action} />
         </Reveal>
       </div>
@@ -81,6 +81,6 @@ export function ProductRail({
           </div>
         )}
       </div>
-    </section>
+    </Band>
   );
 }

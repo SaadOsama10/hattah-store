@@ -9,13 +9,13 @@ type Variant = "primary" | "secondary" | "ghost" | "whatsapp";
 type Size = "md" | "lg";
 
 const variantClasses: Record<Variant, string> = {
-  primary:
-    "bg-terracotta text-on-accent border border-transparent shadow-card hover:shadow-glow-terracotta hover:brightness-[1.06]",
-  secondary:
-    "bg-transparent text-cream border border-line-strong hover:border-cream hover:bg-cream/5",
+  // 1 · primary: gold with a shine sweep and a soft gold glow
+  primary: "btn-shine bg-gold-btn border border-transparent shadow-card hover:shadow-glow-gold",
+  // 2 · secondary: transparent with a fine border
+  secondary: "bg-transparent text-cream border border-line-strong hover:border-gold-line hover:text-gold",
   ghost: "bg-transparent text-cream border border-transparent hover:bg-cream/8",
-  whatsapp:
-    "bg-forest text-on-accent border border-transparent shadow-card hover:shadow-glow-forest hover:brightness-[1.06]",
+  // WhatsApp keeps its own green, with the same shine
+  whatsapp: "btn-shine bg-forest text-on-accent border border-transparent shadow-card hover:shadow-glow-forest",
 };
 
 const sizeClasses: Record<Size, string> = {
@@ -26,7 +26,7 @@ const sizeClasses: Record<Size, string> = {
 const SOUND_VARIANTS: Variant[] = ["primary", "whatsapp"];
 
 const baseClasses =
-  "inline-flex items-center justify-center gap-2 font-inter font-semibold tracking-wide transition-all duration-300 ease-soft rounded-full disabled:opacity-50 disabled:pointer-events-none hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]";
+  "inline-flex items-center justify-center gap-2 font-inter font-semibold tracking-wide transition-all duration-300 ease-soft rounded-full disabled:opacity-50 disabled:pointer-events-none hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.97]";
 
 interface CommonProps {
   variant?: Variant;

@@ -5,6 +5,8 @@ import { AnnouncementBar, ANNOUNCE_INIT_SCRIPT } from "@/components/layout/Annou
 import { AmbientBackground } from "@/components/ui/AmbientBackground";
 import { CartProvider } from "@/contexts/CartContext";
 import { CartDrawer } from "@/components/cart/CartDrawer";
+import { NavProgress } from "@/components/layout/NavProgress";
+import { BackToTop } from "@/components/layout/BackToTop";
 import { MotionProvider } from "@/components/ui/MotionProvider";
 import { getCachedCategories, hasActiveOffers } from "@/lib/supabase/queries";
 import { localizeCategory, type Locale } from "@/lib/supabase/types";
@@ -36,12 +38,14 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
           {tCommon("skipToContent")}
         </a>
         <script dangerouslySetInnerHTML={{ __html: ANNOUNCE_INIT_SCRIPT }} />
+        <NavProgress />
         <AnnouncementBar items={announce} closeLabel={t("close")} />
         <Header hasOffers={offersActive} categories={navCategories} />
         <main id="main" className="min-h-screen">
           {children}
         </main>
         <Footer categories={navCategories} hasOffers={offersActive} />
+        <BackToTop label={tCommon("backToTop")} />
         <CartDrawer />
       </CartProvider>
     </MotionProvider>
