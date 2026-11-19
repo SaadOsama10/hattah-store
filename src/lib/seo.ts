@@ -82,9 +82,9 @@ export function productTitle(name: string): string {
 }
 
 const TAIL: Record<string, string> = {
-  ar: "اطلبها من حَطّة — تراث فلسطيني أصيل، توصيل داخل تركيا.",
-  en: "Order from HATTAH — authentic Palestinian heritage, delivered across Turkey.",
-  tr: "HATTAH'tan sipariş verin — özgün Filistin mirası, Türkiye'ye teslimat.",
+  ar: "اطلبها من حَطّة — تراث فلسطيني أصيل، والطلب عبر واتساب.",
+  en: "Order from HATTAH — authentic Palestinian heritage, ordered on WhatsApp.",
+  tr: "HATTAH'tan sipariş verin — özgün Filistin mirası, WhatsApp ile sipariş.",
 };
 
 export function productDescription(locale: string, name: string, description: string, categoryLabel: string): string {
@@ -133,18 +133,14 @@ export function organizationGraph(locale: string): Graph {
     image: absoluteUrl(BUSINESS.logoPath),
     description:
       locale === "ar"
-        ? "متجر إلكتروني في إسطنبول لمنتجات التراث الفلسطيني والغزّي: هوديات، تطريز، لوحات، ميداليات وأكلات منزلية. توصيل في كل تركيا ومجاني في باشاكشهير."
+        ? "حَطّة علامة فلسطينية مقرّها إسطنبول لمنتجات التراث الفلسطيني والغزّي: هوديات، تطريز، لوحات، ميداليات وأكلات منزلية. الطلب عبر المتجر أو واتساب."
         : locale === "tr"
-          ? "İstanbul merkezli çevrimiçi mağaza: Filistin ve Gazze mirasından kapüşonlular, nakış, tablolar, madalyonlar ve ev yapımı yiyecekler. Türkiye'nin her yerine teslimat, Başakşehir'de ücretsiz."
-          : "An Istanbul-based online store for Palestinian and Gazan heritage: hoodies, tatreez embroidery, artwork, medallions and homemade food. Delivery across Turkey, free in Başakşehir.",
+          ? "İstanbul merkezli bir Filistin markası: Filistin ve Gazze mirasından kapüşonlular, nakış, tablolar, madalyonlar ve ev yapımı yiyecekler. Sipariş mağazadan veya WhatsApp'tan."
+          : "A Palestinian brand based in Istanbul for Palestinian and Gazan heritage: hoodies, tatreez embroidery, artwork, medallions and homemade food. Order online or on WhatsApp.",
     telephone: BUSINESS.phone,
     email: BUSINESS.email,
     priceRange: "₺₺",
     address: { "@type": "PostalAddress", addressLocality: "Istanbul", addressCountry: BUSINESS.country },
-    areaServed: [
-      { "@type": "City", name: "Istanbul" },
-      { "@type": "Country", name: "Türkiye" },
-    ],
     parentOrganization: { "@id": ORG_ID },
     sameAs,
     knowsLanguage: ["ar", "en", "tr"],

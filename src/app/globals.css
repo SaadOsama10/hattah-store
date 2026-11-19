@@ -26,38 +26,38 @@
    ═════════════════════════════════════════════════════════════ */
 :root {
   /* Light — warm cream paper, ink-brown text. */
-  --t-bg-primary: #fbf8f2;
-  --t-bg-secondary: #f2ece1;
-  --t-surface: #ffffff;
-  --t-surface-raised: #fffdf8;
-  --t-line: rgba(30, 25, 18, 0.1);
-  --t-line-strong: rgba(30, 25, 18, 0.2);
+  --t-bg-primary: #fbf6ec; /* warm ivory */
+  --t-bg-secondary: #efe3cc; /* honey sand — the alternate band */
+  --t-surface: #fffaf1;
+  --t-surface-raised: #fffcf6;
+  --t-line: rgba(120, 85, 40, 0.16); /* sand hairline */
+  --t-line-strong: rgba(120, 85, 40, 0.3);
   --t-text-primary: #1e1912;
   --t-text-secondary: #5b5244;
-  --t-text-muted: #6d6354;
+  --t-text-muted: #685d4c;
 
-  --t-forest: #12784f;
+  --t-forest: #0f6c47;
   --t-olive: #4d6b32;
-  --t-terracotta: #b4461f;
+  --t-terracotta: #a3401b;
   --t-terracotta-deep: #bf2a3a;
   --t-on-accent: #ffffff;
   /* Soft tinted washes for pills/badges (bg only, never text). */
   --t-olive-wash: #e9eddc;
   --t-gold: #835410; /* gold for text: AA on cream */
   --t-gold-line: #b8893a; /* gold for hairlines / icons */
-  --t-gold-glow: rgba(214, 160, 72, 0.35);
-  --t-btn-gold: linear-gradient(180deg, #9a6418, #7a4c0e);
+  --t-gold-glow: rgba(214, 160, 72, 0.4);
+  --t-btn-gold: linear-gradient(180deg, #8a5518, #643b12); /* rich earth-brown in daylight */
   --t-btn-gold-fg: #fff8ec;
   --t-terracotta-wash: #f7e6dc;
 
   --t-glow-a: rgba(18, 120, 79, 0.08);
   --t-glow-b: rgba(180, 70, 31, 0.07);
   --t-glow-c: rgba(77, 107, 50, 0.08);
-  --t-shadow-ambient: rgba(92, 70, 40, 0.14);
-  --t-shadow-tight: rgba(92, 70, 40, 0.1);
+  --t-shadow-ambient: rgba(110, 72, 30, 0.18);
+  --t-shadow-tight: rgba(110, 72, 30, 0.1);
   /* Photo scrim — fixed warm-black in both themes (text over photos is always light). */
   --tile-overlay: #17120c;
-  --t-header-bg: rgba(251, 248, 242, 0.78);
+  --t-header-bg: rgba(251, 246, 236, 0.8);
 }
 
 /* Dark — warm espresso, never pure black; ivory text; brand accents
@@ -272,6 +272,12 @@
 @view-transition {
   navigation: auto;
 }
+/* theme switch: a quick, even cross-fade of the whole page */
+html.theme-xfade::view-transition-old(root),
+html.theme-xfade::view-transition-new(root) {
+  animation-duration: 0.3s;
+  animation-timing-function: ease;
+}
 
 /* Locale-aware font utilities. --font-display-current /
    --font-body-current are set per-locale on <body> in the root layout:
@@ -432,23 +438,25 @@ html.js .reveal.is-visible {
    film grain → vignette → content. Entry timeline ≈3.2 s, once per session
    (html.bh-seen = settled). Parallax via --mx/--my (−1…1), scroll-out via --sp (0…1). */
 .bh {
-  /* light: old paper, olive-earth net, soft gold */
-  --bh-bg-0: #f6eedd;
-  --bh-bg-1: #e3d2b2;
-  --bh-glow: rgba(222, 168, 78, 0.42);
-  --bh-net: #6f6a3e;
-  --bh-net-o: 0.32;
-  --bh-ray: rgba(205, 150, 60, 0.11);
-  --bh-text: #24180e;
-  --bh-text-2: #5b4530;
-  --bh-gold: #835410;
-  --bh-line: #a87a2c;
+  /* DAY — "morning light on old Jerusalem stone": ivory → honey sand, a soft
+     sun glow from the upper corner, diagonal light, olive-brown ink. */
+  --bh-bg-0: #fdf6e8;
+  --bh-bg-1: #dcc093;
+  --bh-glow: rgba(255, 199, 112, 0.62);
+  --bh-net: #4a4126;
+  --bh-net-o: 0.36;
+  --bh-ray: rgba(255, 236, 196, 0.5);
+  --bh-text: #2b1a0c;
+  --bh-text-2: #46512a;
+  --bh-gold: #7a4b10;
+  --bh-line: #8a6a3a;
   --bh-green: #3f7a4a;
   --bh-red: #a8333b;
-  --bh-vignette: rgba(110, 80, 40, 0.3);
-  --bh-grain: 0.025;
-  --bh-btn-bg: linear-gradient(180deg, #9a6418, #7a4c0e);
-  --bh-btn-fg: #fff8ec;
+  --bh-vignette: rgba(140, 98, 48, 0.34);
+  --bh-grain: 0.018;
+  --bh-btn-bg: linear-gradient(180deg, #7d4b1d, #5a3411);
+  --bh-btn-fg: #fff6e6;
+  --bh-logo-shadow: 0 22px 44px -16px rgba(110, 66, 22, 0.55), 0 0 0 1px rgba(138, 106, 58, 0.45);
   position: relative;
   isolation: isolate;
   overflow: hidden;
@@ -477,6 +485,37 @@ html.js .reveal.is-visible {
   --bh-grain: 0.04;
   --bh-btn-bg: linear-gradient(180deg, #f0c77d, #d39e45);
   --bh-btn-fg: #1d130a;
+  --bh-logo-shadow: 0 0 0 1px color-mix(in srgb, var(--bh-line) 40%, transparent), 0 18px 50px -12px rgba(0, 0, 0, 0.45), 0 0 60px -6px var(--bh-glow);
+}
+/* Day: the sun sits in the upper corner and its light falls diagonally. */
+:root:not([data-theme="dark"]) .bh {
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 40%, var(--bh-bg-0) 0%, transparent 70%),
+    linear-gradient(160deg, #fff9ee 0%, var(--bh-bg-0) 35%, #ead7b3 70%, var(--bh-bg-1) 100%);
+}
+:root:not([data-theme="dark"]) .bh-glow {
+  background: radial-gradient(circle, var(--bh-glow) 0%, rgba(255, 210, 140, 0.18) 38%, transparent 64%);
+}
+:root:not([data-theme="dark"]) .bh-rays-wrap {
+  -webkit-mask-image: linear-gradient(160deg, #000 0%, rgba(0, 0, 0, 0.55) 45%, transparent 85%);
+  mask-image: linear-gradient(160deg, #000 0%, rgba(0, 0, 0, 0.55) 45%, transparent 85%);
+}
+:root:not([data-theme="dark"]) .bh-rays {
+  left: 8%;
+  top: -18%;
+  background: repeating-conic-gradient(from 95deg, var(--bh-ray) 0deg 2.2deg, transparent 2.2deg 11deg);
+  animation: bh-sway 40s ease-in-out infinite alternate;
+}
+:root:not([data-theme="dark"]) .bh-halo {
+  background: radial-gradient(circle, rgba(255, 214, 140, 0.55) 0%, transparent 62%);
+}
+@keyframes bh-sway {
+  from {
+    rotate: -4deg;
+  }
+  to {
+    rotate: 5deg;
+  }
 }
 .bh-layer {
   position: absolute;
@@ -560,6 +599,18 @@ html.js .reveal.is-visible {
   background: radial-gradient(ellipse 75% 70% at 50% 45%, transparent 50%, var(--bh-vignette) 100%);
 }
 
+/* compact variant (About header): same world, shorter, no intro sequence */
+.bh.bh-mini {
+  min-height: 0;
+  padding: 4.5rem 1rem 5rem;
+}
+.bh-mini .bh-logo-wrap {
+  margin-top: 1.6rem;
+}
+.bh-mini .bh-title {
+  margin-top: 1.8rem;
+}
+
 /* content + scroll-out */
 .bh-content {
   position: relative;
@@ -638,10 +689,7 @@ html.js .reveal.is-visible {
   width: 100%;
   height: 100%;
   border-radius: 9999px;
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--bh-line) 40%, transparent),
-    0 18px 50px -12px rgba(0, 0, 0, 0.45),
-    0 0 60px -6px var(--bh-glow);
+  box-shadow: var(--bh-logo-shadow);
 }
 .bh-word {
   position: relative;
@@ -678,6 +726,13 @@ html.js .reveal.is-visible {
   color: var(--bh-text);
   text-wrap: balance;
   text-shadow: 0 2px 30px color-mix(in srgb, var(--bh-glow) 60%, transparent);
+}
+:root:not([data-theme="dark"]) .bh-title {
+  text-shadow: 0 1px 0 rgba(255, 250, 238, 0.7), 0 10px 30px rgba(255, 214, 150, 0.45);
+}
+:root:not([data-theme="dark"]) .bh-btn-ghost {
+  border-color: rgba(91, 52, 18, 0.45);
+  background: rgba(255, 248, 234, 0.45);
 }
 :lang(ar) .bh-title {
   line-height: 1.35;

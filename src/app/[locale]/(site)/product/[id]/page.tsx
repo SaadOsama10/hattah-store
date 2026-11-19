@@ -5,7 +5,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Gallery } from "@/components/product/Gallery";
 import { ProductPurchaseActions } from "@/components/product/ProductPurchaseActions";
 import { RelatedProducts } from "@/components/product/RelatedProducts";
-import { DeliveryInfo } from "@/components/product/DeliveryInfo";
+import { OrderInfo } from "@/components/product/OrderInfo";
 import { KufiyaDivider } from "@/components/ui/KufiyaDivider";
 import { getBestSellerRanking } from "@/lib/supabase/bestsellers";
 import { getDescendantKeys } from "@/lib/categories";
@@ -176,7 +176,7 @@ export default async function ProductDetailPage({
                 optionLabel={localized.optionLabel}
               />
 
-              <DeliveryInfo />
+              <OrderInfo />
             </div>
           </div>
 

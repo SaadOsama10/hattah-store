@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "HATTAH | Authentic Palestinian Heritage",
-    "description": "HATTAH — authentic pieces of Palestinian heritage: embroidery, jewelry, decor and gifts that carry the story of a land. Made with love, shipped from Turkey."
+    "description": "HATTAH — authentic pieces of Palestinian heritage: embroidery, jewelry, decor and gifts that carry the story of a land. Made and chosen with love."
   },
   "nav": {
     "home": "Home",
@@ -16,7 +16,6 @@
     "menu": "Menu",
     "closeMenu": "Close menu",
     "categories": "Categories",
-    "delivery": "Delivery",
     "returns": "Returns & exchanges",
     "contact": "Contact",
     "faq": "FAQ",
@@ -55,12 +54,12 @@
   },
   "hero": {
     "badge": "PALESTINIAN HERITAGE FROM GAZA",
-    "title": "Gaza, told in details.",
+    "title": "A homeland's memory, in your hands.",
     "phrases": [
       "Every piece carries a story of the land",
       "Embroidery, wood, olive, memory",
       "Made and chosen with love",
-      "Your identity, in your hands"
+      "From Gaza, with love"
     ],
     "ctaPrimary": "Explore the collection",
     "ctaSecondary": "Order on WhatsApp",
@@ -183,15 +182,14 @@
     "prevImage": "Previous image",
     "nextImage": "Next image",
     "imageOf": "Image {n} of {total}",
-    "deliveryTitle": "Ordering",
-    "deliveryOrder": "Order on WhatsApp with a ready message containing the product, your choice and the link",
-    "deliveryMore": "How to order",
     "similarTitle": "Similar products",
     "chooseOptions": "Choose options",
-    "orderDetails": "Delivery and payment details are agreed with you on WhatsApp before the order is placed",
     "badgeNew": "New",
     "badgeFeatured": "Featured",
-    "askPrice": "Ask for the price"
+    "askPrice": "Ask for the price",
+    "orderTitle": "Ordering",
+    "orderLine": "Order on WhatsApp with a ready message containing the product, your choice and the link",
+    "orderMore": "How to order"
   },
   "admin": {
     "nav": {
@@ -358,15 +356,15 @@
   },
   "seo": {
     "shopTitle": "Shop Palestinian Heritage Products | HATTAH",
-    "shopDescription": "Authentic Palestinian hoodies, tatreez embroidery, artwork, medallions and homemade food from HATTAH in Istanbul. Order online or via WhatsApp, delivery across Turkey.",
+    "shopDescription": "Authentic Palestinian hoodies, tatreez embroidery, artwork, medallions and homemade food from HATTAH. Order online or on WhatsApp.",
     "offersTitle": "HATTAH Offers & Discounts | HATTAH",
     "offersDescription": "Latest offers and discounts on Palestinian heritage products from HATTAH. Order now from the store or on WhatsApp.",
     "aboutTitle": "About HATTAH — Palestinian Heritage Store in Istanbul",
-    "aboutDescription": "HATTAH is an Istanbul-based online store for Palestinian and Gazan heritage: hoodies, tatreez embroidery, artwork and food. Delivery in Turkey, free in Başakşehir.",
-    "faqTitle": "FAQ — Delivery, Sizes & Ordering | HATTAH",
-    "faqDescription": "Answers about delivery across Turkey, free delivery in Başakşehir, sizes, custom hoodies and how to order from HATTAH.",
+    "aboutDescription": "HATTAH is a Palestinian brand based in Istanbul, offering products that carry the memory and heritage of Palestine: hoodies, embroidery, artwork, medallions and homemade food.",
+    "faqTitle": "FAQ — Ordering, Sizes & Payment | HATTAH",
+    "faqDescription": "Answers about ordering from HATTAH, sizes, custom hoodies and payment.",
     "categoryTitle": "{name} | HATTAH",
-    "categoryDescription": "Shop {name} from HATTAH: authentic Palestinian products from Istanbul with delivery across Turkey. Order online or on WhatsApp.",
+    "categoryDescription": "Shop {name} from HATTAH: authentic Palestinian products. Order online or on WhatsApp.",
     "home": "Home",
     "shop": "Shop",
     "about": "About HATTAH",
@@ -374,25 +372,36 @@
     "categories": "Categories"
   },
   "about": {
+    "eyebrow": "Our story",
     "title": "About HATTAH",
-    "lead": "HATTAH (حَطّة) is an Istanbul-based online store for authentic Palestinian and Gazan heritage products.",
+    "lead": "Its name comes from the hattah, the Palestinian keffiyeh, a symbol of identity and homeland.",
     "whoTitle": "Who we are",
-    "who": "HATTAH is a Palestinian brand based in Istanbul. We offer products that carry the memory and heritage of Palestine, each shown with clear photos, a description and a price in Turkish lira.",
+    "who": "HATTAH is a Palestinian brand based in Istanbul. Its name comes from the hattah, the Palestinian keffiyeh, a symbol of identity and homeland. We offer products that carry the memory and heritage of Palestine, with every item shown with its photo, description and a clear price in Turkish lira.",
     "offerTitle": "What we offer",
-    "offer": "We offer hoodies with heritage designs, Palestinian tatreez embroidery, artwork, medallions and necklaces, and homemade Palestinian food. Every product is listed in the shop with its details.",
-    "deliveryTitle": "Delivery",
-    "delivery": "We deliver everywhere in Turkey. Delivery is free within Başakşehir, Istanbul.",
+    "offerItems": [
+      "Hoodies with heritage designs",
+      "Palestinian embroidery",
+      "Artwork",
+      "Medallions and necklaces",
+      "Homemade Palestinian food"
+    ],
     "orderTitle": "How to order",
-    "order": "Pick a product in the store, add it to your cart and send your order on WhatsApp in one tap. You can also message us directly on WhatsApp at {phone}.",
-    "contactTitle": "Contact",
+    "steps": [
+      "Pick your item",
+      "Add it to the cart",
+      "Send your order on WhatsApp in one tap"
+    ],
+    "orderNote": "You can also message us directly.",
+    "contactTitle": "Contact us",
     "contactEmail": "Email",
-    "contactPhone": "WhatsApp / phone",
+    "contactWhatsapp": "WhatsApp",
     "cta": "Shop now",
-    "faqLink": "Read the FAQ"
+    "faqLink": "FAQ",
+    "step": "Step {n}"
   },
   "faq": {
     "title": "Frequently asked questions",
-    "lead": "Quick answers about ordering, delivery and products from HATTAH.",
+    "lead": "Quick answers about ordering and products from HATTAH.",
     "items": [
       {
         "q": "What is HATTAH and where are you based?",
@@ -401,18 +410,6 @@
       {
         "q": "How do I order from HATTAH?",
         "a": "Choose a product in the store, add it to your cart and send the order on WhatsApp in one tap, or message us directly on WhatsApp at {phone} with the product you want."
-      },
-      {
-        "q": "Which areas do you deliver to?",
-        "a": "We deliver everywhere in Turkey."
-      },
-      {
-        "q": "Is delivery free?",
-        "a": "Yes, delivery is free within Başakşehir, Istanbul. For other areas we confirm the delivery cost with you on WhatsApp before the order is confirmed."
-      },
-      {
-        "q": "How long does delivery take?",
-        "a": "It depends on your city and the product. We confirm the expected delivery date with you on WhatsApp when you order."
       },
       {
         "q": "What sizes are available for the hoodies?",
@@ -448,11 +445,11 @@
       },
       {
         "h": "What data we collect",
-        "p": "The site has no user accounts or sign-up forms. When you order on WhatsApp you give us your name, phone number, delivery address and order details; we use them only to prepare, deliver and follow up on your order. Your browser stores your cart and theme/sound preferences locally — these are not sent to us."
+        "p": "The site has no user accounts or sign-up forms. When you order on WhatsApp you give us your name, phone number, address and order details; we use them only to prepare, complete and follow up on your order. Your browser stores your cart and theme/sound preferences locally — these are not sent to us."
       },
       {
         "h": "How we use your data",
-        "p": "We use order data to prepare and deliver your order and for after-sales support. We do not sell your data or share it for advertising."
+        "p": "We use order data to prepare and complete your order and for after-sales support. We do not sell your data or share it for advertising."
       },
       {
         "h": "Third-party services",
@@ -566,18 +563,6 @@
     "finalButton": "Order on WhatsApp"
   },
   "policies": {
-    "shippingTitle": "How to order",
-    "shippingLead": "Delivery details are agreed with you on WhatsApp when you order.",
-    "shippingSections": [
-      {
-        "h": "How to order",
-        "p": "Pick a product and tap “Order via WhatsApp”, or add it to your cart and send the order on WhatsApp. We then go through all the details with you."
-      },
-      {
-        "h": "Delivery details",
-        "p": "The address, delivery method and its cost are confirmed with you on WhatsApp before the order is placed."
-      }
-    ],
     "returnsTitle": "Returns & exchanges",
     "returnsLead": "If anything about your order isn't right, contact us on WhatsApp and we'll agree on a solution with you.",
     "returnsSections": [
@@ -586,8 +571,6 @@
         "p": "Message us on WhatsApp at {phone} or email {email}, and we'll agree on the right next step with you."
       }
     ],
-    "seoShippingTitle": "How to order | HATTAH",
-    "seoShippingDescription": "How delivery works at HATTAH: order on WhatsApp and we agree the delivery details with you before the order is placed.",
     "seoReturnsTitle": "Returns & exchanges | HATTAH",
     "seoReturnsDescription": "Something not right with your HATTAH order? Contact us on WhatsApp and we'll agree on a solution."
   }

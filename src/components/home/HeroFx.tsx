@@ -147,6 +147,9 @@ export function HeroFx({ labels }: { labels: { pause: string; play: string } }) 
     };
     const gold = sprite("236,190,110");
     const ember = sprite("232,120,64");
+    // Day: amber "sun dust" drawn normally (additive blending would wash out to white on a light ground).
+    const goldDay = sprite("196,138,52");
+    const emberDay = sprite("178,98,42");
 
     type P = { x: number; y: number; r: number; vy: number; vx: number; a: number; ph: number; ember: boolean };
     const ps: P[] = [];
@@ -170,15 +173,17 @@ export function HeroFx({ labels }: { labels: { pause: string; play: string } }) 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
     let alphaScale = 1;
+    let dark = true;
     const readTheme = () => {
-      alphaScale = document.documentElement.getAttribute("data-theme") === "dark" ? 1 : 0.55;
+      dark = document.documentElement.getAttribute("data-theme") === "dark";
+      alphaScale = dark ? 1 : 0.62;
     };
 
     const frame = () => {
       raf = 0;
       if (!running) return;
       ctx.clearRect(0, 0, w, h);
-      ctx.globalCompositeOperation = "lighter";
+      ctx.globalCompositeOperation = dark ? "lighter" : "source-over";
       for (const p of ps) {
         p.y -= p.vy;
         p.ph += 0.012;
@@ -187,7 +192,7 @@ export function HeroFx({ labels }: { labels: { pause: string; play: string } }) 
         const fade = Math.min(1, (h - p.y) / 120) * Math.min(1, p.y / 140);
         ctx.globalAlpha = Math.max(0, p.a * fade * alphaScale * (0.75 + 0.25 * Math.sin(p.ph * 3)));
         const s = p.r * 4;
-        ctx.drawImage(p.ember ? ember : gold, p.x - s / 2, p.y - s / 2, s, s);
+        ctx.drawImage(dark ? (p.ember ? ember : gold) : p.ember ? emberDay : goldDay, p.x - s / 2, p.y - s / 2, s, s);
       }
       ctx.globalAlpha = 1;
       raf = requestAnimationFrame(frame);

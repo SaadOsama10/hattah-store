@@ -30,7 +30,7 @@ const ICONS = [
   </g>,
 ];
 
-/** Four points about the store — values only, no figures, delivery or promises. */
+/** Four points about the store — values only, no figures or promises. */
 export async function WhyHattah() {
   const t = await getTranslations("home");
   const items = t.raw("why") as { t: string; d: string }[];

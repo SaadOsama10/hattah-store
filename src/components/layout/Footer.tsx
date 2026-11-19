@@ -95,7 +95,7 @@ export async function Footer({ categories = [], hasOffers = false }: { categorie
                 </Link>
               </li>
               <li>
-                <Link href="/shipping" className={linkClass}>
+                <Link href="/about#order" className={linkClass}>
                   {t("nav.howToOrder")}
                 </Link>
               </li>

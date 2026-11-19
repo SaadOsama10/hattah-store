@@ -5,32 +5,7 @@ import { Band } from "@/components/ui/Band";
 import { Reveal } from "@/components/ui/Reveal";
 import { Button } from "@/components/ui/Button";
 import { ParallaxY, ScrollWords } from "@/components/ui/ScrollFx";
-
-/** Small round seal: kufiya net inside, "HATTAH · حَطّة" around the rim,
- * one green and one red arc. Rotates slowly (stops for reduced motion). */
-function Seal({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 200 200" className={className} aria-hidden>
-      <defs>
-        <clipPath id="seal-clip">
-          <circle cx="100" cy="100" r="62" />
-        </clipPath>
-        <pattern id="seal-net" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-          <path d="M0 0 H14 M0 0 V14" stroke="var(--color-gold-line)" strokeWidth="0.8" />
-        </pattern>
-        <path id="seal-text" d="M100 100 m-80 0 a80 80 0 1 1 160 0 a80 80 0 1 1 -160 0" />
-      </defs>
-      <circle cx="100" cy="100" r="96" fill="none" stroke="var(--color-gold-line)" strokeWidth="1" />
-      <circle cx="100" cy="100" r="66" fill="none" stroke="var(--color-gold-line)" strokeWidth="0.8" />
-      <rect x="30" y="30" width="140" height="140" fill="url(#seal-net)" clipPath="url(#seal-clip)" opacity="0.7" />
-      <text fontSize="13" letterSpacing="5" fill="var(--color-gold)" fontFamily="var(--font-brand), Georgia, serif" fontWeight="700">
-        <textPath href="#seal-text">HATTAH · حَطّة · HATTAH · حَطّة · HATTAH · حَطّة ·</textPath>
-      </text>
-      <path d="M 28 72 A 76 76 0 0 1 52 40" fill="none" stroke="var(--color-forest)" strokeWidth="2.2" strokeLinecap="round" />
-      <path d="M 172 128 A 76 76 0 0 1 148 160" fill="none" stroke="var(--color-terracotta-deep)" strokeWidth="2.2" strokeLinecap="round" />
-    </svg>
-  );
-}
+import { Seal } from "@/components/ui/BrandArt";
 
 /** "Our story" on a deep band: the name's origin (the keffiyeh) — only
  * what the project brief says, no dates, figures or claims. */

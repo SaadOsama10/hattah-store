@@ -8,10 +8,10 @@ import { BUSINESS } from "@/lib/site";
 import { buildWhatsAppOrderLink } from "@/lib/whatsapp";
 import type { Locale } from "@/lib/supabase/types";
 
-/** Shared layout for the simple policy pages (delivery, returns). Copy
+/** Layout for the simple policy page (returns). Copy
  * lives in messages/*.json → policies; {phone} {email} are filled
  * from lib/site.ts so the facts have a single source. */
-export async function PolicyPage({ locale, kind }: { locale: Locale; kind: "shipping" | "returns" }) {
+export async function PolicyPage({ locale, kind }: { locale: Locale; kind: "returns" }) {
   const t = await getTranslations("policies");
   const tSeo = await getTranslations("seo");
   const tHome = await getTranslations("home");

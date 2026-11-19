@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "HATTAH | Otantik Filistin Mirası",
-    "description": "HATTAH — Filistin mirasının otantik parçaları: nakış, takı, dekor ve bir toprağın hikayesini taşıyan hediyeler. Sevgiyle üretildi, Türkiye'den gönderildi."
+    "description": "HATTAH — Filistin mirasının otantik parçaları: nakış, takı, dekor ve bir toprağın hikayesini taşıyan hediyeler. Sevgiyle yapıldı ve seçildi."
   },
   "nav": {
     "home": "Ana Sayfa",
@@ -16,7 +16,6 @@
     "menu": "Menü",
     "closeMenu": "Menüyü kapat",
     "categories": "Kategoriler",
-    "delivery": "Teslimat",
     "returns": "İade ve değişim",
     "contact": "İletişim",
     "faq": "SSS",
@@ -55,12 +54,12 @@
   },
   "hero": {
     "badge": "GAZZE'DEN FİLİSTİN MİRASI",
-    "title": "Gazze, ayrıntılarda yaşar.",
+    "title": "Bir vatanın hafızası, ellerinde.",
     "phrases": [
       "Her parçada bir toprağın hikâyesi var",
       "İşleme, ahşap, zeytin, hafıza",
       "Sevgiyle yapılan ve seçilen",
-      "Kimliğin, ellerinde"
+      "Gazze'den, sevgiyle"
     ],
     "ctaPrimary": "Koleksiyonu keşfet",
     "ctaSecondary": "WhatsApp ile sipariş ver",
@@ -183,15 +182,14 @@
     "prevImage": "Önceki görsel",
     "nextImage": "Sonraki görsel",
     "imageOf": "Görsel {n} / {total}",
-    "deliveryTitle": "Sipariş",
-    "deliveryOrder": "Ürün, seçiminiz ve bağlantıyı içeren hazır mesajla WhatsApp'tan sipariş",
-    "deliveryMore": "Nasıl sipariş verilir",
     "similarTitle": "Benzer ürünler",
     "chooseOptions": "Seçenekleri seç",
-    "orderDetails": "Teslimat ve ödeme ayrıntıları sipariş onaylanmadan önce WhatsApp'tan sizinle belirlenir",
     "badgeNew": "Yeni",
     "badgeFeatured": "Öne çıkan",
-    "askPrice": "Fiyatı sor"
+    "askPrice": "Fiyatı sor",
+    "orderTitle": "Sipariş",
+    "orderLine": "Ürün, seçiminiz ve bağlantıyı içeren hazır mesajla WhatsApp'tan sipariş",
+    "orderMore": "Nasıl sipariş verilir"
   },
   "admin": {
     "nav": {
@@ -358,15 +356,15 @@
   },
   "seo": {
     "shopTitle": "Filistin Mirası Ürünleri Alışveriş | HATTAH",
-    "shopDescription": "İstanbul'dan HATTAH ile özgün Filistin kapüşonluları, tatreez nakışı, tablolar, madalyonlar ve ev yapımı yiyecekler. Mağazadan veya WhatsApp'tan sipariş verin; Türkiye'ye teslimat.",
+    "shopDescription": "HATTAH'tan özgün Filistin kapüşonluları, tatreez nakışı, tablolar, madalyonlar ve ev yapımı yiyecekler. Mağazadan veya WhatsApp'tan sipariş verin.",
     "offersTitle": "HATTAH Fırsatlar ve İndirimler | HATTAH",
     "offersDescription": "HATTAH'ın Filistin mirası ürünlerinde güncel fırsatlar ve indirimler. Mağazadan veya WhatsApp'tan hemen sipariş verin.",
     "aboutTitle": "HATTAH Hakkında — İstanbul'da Filistin Mirası Mağazası",
-    "aboutDescription": "HATTAH, İstanbul merkezli çevrimiçi bir mağazadır: Filistin ve Gazze mirasından kapüşonlular, nakış, tablolar ve yiyecekler. Türkiye'ye teslimat, Başakşehir'de ücretsiz.",
-    "faqTitle": "Sık Sorulan Sorular | HATTAH",
-    "faqDescription": "Türkiye'ye teslimat, Başakşehir'de ücretsiz teslimat, bedenler, özel tasarım kapüşonlu ve sipariş yöntemi hakkında yanıtlar.",
+    "aboutDescription": "HATTAH, İstanbul merkezli bir Filistin markasıdır; Filistin'in hafızasını ve mirasını taşıyan ürünler sunar: kapüşonlular, nakış, tablolar, madalyonlar ve ev yapımı yiyecekler.",
+    "faqTitle": "SSS | HATTAH",
+    "faqDescription": "HATTAH'tan sipariş, bedenler, özel tasarım kapüşonlular ve ödeme hakkında yanıtlar.",
     "categoryTitle": "{name} | HATTAH",
-    "categoryDescription": "HATTAH'tan {name}: İstanbul'dan özgün Filistin ürünleri, Türkiye'ye teslimat. Mağazadan veya WhatsApp'tan sipariş verin.",
+    "categoryDescription": "HATTAH'tan {name}: özgün Filistin ürünleri. Mağazadan veya WhatsApp'tan sipariş verin.",
     "home": "Ana sayfa",
     "shop": "Mağaza",
     "about": "HATTAH Hakkında",
@@ -374,25 +372,36 @@
     "categories": "Kategoriler"
   },
   "about": {
-    "title": "HATTAH Hakkında",
-    "lead": "HATTAH (حَطّة), özgün Filistin ve Gazze mirası ürünleri sunan, İstanbul merkezli çevrimiçi bir mağazadır.",
+    "eyebrow": "Hikâyemiz",
+    "title": "HATTAH hakkında",
+    "lead": "Adını Filistin kefiyesi olan \"hatta\"dan alır; kimliğin ve toprağın simgesidir.",
     "whoTitle": "Biz kimiz",
-    "who": "HATTAH, İstanbul'da bulunan bir Filistin markasıdır. Filistin'in hafızasını ve mirasını taşıyan ürünleri; net fotoğraflar, açıklama ve Türk lirası fiyatla sunuyoruz.",
+    "who": "HATTAH, İstanbul merkezli bir Filistin markasıdır. Adını Filistin kefiyesi olan \"hatta\"dan alır; kimliğin ve toprağın simgesidir. Filistin'in hafızasını ve mirasını taşıyan ürünler sunuyoruz; her ürün fotoğrafı, açıklaması ve net Türk lirası fiyatıyla yer alır.",
     "offerTitle": "Neler sunuyoruz",
-    "offer": "Miras tasarımlı kapüşonlular, Filistin tatreez nakışı, tablolar, madalyonlar ve kolyeler ile ev yapımı Filistin yiyecekleri sunuyoruz. Tüm ürünler mağazada ayrıntılarıyla listelenir.",
-    "deliveryTitle": "Teslimat",
-    "delivery": "Türkiye'nin her yerine teslimat yapıyoruz. İstanbul Başakşehir içinde teslimat ücretsizdir.",
+    "offerItems": [
+      "Miras desenli kapüşonlular",
+      "Filistin nakışı",
+      "Sanat eserleri",
+      "Madalyonlar ve kolyeler",
+      "Ev yapımı Filistin yemekleri"
+    ],
     "orderTitle": "Nasıl sipariş verilir",
-    "order": "Mağazadan ürünü seçin, sepete ekleyin ve siparişinizi tek dokunuşla WhatsApp'tan gönderin. Bize doğrudan {phone} numarasından WhatsApp'tan da yazabilirsiniz.",
-    "contactTitle": "İletişim",
+    "steps": [
+      "Ürününü seç",
+      "Sepete ekle",
+      "Siparişini tek dokunuşla WhatsApp'tan gönder"
+    ],
+    "orderNote": "Bize doğrudan da yazabilirsin.",
+    "contactTitle": "Bize ulaşın",
     "contactEmail": "E-posta",
-    "contactPhone": "WhatsApp / telefon",
+    "contactWhatsapp": "WhatsApp",
     "cta": "Alışverişe başla",
-    "faqLink": "Sık sorulan soruları oku"
+    "faqLink": "SSS",
+    "step": "Adım {n}"
   },
   "faq": {
     "title": "Sık sorulan sorular",
-    "lead": "HATTAH'ta sipariş, teslimat ve ürünler hakkında kısa yanıtlar.",
+    "lead": "HATTAH'ta sipariş ve ürünler hakkında kısa yanıtlar.",
     "items": [
       {
         "q": "HATTAH nedir ve nerede bulunuyorsunuz?",
@@ -401,18 +410,6 @@
       {
         "q": "HATTAH'tan nasıl sipariş verebilirim?",
         "a": "Mağazadan ürünü seçip sepete ekleyin ve siparişi tek dokunuşla WhatsApp'tan gönderin; ya da istediğiniz ürünü {phone} numarasından doğrudan WhatsApp'ta yazın."
-      },
-      {
-        "q": "Hangi bölgelere teslimat yapıyorsunuz?",
-        "a": "Türkiye'nin her yerine teslimat yapıyoruz."
-      },
-      {
-        "q": "Teslimat ücretsiz mi?",
-        "a": "Evet, İstanbul Başakşehir içinde teslimat ücretsizdir. Diğer bölgeler için sipariş onaylanmadan önce teslimat ücretini WhatsApp'tan size bildiriyoruz."
-      },
-      {
-        "q": "Teslimat ne kadar sürer?",
-        "a": "Şehrinize ve ürüne göre değişir. Sipariş verdiğinizde tahmini teslimat tarihini WhatsApp'tan teyit ediyoruz."
       },
       {
         "q": "Kapüşonlular için hangi bedenler var?",
@@ -448,11 +445,11 @@
       },
       {
         "h": "Hangi verileri topluyoruz",
-        "p": "Sitede kullanıcı hesabı veya kayıt formu yoktur. WhatsApp'tan sipariş verdiğinizde ad, telefon numarası, teslimat adresi ve sipariş ayrıntılarını bize siz iletirsiniz; bunları yalnızca siparişi hazırlamak, teslim etmek ve sizinle iletişim kurmak için kullanırız. Tarayıcınız sepetinizi ve tema/ses tercihlerinizi yerel olarak saklar; bunlar bize gönderilmez."
+        "p": "Sitede kullanıcı hesabı veya kayıt formu yoktur. WhatsApp'tan sipariş verdiğinizde ad, telefon numarası, adres ve sipariş ayrıntılarını bize siz iletirsiniz; bunları yalnızca siparişi hazırlamak, tamamlamak ve sizinle iletişim kurmak için kullanırız. Tarayıcınız sepetinizi ve tema/ses tercihlerinizi yerel olarak saklar; bunlar bize gönderilmez."
       },
       {
         "h": "Verilerinizi nasıl kullanıyoruz",
-        "p": "Sipariş verilerini siparişi hazırlamak, teslim etmek ve satış sonrası destek için kullanırız. Verilerinizi satmaz ve reklam amacıyla paylaşmayız."
+        "p": "Sipariş verilerini siparişi hazırlamak, tamamlamak ve satış sonrası destek için kullanırız. Verilerinizi satmaz ve reklam amacıyla paylaşmayız."
       },
       {
         "h": "Üçüncü taraf hizmetler",
@@ -566,18 +563,6 @@
     "finalButton": "WhatsApp ile sipariş ver"
   },
   "policies": {
-    "shippingTitle": "Nasıl sipariş verilir",
-    "shippingLead": "Teslimat ayrıntıları sipariş sırasında WhatsApp'tan sizinle belirlenir.",
-    "shippingSections": [
-      {
-        "h": "Nasıl sipariş verilir",
-        "p": "Ürünü seçip “WhatsApp ile sipariş ver”e dokunun ya da sepete ekleyip siparişi WhatsApp'tan gönderin. Ardından tüm ayrıntıları sizinle birlikte tamamlarız."
-      },
-      {
-        "h": "Teslimat ayrıntıları",
-        "p": "Adres, teslimat şekli ve ücreti sipariş onaylanmadan önce WhatsApp'tan sizinle teyit edilir."
-      }
-    ],
     "returnsTitle": "İade ve değişim",
     "returnsLead": "Siparişinizle ilgili bir sorun olursa WhatsApp'tan bize yazın, çözümü birlikte belirleyelim.",
     "returnsSections": [
@@ -586,8 +571,6 @@
         "p": "{phone} numarasına WhatsApp'tan ya da {email} adresine yazın, uygun adımı birlikte belirleyelim."
       }
     ],
-    "seoShippingTitle": "Nasıl sipariş verilir | HATTAH",
-    "seoShippingDescription": "HATTAH'ta teslimat: WhatsApp'tan sipariş verin, teslimat ayrıntılarını sipariş onaylanmadan önce sizinle belirleyelim.",
     "seoReturnsTitle": "İade ve değişim | HATTAH",
     "seoReturnsDescription": "HATTAH siparişinizde bir sorun mu var? WhatsApp'tan bize yazın, çözümü birlikte belirleyelim."
   }

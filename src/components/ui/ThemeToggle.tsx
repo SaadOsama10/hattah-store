@@ -82,7 +82,16 @@ export function ThemeToggle({ className, labels }: { className?: string; labels?
   function toggle() {
     const next = theme === "dark" ? "light" : "dark";
     setTheme(next);
-    applyTheme(next);
+    // Soft 300 ms cross-fade between themes where the browser supports view
+    // transitions (no flash); instant elsewhere and for reduced motion.
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown };
+    if (doc.startViewTransition && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      document.documentElement.classList.add("theme-xfade");
+      const vt = doc.startViewTransition(() => applyTheme(next)) as { finished?: Promise<void> };
+      vt?.finished?.finally(() => document.documentElement.classList.remove("theme-xfade"));
+    } else {
+      applyTheme(next);
+    }
     try {
       localStorage.setItem(THEME_STORAGE_KEY, next);
     } catch {
