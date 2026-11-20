@@ -23,7 +23,6 @@ export const BUSINESS = {
   email: "hattah.store.co@gmail.com",
   instagram: INSTAGRAM_URL !== "#" ? INSTAGRAM_URL : "https://www.instagram.com/hattah.store.co/",
   facebook: FACEBOOK_URL !== "#" ? FACEBOOK_URL : "https://www.facebook.com/profile.php?id=61593150359220",
-  freeDeliveryArea: { ar: "باشاكشهير", en: "Başakşehir", tr: "Başakşehir" },
   logoPath: "/images/hattah-logo.jpg",
 } as const;
 

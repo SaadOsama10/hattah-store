@@ -1,59 +1,31 @@
-import { getTranslations, getLocale } from "next-intl/server";
-import { ProductCard } from "@/components/ui/ProductCard";
-import { Divider } from "@/components/ui/Divider";
-import {
-  localizeProduct,
-  localizeCategory,
-  type ProductRow,
-  type CategoryRow,
-  type Locale,
-} from "@/lib/supabase/types";
+import { getLocale, getTranslations } from "next-intl/server";
+import { ProductRail } from "@/components/home/ProductRail";
+import { categoryPath } from "@/lib/seo";
+import { toCardProduct } from "@/lib/storefront";
+import type { CategoryRow, Locale, ProductRow } from "@/lib/supabase/types";
 
+/** "Similar products": same category first, topped up from sibling
+ * subcategories of the same parent when the category is small. */
 export async function RelatedProducts({
   products,
   categories,
+  categoryKey,
 }: {
   products: ProductRow[];
   categories: CategoryRow[];
+  categoryKey?: string;
 }) {
   if (products.length === 0) return null;
-
   const t = await getTranslations("product");
+  const tHome = await getTranslations("home");
   const locale = (await getLocale()) as Locale;
-  const categoryLabelByKey = Object.fromEntries(
-    categories.map((c) => [c.key, localizeCategory(c, locale)])
-  );
-
   return (
-    <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
-      <div className="mb-10 text-center">
-        <h2 className="font-playfair text-3xl font-bold text-cream sm:text-4xl">
-          {t("relatedTitle")}
-        </h2>
-        <Divider className="mt-5" />
-      </div>
-      <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-4">
-        {products.map((product) => {
-          const localized = localizeProduct(product, locale);
-          return (
-            <ProductCard
-              key={product.id}
-              id={localized.id}
-                slug={localized.slug}
-              name={localized.name}
-              price={localized.startingPrice}
-              salePrice={localized.salePrice}
-              priceOnRequest={localized.priceOnRequest}
-              startingFrom={localized.quantities.length > 0}
-              image={localized.images[0]}
-              categoryLabel={categoryLabelByKey[localized.category]}
-              hasVariants={
-                localized.sizes.length > 0 || localized.colors.length > 0 || localized.quantities.length > 0
-              }
-            />
-          );
-        })}
-      </div>
-    </section>
+    <ProductRail
+      id="similar"
+      products={products.map((p) => toCardProduct(p, locale, categories))}
+      title={t("similarTitle")}
+      action={categoryKey ? { href: categoryPath(categoryKey), label: tHome("seeAll") } : undefined}
+      tone="cream"
+    />
   );
 }

@@ -1,67 +1,159 @@
 @import "tailwindcss";
 
-/* ─────────────────────────────────────────────────────────────
-   Theme tokens — the fresh, vivid light look is the brand default;
-   [data-theme="dark"] overrides the same variables so every existing
-   bg-, text-, and border- utility class in the app becomes
-   theme-aware for free. Brand accents (forest / olive / terracotta)
-   stay constant across both themes, just a little more vivid than
-   the old muted earth tones.
-   ───────────────────────────────────────────────────────────── */
-:root {
-  /* Warm greige secondary — a neutral, unisex break from flat white
-     (not the earlier blush pink, which read as too soft/feminine). */
-  --t-bg-primary: #fdfbf7;
-  --t-bg-secondary: #f0ece4;
-  --t-text-primary: #201a12;
-  --t-text-secondary: #59503f;
-  --t-glow-a: rgba(23, 143, 94, 0.14);
-  --t-glow-b: rgba(210, 87, 46, 0.12);
-  --t-glow-c: rgba(91, 127, 63, 0.12);
-  --t-shadow-ambient: rgba(120, 100, 70, 0.16);
+/* ═════════════════════════════════════════════════════════════
+   HATTAH design tokens (redesign v2)
+   ─────────────────────────────────────────────────────────────
+   Every color the UI paints comes from a --t-* variable defined
+   once per theme below, then exposed to Tailwind through @theme.
+   Components never hard-code a hex value: they use bg-surface,
+   text-cream, text-terracotta, border-line, … and the theme
+   switches underneath them.
 
-  /* Category tile ambient-photo treatment (CategoryTiles.tsx) — a
-     single warm-neutral overlay color (the light theme's own text
-     color, used here as a fixed constant regardless of site theme).
-     The category accent (--tile-accent, set inline per card) only ever
-     shows as a thin border and the icon's backdrop circle — never a
-     tint over the photo itself. */
-  --tile-overlay: #201a12;
+   Naming is kept from v1 so the admin panel (which uses the same
+   classes) keeps working untouched:
+     bg-bg-primary / bg-bg-secondary  page + alternate section bg
+     text-cream / text-cream-secondary  main + secondary text
+     forest / olive / terracotta / terracotta-deep  brand accents
+   New in v2:
+     bg-surface      cards, menus, inputs (one step above the page)
+     border-line     hairline borders
+     text-muted      tertiary text (AA on every background)
+     text-on-accent  text placed on a filled brand-color button
+
+   Contrast (WCAG): every text token ≥ 4.5:1 on bg-primary,
+   bg-secondary and surface in both themes; on-accent ≥ 5.4:1 on
+   terracotta / forest / terracotta-deep fills.
+   ═════════════════════════════════════════════════════════════ */
+:root {
+  /* Light — warm cream paper, ink-brown text. */
+  --t-bg-primary: #fbf6ec; /* warm ivory */
+  --t-bg-secondary: #efe3cc; /* honey sand — the alternate band */
+  --t-surface: #fffaf1;
+  --t-surface-raised: #fffcf6;
+  --t-line: rgba(120, 85, 40, 0.16); /* sand hairline */
+  --t-line-strong: rgba(120, 85, 40, 0.3);
+  --t-text-primary: #1e1912;
+  --t-text-secondary: #5b5244;
+  --t-text-muted: #685d4c;
+
+  --t-forest: #0f6c47;
+  --t-olive: #4d6b32;
+  --t-terracotta: #a3401b;
+  --t-terracotta-deep: #bf2a3a;
+  --t-on-accent: #ffffff;
+  /* Soft tinted washes for pills/badges (bg only, never text). */
+  --t-olive-wash: #e9eddc;
+  /* "gold" now means neutral ink: gold is reserved for the primary button */
+  --t-gold: #1e1912;
+  --t-gold-line: rgba(120, 85, 40, 0.3);
+  --t-gold-glow: transparent;
+  /* the embroidery thread: earthy red, one green stitch */
+  --t-thread: #a8332e;
+  --t-thread-green: #2f7a46;
+  --t-btn-gold: linear-gradient(180deg, #8a5518, #643b12); /* rich earth-brown in daylight */
+  --t-btn-gold-fg: #fff8ec;
+  --t-terracotta-wash: #f7e6dc;
+
+  --t-glow-a: rgba(18, 120, 79, 0.08);
+  --t-glow-b: rgba(180, 70, 31, 0.07);
+  --t-glow-c: rgba(77, 107, 50, 0.08);
+  --t-shadow-ambient: rgba(110, 72, 30, 0.18);
+  --t-shadow-tight: rgba(110, 72, 30, 0.1);
+  /* Photo scrim — fixed warm-black in both themes (text over photos is always light). */
+  --tile-overlay: #17120c;
+  --t-header-bg: rgba(251, 246, 236, 0.8);
 }
 
+/* Dark — warm espresso, never pure black; ivory text; brand accents
+   lifted so they stay readable and calm on the dark ground. */
+:root[data-theme="dark"],
 [data-theme="dark"] {
-  /* A warm, neutral charcoal sitting between "not dark enough" and
-     "pitch black" — dark and luxurious without the harshness of true
-     black. Only the faintest green whisper in the undertone; the
-     brand green mainly shows up through the glows/accents. */
-  --t-bg-primary: #10120e;
-  --t-bg-secondary: #181b15;
-  --t-text-primary: #f3ead8;
-  --t-text-secondary: #ede3d0;
-  --t-glow-a: rgba(23, 143, 94, 0.2);
-  --t-glow-b: rgba(210, 87, 46, 0.16);
-  --t-glow-c: rgba(91, 127, 63, 0.17);
-  --t-shadow-ambient: rgba(0, 0, 0, 0.55);
+  --t-bg-primary: #1a1613;
+  --t-bg-secondary: #221d19;
+  --t-surface: #241f1a;
+  --t-surface-raised: #2b251f;
+  --t-line: rgba(243, 235, 220, 0.1);
+  --t-line-strong: rgba(243, 235, 220, 0.2);
+  --t-text-primary: #f3ebdc;
+  --t-text-secondary: #d2c7b4;
+  --t-text-muted: #a89d8a;
+
+  --t-forest: #5ec596;
+  --t-olive: #a7c483;
+  --t-terracotta: #e8805a;
+  --t-terracotta-deep: #f17d87;
+  --t-on-accent: #1a1410;
+  --t-olive-wash: #2c3022;
+  --t-gold: #f3ebdc;
+  --t-gold-line: rgba(243, 235, 220, 0.2);
+  --t-gold-glow: transparent;
+  --t-thread: #d4675d;
+  --t-thread-green: #6fc08a;
+  --t-btn-gold: linear-gradient(180deg, #f0c77d, #d39e45);
+  --t-btn-gold-fg: #1d130a;
+  --t-terracotta-wash: #3a261d;
+
+  --t-glow-a: rgba(94, 197, 150, 0.07);
+  --t-glow-b: rgba(232, 128, 90, 0.06);
+  --t-glow-c: rgba(167, 196, 131, 0.06);
+  --t-shadow-ambient: rgba(0, 0, 0, 0.5);
+  --t-shadow-tight: rgba(0, 0, 0, 0.35);
+  --t-header-bg: rgba(26, 22, 19, 0.78);
 }
 
 @theme {
+  /* ── Color ── */
   --color-bg-primary: var(--t-bg-primary);
   --color-bg-secondary: var(--t-bg-secondary);
+  --color-surface: var(--t-surface);
+  --color-surface-raised: var(--t-surface-raised);
+  --color-line: var(--t-line);
+  --color-line-strong: var(--t-line-strong);
   --color-cream: var(--t-text-primary);
   --color-cream-secondary: var(--t-text-secondary);
-  /* Unlike --color-cream (which flips to near-black in light mode), this
-     stays a fixed light tone — for text placed directly over a
-     deliberately-darkened photo (e.g. category tile backgrounds), which
-     is dark regardless of site theme and needs light text either way. */
-  --color-cream-fixed: #f3ead8;
-  --color-forest: #178f5e;
-  --color-olive: #5b7f3f;
-  --color-terracotta: #d2572e;
-  --color-terracotta-deep: #d6293a;
+  --color-muted: var(--t-text-muted);
+  /* Always-light text for use over a darkened photo, in either theme. */
+  --color-cream-fixed: #f6efe2;
+  --color-forest: var(--t-forest);
+  --color-olive: var(--t-olive);
+  --color-terracotta: var(--t-terracotta);
+  --color-terracotta-deep: var(--t-terracotta-deep);
+  --color-on-accent: var(--t-on-accent);
+  --color-gold: var(--t-gold);
+  --color-gold-line: var(--t-gold-line);
+  --color-olive-wash: var(--t-olive-wash);
+  --color-terracotta-wash: var(--t-terracotta-wash);
 
+  /* ── Type scale (fluid display sizes; body uses Tailwind defaults) ── */
+  --text-display: clamp(2.4rem, 1.4rem + 4.6vw, 4.6rem);
+  --text-display--line-height: 1.08;
+  --text-h2: clamp(1.9rem, 1.25rem + 2.6vw, 3.3rem);
+  --text-h2--line-height: 1.18;
+  --text-h3: clamp(1.15rem, 1rem + 0.5vw, 1.4rem);
+  --text-h3--line-height: 1.35;
+  --text-eyebrow: 0.75rem;
+  --text-eyebrow--line-height: 1rem;
+
+  /* ── Space ── */
+  --spacing-section: clamp(5rem, 3.4rem + 4.4vw, 7.75rem);
+  --spacing-gutter: clamp(1rem, 0.6rem + 1.6vw, 2rem);
+
+  /* ── Radius ── */
+  --radius-card: 1.25rem;
+  --radius-tile: 1.75rem;
+  --radius-panel: 2rem;
+
+  /* ── Shadow (theme-aware tint) ── */
   --shadow-soft: 0 24px 60px -24px var(--t-shadow-ambient);
-  --shadow-glow-terracotta: 0 10px 36px -10px rgba(210, 87, 46, 0.45);
-  --shadow-glow-forest: 0 10px 36px -10px rgba(23, 143, 94, 0.45);
+  /* warm, layered (never flat grey) */
+  --shadow-card: 0 1px 1px var(--t-shadow-tight), 0 4px 10px -4px var(--t-shadow-tight), 0 14px 30px -18px var(--t-shadow-ambient);
+  --shadow-lift: 0 1px 2px var(--t-shadow-tight), 0 10px 20px -10px var(--t-shadow-tight), 0 30px 60px -28px var(--t-shadow-ambient);
+  --shadow-glow-terracotta: 0 10px 30px -12px color-mix(in srgb, var(--t-terracotta) 55%, transparent);
+  --shadow-glow-forest: 0 10px 30px -12px color-mix(in srgb, var(--t-forest) 55%, transparent);
+
+  /* ── Motion ── */
+  --ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
 
   --animate-fade-up: fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   --animate-fade-in: fade-in 1s ease forwards;
@@ -71,6 +163,7 @@
   --animate-float: float 9s ease-in-out infinite;
   --animate-float-slow: float 13s ease-in-out infinite reverse;
   --animate-kenburns: kenburns 18s ease-in-out infinite alternate;
+  --animate-shimmer: shimmer 1.6s ease-in-out infinite;
 
   @keyframes fade-up {
     from {
@@ -132,22 +225,175 @@
       transform: scale(1.08);
     }
   }
+  @keyframes shimmer {
+    0%,
+    100% {
+      opacity: 0.55;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
 }
 
-/* Smooth cross-fade between page navigations where supported
-   (Chrome/Edge). Purely progressive enhancement — no-op elsewhere. */
+/* Any element carrying data-theme (the <html>, or a section forced to the
+   dark palette such as the "deep" bands) re-derives the Tailwind colour
+   variables from its own --t-* values — custom properties resolve where
+   they're declared, so without this a nested scope would inherit the
+   root's already-resolved colours. */
+[data-theme] {
+  --color-bg-primary: var(--t-bg-primary);
+  --color-bg-secondary: var(--t-bg-secondary);
+  --color-surface: var(--t-surface);
+  --color-surface-raised: var(--t-surface-raised);
+  --color-line: var(--t-line);
+  --color-line-strong: var(--t-line-strong);
+  --color-cream: var(--t-text-primary);
+  --color-cream-secondary: var(--t-text-secondary);
+  --color-muted: var(--t-text-muted);
+  --color-forest: var(--t-forest);
+  --color-olive: var(--t-olive);
+  --color-terracotta: var(--t-terracotta);
+  --color-terracotta-deep: var(--t-terracotta-deep);
+  --color-on-accent: var(--t-on-accent);
+  --color-olive-wash: var(--t-olive-wash);
+  --color-terracotta-wash: var(--t-terracotta-wash);
+  --color-gold: var(--t-gold);
+  --color-gold-line: var(--t-gold-line);
+  --shadow-card: 0 1px 1px var(--t-shadow-tight), 0 4px 10px -4px var(--t-shadow-tight), 0 14px 30px -18px var(--t-shadow-ambient);
+  --shadow-lift: 0 1px 2px var(--t-shadow-tight), 0 10px 20px -10px var(--t-shadow-tight), 0 30px 60px -28px var(--t-shadow-ambient);
+}
+
+/* Motion durations (plain vars; used in custom CSS below). */
+:root {
+  --dur-fast: 160ms;
+  --dur-base: 300ms;
+  --dur-slow: 650ms;
+  /* Height of the sticky header (+ announcement bar is above it and scrolls away). */
+  --header-h: 4rem;
+}
+
 @view-transition {
   navigation: auto;
 }
+/* theme switch: a quick, even cross-fade of the whole page */
+html.theme-xfade::view-transition-old(root),
+html.theme-xfade::view-transition-new(root) {
+  animation-duration: 0.3s;
+  animation-timing-function: ease;
+}
 
-/* Locale-aware font utilities. Written as plain CSS (rather than
-   inside @theme) because Tailwind v4 won't generate a utility class
-   for a --font-* theme value that itself contains a var() reference —
-   these keep the original class names (font-playfair, font-inter) so
-   no component needed renaming; --font-display-current /
-   --font-body-current are set per-locale on <body> in the root layout. */
+/* Playfair Display Bold, self-hosted (OFL) so it can be preloaded on Latin pages
+   only (see the root layout). Used for Latin headlines and the HATTAH wordmark. */
+@font-face {
+  font-family: "Playfair HATTAH";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/playfair-700-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Playfair HATTAH";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/playfair-700-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1D00-1DBF, U+1E00-1E9F,
+    U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* metric-matched fallback (same overrides next/font generated) → no layout shift on swap */
+@font-face {
+  font-family: "Playfair HATTAH Fallback";
+  src: local("Times New Roman");
+  ascent-override: 97.25%;
+  descent-override: 22.56%;
+  line-gap-override: 0%;
+  size-adjust: 111.26%;
+}
+/* Arabic faces, self-hosted subsets (Arabic letters/marks/digits + basic Latin):
+   Amiri Bold for headlines, IBM Plex Sans Arabic for body text. */
+@font-face {
+  font-family: "Amiri HATTAH";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/amiri-ar-700.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Amiri HATTAH Fallback";
+  src: local("Times New Roman");
+  ascent-override: 112.4%;
+  descent-override: 63.4%;
+  line-gap-override: 0%;
+  size-adjust: 100%;
+}
+@font-face {
+  font-family: "Plex Arabic HATTAH";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/plex-ar-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Plex Arabic HATTAH";
+  font-style: normal;
+  font-weight: 600;
+  /* only small labels use 600: if it isn't there at first paint, keep the
+     fallback for this view rather than swapping (no shift) */
+  font-display: optional;
+  src: url("/fonts/plex-ar-600.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Plex Arabic HATTAH Fallback";
+  src: local("Arial");
+  ascent-override: 107.29%;
+  descent-override: 41.04%;
+  line-gap-override: 0%;
+  size-adjust: 101.13%;
+}
+/* Inter (variable), self-hosted: the Latin file, plus a 3 KB extension with only the
+   Turkish letters and the lira sign — instead of Google's 84 KB Latin-extended file. */
+@font-face {
+  font-family: "Inter HATTAH";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/inter-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Inter HATTAH";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/inter-tr-ext.woff2") format("woff2");
+  unicode-range: U+011E-011F, U+0130, U+015E-015F, U+20BA;
+}
+@font-face {
+  font-family: "Inter HATTAH Fallback";
+  src: local("Arial");
+  ascent-override: 90.44%;
+  descent-override: 22.52%;
+  line-gap-override: 0%;
+  size-adjust: 107.12%;
+}
+:root {
+  --font-inter-latin: "Inter HATTAH", "Inter HATTAH Fallback";
+  --font-amiri: "Amiri HATTAH", "Amiri HATTAH Fallback";
+  --font-ibm-plex-sans-arabic: "Plex Arabic HATTAH", "Plex Arabic HATTAH Fallback";
+  --font-playfair-latin: "Playfair HATTAH", "Playfair HATTAH Fallback";
+  --font-brand: "Playfair HATTAH", "Playfair HATTAH Fallback";
+}
+
+/* Locale-aware font utilities. --font-display-current /
+   --font-body-current are set per-locale on <body> in the root layout:
+   display = Playfair Display (Latin) / Amiri (Arabic),
+   body    = Inter (Latin) / IBM Plex Sans Arabic (Arabic). */
 .font-playfair {
-  font-family: var(--font-display-current), sans-serif;
+  font-family: var(--font-display-current), serif;
 }
 .font-inter {
   font-family: var(--font-body-current), sans-serif;
@@ -156,6 +402,7 @@
 html {
   scroll-behavior: smooth;
   color-scheme: light;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html[data-theme="dark"] {
@@ -170,71 +417,18 @@ body {
     color 0.4s ease;
 }
 
-/* Subtle film-grain texture — replaces the old repeating keffiyeh
-   pattern as the ambient background texture. It's noise, not a
-   discernible repeating motif, so it reads as depth/atmosphere rather
-   than a "pattern", and needs no light/dark variant since it's neutral. */
-.bg-grain {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 180px 180px;
-}
-
-/* Thin decorative divider */
-.divider-ornate {
-  position: relative;
-  height: 1px;
-  background: linear-gradient(
-    to right,
-    transparent,
-    var(--color-olive) 50%,
-    transparent
-  );
-}
-
-/* Thin gradient (olive → terracotta) border for premium accents.
-   Usage: wrap an element with position:relative and class
-   "border-gradient" — the ring fades in on hover by default via
-   the .group-hover variant below, or stays visible with
-   "border-gradient-visible". */
-.border-gradient {
-  position: relative;
-}
-.border-gradient::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(
-    135deg,
-    var(--color-olive),
-    var(--color-terracotta) 50%,
-    var(--color-olive)
-  );
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-  opacity: 0.35;
-  transition: opacity 0.5s ease;
-}
-.group:hover .border-gradient::before,
-.border-gradient:hover::before {
-  opacity: 1;
-}
-.border-gradient-visible::before {
-  opacity: 0.7;
+/* Visible keyboard focus everywhere (mouse clicks don't show it). */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-terracotta);
+  outline-offset: 3px;
+  border-radius: 6px;
 }
 
 ::selection {
   background: var(--color-terracotta);
-  color: #fdfbf7;
+  color: var(--color-on-accent);
 }
 
-/* Custom scrollbar for a refined feel */
 ::-webkit-scrollbar {
   width: 10px;
 }
@@ -242,7 +436,7 @@ body {
   background: var(--color-bg-primary);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-olive);
+  background: color-mix(in srgb, var(--color-olive) 70%, transparent);
   border-radius: 999px;
 }
 
@@ -254,6 +448,543 @@ body {
   display: none;
 }
 
+/* ── Scroll reveal (see components/ui/Reveal.tsx) ──
+   Only hidden when JS is running (html.js is set by the theme init
+   script), so content is never lost without JS. */
+/* Content that can be the LCP element (hero headline, the About intro) is
+   never wrapped in a reveal — it uses .fade-soft below instead. */
+html.js .reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 0.6s var(--ease-soft),
+    transform 0.6s var(--ease-soft),
+    filter 0.6s var(--ease-soft);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+html.js .reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Skeleton block */
+.skeleton {
+  /* warm shimmer sweep */
+  background:
+    linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--t-gold-line) 16%, transparent) 50%, transparent 70%) no-repeat,
+    color-mix(in srgb, var(--color-cream) 7%, var(--color-surface));
+  background-size: 220% 100%, auto;
+  animation: skeleton-sweep 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-sweep {
+  from {
+    background-position: 120% 0, 0 0;
+  }
+  to {
+    background-position: -120% 0, 0 0;
+  }
+}
+
+/* Horizontal product rails: momentum scroll + snap, hidden bar. */
+.rail {
+  display: grid;
+  grid-auto-flow: column;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--spacing-gutter);
+  scrollbar-width: none;
+}
+.rail::-webkit-scrollbar {
+  display: none;
+}
+.rail > * {
+  scroll-snap-align: start;
+}
+
+/* Below-the-fold sections skip rendering work until they're near the viewport. */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 720px;
+}
+
+/* ── Section bands: flat colour, nothing on top ── */
+.band-deep {
+  background: #15100c;
+}
+
+/* The one gold element: the primary call-to-action button. */
+.bg-gold-btn {
+  background: var(--t-btn-gold);
+  color: var(--t-btn-gold-fg);
+}
+
+/* ═════════════ Hero (components/home/Hero.tsx) ═════════════
+   One calm background with a single static pool of warm light behind the
+   text. The headline appears word by word (≤1.2 s); one word is stitched
+   underneath with the red thread. */
+.hero {
+  --hero-bg: #f8f0e1;
+  --hero-bg-edge: #efe2c8;
+  --hero-light: rgba(255, 236, 200, 0.9);
+  position: relative;
+  display: grid;
+  /* content anchored to the top (not centred): a late font swap can't move
+     what's above it, so no layout shift */
+  place-items: start center;
+  min-height: max(560px, calc(100svh - 6.25rem));
+  padding: clamp(3.5rem, 2rem + 6vh, 7rem) var(--spacing-gutter) 5rem;
+  background:
+    radial-gradient(ellipse 55% 45% at 50% 48%, var(--hero-light) 0%, transparent 70%),
+    linear-gradient(180deg, var(--hero-bg) 0%, var(--hero-bg-edge) 100%);
+}
+:root[data-theme="dark"] .hero {
+  --hero-bg: #17110c;
+  --hero-bg-edge: #0f0b08;
+  --hero-light: rgba(120, 82, 42, 0.32);
+}
+.hero-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 64rem;
+}
+.hero-logo {
+  width: 84px;
+  height: 84px;
+  border-radius: 9999px;
+  box-shadow: 0 0 0 1px var(--t-line-strong);
+}
+@media (min-width: 768px) {
+  .hero-logo {
+    width: 96px;
+    height: 96px;
+  }
+}
+.hero-badge {
+  margin-top: 1.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-cream-secondary);
+}
+:lang(ar) .hero-badge {
+  letter-spacing: 0.02em;
+  font-size: 0.9rem;
+}
+.hero-title {
+  margin-top: 1.1rem;
+  max-width: 16ch;
+  font-weight: 700;
+  font-size: clamp(2.6rem, 1.3rem + 5.6vw, 6.4rem);
+  line-height: 1.12;
+  color: var(--color-cream);
+  text-wrap: balance;
+}
+:lang(ar) .hero-title {
+  line-height: 1.4;
+}
+.hero-title:not(:lang(ar)) {
+  max-width: 20ch;
+  font-size: clamp(2.1rem, 1.1rem + 4.4vw, 5.4rem);
+}
+.hero-title-mini {
+  font-size: clamp(2.4rem, 1.4rem + 4vw, 4.6rem) !important;
+}
+.hero-word {
+  display: inline-block;
+  animation: hero-word 0.6s var(--ease-soft) both;
+}
+/* starts at 1% so the headline counts as painted with the HTML (LCP) */
+@keyframes hero-word {
+  from {
+    opacity: 0.01;
+    translate: 0 0.3em;
+  }
+}
+.hero-focus {
+  position: relative;
+}
+.hero-stitch {
+  position: absolute;
+  inset-inline: 0;
+  bottom: -0.12em;
+  width: 100%;
+  height: 0.28em;
+  overflow: visible;
+}
+.hero-stitch path {
+  fill: none;
+  stroke: var(--t-thread);
+  stroke-width: 2.4;
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  animation: stitch-draw 0.9s var(--ease-in-out-soft) both;
+}
+[dir="rtl"] .hero-stitch {
+  transform: scaleX(-1); /* sew from the reading start */
+}
+@keyframes stitch-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+/* the subtitle is often the LCP element on Latin pages: it paints at once */
+.hero-ctas {
+  animation: hero-word 0.6s var(--ease-soft) both;
+}
+.hero-sub {
+  margin-top: 1.5rem;
+  max-width: 36rem;
+  font-size: clamp(1rem, 0.92rem + 0.4vw, 1.2rem);
+  line-height: 1.7;
+  color: var(--color-cream-secondary);
+}
+.hero-ctas {
+  margin-top: 2.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+.hero-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3.25rem;
+  padding: 0 1.75rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  transition:
+    transform 0.3s var(--ease-soft),
+    border-color 0.3s;
+}
+.hero-btn:hover {
+  transform: translateY(-2px);
+}
+.hero-btn-primary {
+  background: var(--t-btn-gold);
+  color: var(--t-btn-gold-fg);
+}
+.hero-btn-ghost {
+  color: var(--color-cream);
+  border: 1px solid var(--t-line-strong);
+}
+.hero-btn-ghost:hover {
+  border-color: var(--color-cream);
+}
+.hero.hero-mini {
+  min-height: 0;
+  padding: 4.5rem var(--spacing-gutter) 5rem;
+}
+
+/* ═════════════ Word strip under the hero (components/home/Marquee.tsx) ═════════════
+   Quiet: no fill colour, faint hairlines, muted text, red cross-stitch
+   separators, one slow linear loop. It sits above the page thread (which
+   passes behind it like a thread under fabric) and fades out at both edges,
+   where the thread runs, so the two never touch. */
+.marquee {
+  position: relative;
+  z-index: 21; /* above the thread layer (20) */
+  height: 48px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: var(--color-bg-primary);
+  border-block: 1px solid var(--t-line);
+  contain: layout paint;
+}
+/* edge fades as two static covers in the page colour (a mask on the moving
+   strip would force a repaint every frame) */
+.marquee::before,
+.marquee::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  z-index: 1;
+  width: 9%;
+  pointer-events: none;
+}
+.marquee::before {
+  left: 0;
+  background: linear-gradient(90deg, var(--color-bg-primary), transparent);
+}
+.marquee::after {
+  right: 0;
+  background: linear-gradient(-90deg, var(--color-bg-primary), transparent);
+}
+@media (max-width: 767px) {
+  .marquee {
+    height: 40px;
+  }
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  /* starts once the page has settled (the first screen stays still while loading) */
+  animation:
+    marquee-in 0.8s ease both,
+    marquee-ltr 72s linear infinite;
+  will-change: transform;
+}
+@keyframes marquee-in {
+  from {
+    opacity: 0;
+  }
+}
+[dir="rtl"] .marquee-track {
+  animation-name: marquee-in, marquee-rtl;
+}
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track,
+.marquee[data-offscreen] .marquee-track {
+  animation-play-state: paused;
+}
+.marquee-row,
+.marquee-still {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.marquee-still {
+  display: none;
+  width: 100%;
+  justify-content: center;
+}
+.marquee-item {
+  display: inline-flex;
+  align-items: center;
+}
+.marquee-word {
+  padding-inline: 1.6rem;
+  /* the page's body font: no extra font file just for this strip */
+  font-family: var(--font-body-current), sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--color-cream-secondary); /* the muted tone (AA) rather than a literal 60% opacity */
+  white-space: nowrap;
+}
+.marquee-word-ar {
+  font-family: var(--font-display-current), serif;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+.marquee-stitch {
+  width: 9px;
+  height: 9px;
+  flex-shrink: 0;
+}
+.marquee-stitch path {
+  fill: none;
+  stroke: var(--t-thread);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+@keyframes marquee-ltr {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes marquee-rtl {
+  to {
+    transform: translateX(50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    display: none;
+  }
+  .marquee-still {
+    display: flex;
+  }
+}
+
+/* ═════════════ The thread (components/ui/Thread.tsx) ═════════════ */
+.thread-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  overflow: hidden;
+}
+.thread-layer svg {
+  display: block;
+}
+.thread-path {
+  fill: none;
+  stroke: var(--t-thread);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+@media (max-width: 767px) {
+  .thread-path {
+    stroke-width: 1.25;
+  }
+}
+.thread-path.is-live {
+  transition: stroke-dashoffset 0.18s linear;
+}
+.thread-stitch path {
+  fill: none;
+  stroke: var(--t-thread);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.thread-stitch.is-green path {
+  stroke: var(--t-thread-green);
+}
+.thread-stitch.is-on path {
+  opacity: 1;
+}
+.thread-knot-loop {
+  fill: none;
+  stroke: var(--t-thread);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.thread-knot-loop.is-on {
+  opacity: 1;
+}
+/* ── Buttons: arrow nudges on hover ── */
+.btn-arrow {
+  transition: transform var(--dur-base) var(--ease-soft);
+}
+:hover > .btn-arrow {
+  transform: translateX(4px);
+}
+[dir="rtl"] :hover > .btn-arrow {
+  transform: scaleX(-1) translateX(4px);
+}
+
+/* ── Kufiya divider draws itself (from the centre out) when its section reveals ── */
+html.js .reveal .kufiya-divider svg {
+  clip-path: inset(0 50% 0 50%);
+  transition: clip-path 1s var(--ease-soft) 0.15s;
+}
+html.js .reveal.is-visible .kufiya-divider svg {
+  clip-path: inset(0 0 0 0);
+}
+
+/* Soft fade for above-the-fold text: starts at 1% opacity (counted as painted, so
+   it never delays the LCP) and is fully opaque well before any audit runs. */
+.fade-soft {
+  animation: fade-soft 0.7s var(--ease-soft) 0.1s both;
+}
+@keyframes fade-soft {
+  from {
+    opacity: 0.01;
+    transform: translateY(10px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fade-soft {
+    animation: none;
+  }
+}
+
+/* ── Scroll-lit words (Our story); without JS / reduced motion they're simply fully visible ── */
+html.js .scroll-word {
+  opacity: 0.18;
+  transition: opacity 0.25s linear;
+}
+@media (prefers-reduced-motion: reduce) {
+  html.js .scroll-word {
+    opacity: 1 !important;
+  }
+}
+/* ── Navigation progress (layout/NavProgress.tsx) ── */
+.nav-progress {
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  z-index: 80;
+  height: 2px;
+  transform-origin: left center;
+  background: var(--t-thread);
+  transform: scaleX(0);
+  opacity: 0;
+  pointer-events: none;
+}
+[dir="rtl"] .nav-progress {
+  transform-origin: right center;
+}
+.nav-progress[data-state="loading"] {
+  opacity: 1;
+  animation: nav-progress 8s cubic-bezier(0.1, 0.6, 0.2, 1) forwards;
+}
+.nav-progress[data-state="done"] {
+  opacity: 0;
+  transform: scaleX(1);
+  transition:
+    transform 0.2s ease,
+    opacity 0.35s ease 0.15s;
+}
+@keyframes nav-progress {
+  from {
+    transform: scaleX(0.05);
+  }
+  to {
+    transform: scaleX(0.9);
+  }
+}
+
+/* ── Card quick actions: revealed on hover/focus where a mouse exists, always shown on touch ── */
+@media (hover: hover) and (pointer: fine) {
+  .card-actions {
+    opacity: 0;
+    translate: 0 6px;
+    transition:
+      opacity 0.3s var(--ease-soft),
+      translate 0.3s var(--ease-soft);
+  }
+  .group:hover .card-actions,
+  .group:focus-within .card-actions {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* ── Images fade in once loaded (no layout jump: boxes are pre-sized) ── */
+.img-fade {
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.img-fade.is-loaded {
+  opacity: 1;
+}
+
+/* ── Page fade between client navigations (see app/[locale]/(site)/template.tsx) ── */
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.page-in {
+  animation: page-in 0.45s var(--ease-soft) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -262,5 +993,17 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  html.js .reveal {
+    opacity: 1;
+    transform: none;
+  }
+  html.js .reveal .kufiya-divider svg {
+    clip-path: none;
+  }
+  .hero-word,
+  .hero-ctas,
+  .hero-stitch path {
+    animation: none !important;
   }
 }

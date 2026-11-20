@@ -6,71 +6,92 @@ import { cn } from "@/lib/cn";
 
 export const THEME_STORAGE_KEY = "hattah-theme";
 
+type Theme = "light" | "dark";
+
+/** Runs before first paint: the stored choice wins; on a first visit
+ * (nothing stored) the device's prefers-color-scheme decides. Also
+ * marks <html class="js"> so scroll-reveal CSS only hides content when
+ * JS is actually running. */
 export const THEME_INIT_SCRIPT = `
 (function () {
+  var d = document.documentElement;
+  d.classList.add("js");
   try {
     var stored = localStorage.getItem("${THEME_STORAGE_KEY}");
-    var theme = stored === "light" || stored === "dark" ? stored : "light";
-    document.documentElement.setAttribute("data-theme", theme);
+    var theme = stored === "light" || stored === "dark"
+      ? stored
+      : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    d.setAttribute("data-theme", theme);
   } catch (e) {}
 })();
 `;
 
-// Layout effects don't run during SSR (and warn if used carelessly there);
-// this resolves to the right hook per environment once per module load,
-// which doesn't violate the rules of hooks.
 const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
-/** localStorage — never the `data-theme` DOM attribute — is the single
- * source of truth. The attribute is only ever a projection of this value
- * onto the DOM; anything reading "the current theme" should read this. */
-function getStoredTheme(): "light" | "dark" {
+/** Stored choice, else the device preference. */
+function resolveTheme(): Theme {
   if (typeof window === "undefined") return "light";
   try {
-    return localStorage.getItem(THEME_STORAGE_KEY) === "dark" ? "dark" : "light";
+    const stored = localStorage.getItem(THEME_STORAGE_KEY);
+    if (stored === "dark" || stored === "light") return stored;
   } catch {
-    return "light";
+    // storage disabled — fall through to the device preference
   }
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
-function applyTheme(theme: "light" | "dark") {
+function applyTheme(theme: Theme) {
   document.documentElement.setAttribute("data-theme", theme);
+  document.documentElement.classList.add("js");
 }
 
 /**
- * Re-asserts the stored theme onto <html data-theme> on every mount.
- *
- * Why this exists: switching locale is a client-side navigation (no full
- * page reload), but it re-renders the root [locale] layout — including
- * the <html> element itself — which wipes any attribute set imperatively
- * (like data-theme) since React only manages the props it's explicitly
- * given (lang/dir), not ad-hoc attributes. The one-time inline
- * THEME_INIT_SCRIPT only runs on a genuine first page load, so nothing
- * re-applies data-theme after that reset. Mounting this alongside the
- * init script means its layout effect re-fires on every such re-render,
- * restoring the theme before the browser paints — no flash, no drift
- * between locale switches.
+ * Re-asserts the theme onto <html data-theme> on every mount: a locale
+ * switch re-renders the root layout's <html> and drops attributes React
+ * doesn't own, and the one-time init script can't cover that. Also
+ * follows live device-theme changes while the visitor hasn't picked one.
  */
 export function ThemeSync() {
   useIsomorphicLayoutEffect(() => {
-    applyTheme(getStoredTheme());
+    applyTheme(resolveTheme());
   });
+  useEffect(() => {
+    const mq = window.matchMedia?.("(prefers-color-scheme: dark)");
+    if (!mq) return;
+    const onChange = () => {
+      try {
+        if (localStorage.getItem(THEME_STORAGE_KEY)) return;
+      } catch {}
+      applyTheme(mq.matches ? "dark" : "light");
+    };
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
   return null;
 }
 
-export function ThemeToggle({ className }: { className?: string }) {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+export function ThemeToggle({ className, labels }: { className?: string; labels?: { toLight: string; toDark: string } }) {
+  const [theme, setTheme] = useState<Theme>("light");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setTheme(getStoredTheme());
+    setTheme(resolveTheme());
     setMounted(true);
   }, []);
 
   function toggle() {
     const next = theme === "dark" ? "light" : "dark";
     setTheme(next);
-    applyTheme(next);
+    // Soft 300 ms cross-fade between themes where the browser supports view
+    // transitions (no flash); instant elsewhere and for reduced motion.
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown };
+    if (doc.startViewTransition && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      document.documentElement.classList.add("theme-xfade");
+      const vt = doc.startViewTransition(() => applyTheme(next)) as { finished?: Promise<void> };
+      vt?.finished?.finally(() => document.documentElement.classList.remove("theme-xfade"));
+    } else {
+      applyTheme(next);
+    }
     try {
       localStorage.setItem(THEME_STORAGE_KEY, next);
     } catch {
@@ -78,24 +99,21 @@ export function ThemeToggle({ className }: { className?: string }) {
     }
   }
 
+  const label = theme === "dark" ? (labels?.toLight ?? "Switch to light mode") : (labels?.toDark ?? "Switch to dark mode");
+
   return (
     <button
       type="button"
       onClick={toggle}
-      aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+      aria-label={label}
+      title={label}
       suppressHydrationWarning
       className={cn(
-        "flex h-9 w-9 items-center justify-center rounded-full border border-cream/25 text-cream transition-all duration-300 hover:scale-105 hover:border-cream hover:bg-cream/5",
+        "flex h-11 w-11 items-center justify-center rounded-full text-cream transition-colors duration-300 hover:bg-cream/8",
         className
       )}
     >
-      {!mounted ? (
-        <Moon size={15} />
-      ) : theme === "dark" ? (
-        <Sun size={15} />
-      ) : (
-        <Moon size={15} />
-      )}
+      {mounted && theme === "dark" ? <Sun size={18} strokeWidth={1.75} /> : <Moon size={18} strokeWidth={1.75} />}
     </button>
   );
 }

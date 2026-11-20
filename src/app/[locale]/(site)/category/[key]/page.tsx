@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { ProductCard } from "@/components/ui/ProductCard";
-import { Divider } from "@/components/ui/Divider";
-import { Button } from "@/components/ui/Button";
-import { Link } from "@/i18n/navigation";
+import { ShopClient } from "@/components/shop/ShopClient";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { buildCategoryTree, getDescendantKeys } from "@/lib/categories";
-import { getAllProducts, getCategories } from "@/lib/supabase/queries";
+import { getDescendantKeys } from "@/lib/categories";
+import { buildShopCategories, buildShopItems, parseSort } from "@/lib/shop-data";
+import { getBestSellerRanking } from "@/lib/supabase/bestsellers";
+import { getAllProducts, getCachedCategories, getCategories } from "@/lib/supabase/queries";
 import { localizeCategory, localizeCategoryDescription, localizeProduct, type Locale } from "@/lib/supabase/types";
 import { breadcrumbJsonLd, buildMetadata, categoryPath, itemListJsonLd, pagePath, productPath } from "@/lib/seo";
 
@@ -29,85 +29,72 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   });
 }
 
-export default async function CategoryPage({ params }: { params: Promise<{ locale: string; key: string }> }) {
+export default async function CategoryPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string; key: string }>;
+  searchParams: Promise<{ category?: string; sort?: string; q?: string }>;
+}) {
   const { locale, key } = await params;
+  const { category: sub, sort, q } = await searchParams;
   setRequestLocale(locale);
+  const loc = locale as Locale;
 
-  const [categories, products, tSeo, tShop] = await Promise.all([
-    getCategories(),
+  const [categories, products, ranking, tSeo] = await Promise.all([
+    getCachedCategories(),
     getAllProducts(),
+    getBestSellerRanking(),
     getTranslations("seo"),
-    getTranslations("common"),
   ]);
   const cat = categories.find((c) => c.key === key);
   if (!cat) notFound();
 
-  const label = localizeCategory(cat, locale as Locale);
+  const label = localizeCategory(cat, loc);
   const keys = new Set(getDescendantKeys(categories, key));
   const rows = products.filter((p) => keys.has(p.category));
-  const localized = rows.map((p) => localizeProduct(p, locale as Locale));
-  const labelByKey = Object.fromEntries(categories.map((c) => [c.key, localizeCategory(c, locale as Locale)]));
-  const children = buildCategoryTree(categories).find((n) => n.key === key)?.children ?? [];
-  const description = localizeCategoryDescription(cat, locale as Locale);
+  const localized = rows.map((p) => localizeProduct(p, loc));
+  const description = localizeCategoryDescription(cat, loc);
+  const parent = cat.parent_key ? categories.find((c) => c.key === cat.parent_key) : undefined;
+  const scopeNode = buildShopCategories(categories, loc).find((c) => c.key === key) ?? {
+    key,
+    label,
+    keys: [key],
+    children: [],
+  };
 
   return (
-    <div className="mx-auto max-w-7xl px-5 pb-24 pt-32 sm:px-8 sm:pt-36">
+    <>
       <JsonLd
         data={[
           breadcrumbJsonLd([
             { name: tSeo("home"), path: pagePath(locale) },
             { name: tSeo("shop"), path: pagePath(locale, "/shop") },
+            ...(parent ? [{ name: localizeCategory(parent, loc), path: pagePath(locale, categoryPath(parent.key)) }] : []),
             { name: label, path: pagePath(locale, categoryPath(key)) },
           ]),
           itemListJsonLd(label, rows.slice(0, 50).map((p, i) => ({ name: localized[i].name, path: pagePath(locale, productPath(p)) }))),
         ]}
       />
-      <nav aria-label="Breadcrumb" className="mb-4 flex flex-wrap items-center gap-1.5 font-inter text-xs text-cream-secondary/70">
-        <Link href="/" className="hover:text-terracotta">{tSeo("home")}</Link>
-        <span aria-hidden>/</span>
-        <Link href="/shop" className="hover:text-terracotta">{tSeo("shop")}</Link>
-      </nav>
-      <div className="mb-10 text-center">
-        <h1 className="font-playfair text-4xl font-bold text-cream sm:text-5xl">{label}</h1>
-        {description && <p className="mx-auto mt-3 max-w-xl font-inter text-cream-secondary/70">{description}</p>}
-        <Divider className="mt-6" />
-      </div>
-
-      {children.length > 0 && (
-        <ul className="mb-10 flex flex-wrap justify-center gap-2">
-          {children.map((c) => (
-            <li key={c.key}>
-              <Link href={categoryPath(c.key) as "/category/[key]"} className="rounded-full border border-cream/20 px-4 py-1.5 font-inter text-sm text-cream-secondary hover:border-terracotta hover:text-terracotta">
-                {localizeCategory(c, locale as Locale)}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {localized.length === 0 ? (
-        <div className="py-20 text-center">
-          <Button href="/shop" variant="secondary">{tShop("backToShop")}</Button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
-          {localized.map((p) => (
-            <ProductCard
-              key={p.id}
-              id={p.id}
-              slug={p.slug}
-              name={p.name}
-              price={p.startingPrice}
-              salePrice={p.salePrice}
-              priceOnRequest={p.priceOnRequest}
-              image={p.images[0]}
-              categoryLabel={labelByKey[p.category]}
-              startingFrom={p.quantities.length > 0}
-              hasVariants={p.sizes.length > 0 || p.colors.length > 0 || p.quantities.length > 0}
-            />
-          ))}
-        </div>
-      )}
-    </div>
+      <PageHeader
+        title={label}
+        eyebrow={parent ? localizeCategory(parent, loc) : tSeo("categories")}
+        description={description}
+        crumbs={[
+          { label: tSeo("home"), href: "/" },
+          { label: tSeo("shop"), href: "/shop" },
+          ...(parent ? [{ label: localizeCategory(parent, loc), href: categoryPath(parent.key) }] : []),
+          { label },
+        ]}
+      />
+      <ShopClient
+        items={buildShopItems(rows, categories, ranking, loc)}
+        categories={[scopeNode]}
+        scope={key}
+        initialCategory={sub && scopeNode.children.some((c) => c.key === sub) ? sub : "all"}
+        initialSort={parseSort(sort)}
+        initialQuery={(q ?? "").slice(0, 80)}
+      />
+    </>
   );
 }

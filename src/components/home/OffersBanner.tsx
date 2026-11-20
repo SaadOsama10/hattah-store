@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { m } from "framer-motion";
+import { Reveal } from "@/components/ui/Reveal";
 import { ArrowRight, Tag } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 
@@ -10,12 +10,7 @@ export function OffersBanner() {
 
   return (
     <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8">
-      <m.div
-        initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-40px" }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      >
+      <Reveal>
         <Link
           href="/offers"
           className="group flex flex-col items-start gap-4 rounded-2xl border border-terracotta/25 bg-terracotta/[0.06] px-6 py-5 transition-colors duration-300 hover:border-terracotta/40 hover:bg-terracotta/10 sm:flex-row sm:items-center sm:justify-between"
@@ -37,7 +32,7 @@ export function OffersBanner() {
             />
           </span>
         </Link>
-      </m.div>
+      </Reveal>
     </section>
   );
 }

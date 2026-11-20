@@ -1,237 +1,275 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
-import { Search, SlidersHorizontal } from "lucide-react";
-import { m, AnimatePresence } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
+import { ArrowUpDown, MessageCircle, Search, SearchX, X } from "lucide-react";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { Button } from "@/components/ui/Button";
+import { KufiyaDivider } from "@/components/ui/KufiyaDivider";
+import { Reveal } from "@/components/ui/Reveal";
 import { cn } from "@/lib/cn";
 import { playClick } from "@/lib/sound";
-import { buildCategoryTree, getDescendantKeys } from "@/lib/categories";
-import {
-  localizeProduct,
-  localizeCategory,
-  type ProductRow,
-  type CategoryRow,
-  type CategoryKey,
-  type Locale,
-} from "@/lib/supabase/types";
+import { sortPrice, type CardProduct } from "@/lib/storefront";
+import { buildWhatsAppOrderLink } from "@/lib/whatsapp";
 
-const PAGE_SIZE = 12;
+export interface ShopItem extends CardProduct {
+  category: string;
+  createdAt: string;
+  /** Position in the sales-based best-seller ranking (lower = better); null = no sales data. */
+  rank: number | null;
+  /** Lower-cased names (current language + English) for search. */
+  search: string;
+}
 
+export interface ShopCategory {
+  key: string;
+  label: string;
+  /** All keys that count as "in" this category (itself + its subcategories). */
+  keys: string[];
+  children: { key: string; label: string }[];
+}
+
+export type SortKey = "newest" | "best" | "price-asc" | "price-desc";
+const SORTS: SortKey[] = ["newest", "best", "price-asc", "price-desc"];
+const PAGE_SIZE = 24;
+
+/**
+ * Product listing with a sticky filter bar: category pills (top level,
+ * then subcategories), search and sort. State mirrors into the URL
+ * (?category= &sort= &q=) without a reload so a filtered view can be
+ * shared. On a category page (`scope`) only that category's
+ * subcategories are offered.
+ */
 export function ShopClient({
-  products,
+  items,
   categories,
-  initialCategory,
+  initialCategory = "all",
+  initialSort = "newest",
+  initialQuery = "",
+  scope,
 }: {
-  products: ProductRow[];
-  categories: CategoryRow[];
-  initialCategory: CategoryKey | "all";
+  items: ShopItem[];
+  categories: ShopCategory[];
+  initialCategory?: string;
+  initialSort?: SortKey;
+  initialQuery?: string;
+  scope?: string;
 }) {
   const t = useTranslations("shop");
   const tCommon = useTranslations("common");
-  const locale = useLocale() as Locale;
+  const tHome = useTranslations("home");
 
-  const categoryTree = useMemo(() => buildCategoryTree(categories), [categories]);
-
-  // A deep-link (?category=<subcategory key>) should land on its parent
-  // tab with the subcategory pill already active.
-  const initialRow = categories.find((c) => c.key === initialCategory);
-  const [activeParent, setActiveParent] = useState<CategoryKey | "all">(
-    initialRow ? (initialRow.parent_key ?? initialRow.key) : "all"
+  const parentOf = (key: string) => categories.find((c) => c.key === key || c.children.some((ch) => ch.key === key));
+  const initialParent = scope ?? parentOf(initialCategory)?.key ?? "all";
+  const [parent, setParent] = useState<string>(initialParent);
+  const [child, setChild] = useState<string>(
+    initialCategory !== "all" && initialCategory !== initialParent ? initialCategory : "all"
   );
-  const [activeChild, setActiveChild] = useState<CategoryKey | "all">(
-    initialRow?.parent_key ? initialRow.key : "all"
-  );
-  const [query, setQuery] = useState("");
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [sort, setSort] = useState<SortKey>(SORTS.includes(initialSort) ? initialSort : "newest");
+  const [query, setQuery] = useState(initialQuery);
+  const [visible, setVisible] = useState(PAGE_SIZE);
 
-  const activeParentNode = categoryTree.find((c) => c.key === activeParent);
+  const parentNode = categories.find((c) => c.key === parent);
 
-  function selectParent(key: CategoryKey | "all") {
-    playClick();
-    setActiveParent(key);
-    setActiveChild("all");
-    setVisibleCount(PAGE_SIZE);
-  }
-
-  function selectChild(key: CategoryKey | "all") {
-    playClick();
-    setActiveChild(key);
-    setVisibleCount(PAGE_SIZE);
-  }
-
-  const localized = useMemo(
-    () => products.map((p) => localizeProduct(p, locale)),
-    [products, locale]
-  );
+  // Mirror the filters into the address bar (no navigation, no reload).
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const set = (k: string, v: string | null) => (v ? url.searchParams.set(k, v) : url.searchParams.delete(k));
+    set("category", scope ? (child !== "all" ? child : null) : child !== "all" ? child : parent !== "all" ? parent : null);
+    set("sort", sort !== "newest" ? sort : null);
+    set("q", query.trim() || null);
+    window.history.replaceState(window.history.state, "", url.pathname + url.search);
+  }, [parent, child, sort, query, scope]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const allowedKeys =
-      activeParent === "all"
-        ? null
-        : activeChild !== "all"
-          ? [activeChild]
-          : getDescendantKeys(categories, activeParent);
-
-    return localized.filter((p) => {
-      const matchesCategory = !allowedKeys || allowedKeys.includes(p.category);
-      const matchesQuery = !q || p.name.toLowerCase().includes(q);
-      return matchesCategory && matchesQuery;
+    const allowed =
+      child !== "all" ? new Set([child]) : parentNode ? new Set(parentNode.keys) : null;
+    const list = items.filter((p) => (!allowed || allowed.has(p.category)) && (!q || p.search.includes(q)));
+    const byNewest = (a: ShopItem, b: ShopItem) => b.createdAt.localeCompare(a.createdAt);
+    return [...list].sort((a, b) => {
+      if (sort === "best") {
+        const ra = a.rank ?? Infinity;
+        const rb = b.rank ?? Infinity;
+        return ra !== rb ? ra - rb : byNewest(a, b);
+      }
+      if (sort === "price-asc" || sort === "price-desc") {
+        const pa = sortPrice(a);
+        const pb = sortPrice(b);
+        // Price-on-request products have no price: always after the priced ones.
+        if (pa === null || pb === null) return pa === pb ? byNewest(a, b) : pa === null ? 1 : -1;
+        return sort === "price-asc" ? pa - pb : pb - pa;
+      }
+      return byNewest(a, b);
     });
-  }, [localized, activeParent, activeChild, categories, query]);
+  }, [items, parentNode, child, query, sort]);
 
-  const visible = filtered.slice(0, visibleCount);
-  const categoryLabelByKey = Object.fromEntries(
-    categories.map((c) => [c.key, localizeCategory(c, locale)])
-  );
+  function pickParent(key: string) {
+    playClick();
+    setParent(key);
+    setChild("all");
+    setVisible(PAGE_SIZE);
+  }
+  function pickChild(key: string) {
+    playClick();
+    setChild(key);
+    setVisible(PAGE_SIZE);
+  }
+  function reset() {
+    setParent(scope ?? "all");
+    setChild("all");
+    setQuery("");
+    setSort("newest");
+    setVisible(PAGE_SIZE);
+  }
+
+  const pill = (active: boolean) =>
+    cn(
+      "inline-flex min-h-10 shrink-0 items-center whitespace-nowrap rounded-full px-4 font-inter text-sm font-semibold transition-colors duration-200",
+      active ? "bg-cream text-bg-primary" : "bg-surface text-cream ring-1 ring-line hover:ring-line-strong"
+    );
+  const subPill = (active: boolean) =>
+    cn(
+      "inline-flex min-h-9 shrink-0 items-center whitespace-nowrap rounded-full px-3.5 font-inter text-[13px] transition-colors duration-200",
+      active ? "bg-olive-wash font-semibold text-olive ring-1 ring-olive/40" : "text-cream-secondary hover:text-cream"
+    );
+
+  const showChildren = parentNode && parentNode.children.length > 0;
 
   return (
-    <div className="mx-auto max-w-7xl px-5 pb-24 pt-32 sm:px-8 sm:pt-36">
-      <div className="mb-12 text-center">
-        <h1 className="font-playfair text-4xl font-bold text-cream sm:text-5xl">{t("title")}</h1>
-        <p className="mx-auto mt-3 max-w-xl font-inter text-cream-secondary/70">
-          {t("subtitle")}
-        </p>
-      </div>
-
-      <div className="mb-10 flex flex-col gap-6">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className="flex flex-wrap items-center gap-2">
-            <SlidersHorizontal size={15} className="me-1 text-cream-secondary/50" />
-            <button
-              type="button"
-              onClick={() => selectParent("all")}
-              className={cn(
-                "rounded-full border px-4 py-2 font-inter text-xs uppercase tracking-widest transition-all duration-300 hover:-translate-y-0.5",
-                activeParent === "all"
-                  ? "border-terracotta bg-terracotta text-cream shadow-glow-terracotta"
-                  : "border-cream/20 text-cream-secondary hover:border-cream/50"
-              )}
-            >
-              {t("filterAll")}
-            </button>
-            {categoryTree.map((cat) => (
-              <button
-                key={cat.key}
-                type="button"
-                onClick={() => selectParent(cat.key as CategoryKey)}
-                className={cn(
-                  "rounded-full border px-4 py-2 font-inter text-xs uppercase tracking-widest transition-all duration-300 hover:-translate-y-0.5",
-                  activeParent === cat.key
-                    ? "border-terracotta bg-terracotta text-cream shadow-glow-terracotta"
-                    : "border-cream/20 text-cream-secondary hover:border-cream/50"
-                )}
-              >
-                {localizeCategory(cat, locale)}
+    <div>
+      {/* ── Sticky filter bar ── */}
+      <div className="sticky top-[var(--header-offset,4rem)] z-30 border-b border-line bg-[var(--t-header-bg)] backdrop-blur-xl backdrop-saturate-150 transition-[top] duration-300 ease-soft">
+        <div className="mx-auto max-w-7xl px-gutter py-3">
+          {!scope && (
+            <div role="group" aria-label={t("categoryFilter")} className="scrollbar-none -mx-gutter flex gap-2 overflow-x-auto px-gutter">
+              <button type="button" onClick={() => pickParent("all")} aria-pressed={parent === "all"} className={pill(parent === "all")}>
+                {t("filterAll")}
               </button>
-            ))}
-          </div>
-
-          <div className="relative w-full max-w-xs">
-            <Search
-              size={16}
-              className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-cream-secondary/50"
-            />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setVisibleCount(PAGE_SIZE);
-              }}
-              placeholder={t("searchPlaceholder")}
-              className="w-full rounded-full border border-cream/20 bg-bg-secondary py-2.5 ps-10 pe-4 font-inter text-sm text-cream placeholder:text-cream-secondary/40 focus:border-terracotta focus:outline-none"
-            />
-          </div>
-        </div>
-
-        <AnimatePresence>
-          {activeParentNode && activeParentNode.children.length > 0 && (
-            <m.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="flex flex-wrap items-center gap-2 ps-6"
-            >
-              <button
-                type="button"
-                onClick={() => selectChild("all")}
-                className={cn(
-                  "rounded-full border px-3 py-1.5 font-inter text-[11px] uppercase tracking-widest transition-colors",
-                  activeChild === "all"
-                    ? "border-forest bg-forest/15 text-forest"
-                    : "border-cream/15 text-cream-secondary/70 hover:border-cream/40"
-                )}
-              >
-                {t("allSubcategories")}
-              </button>
-              {activeParentNode.children.map((child) => (
-                <button
-                  key={child.key}
-                  type="button"
-                  onClick={() => selectChild(child.key as CategoryKey)}
-                  className={cn(
-                    "rounded-full border px-3 py-1.5 font-inter text-[11px] uppercase tracking-widest transition-colors",
-                    activeChild === child.key
-                      ? "border-forest bg-forest/15 text-forest"
-                      : "border-cream/15 text-cream-secondary/70 hover:border-cream/40"
-                  )}
-                >
-                  {localizeCategory(child, locale)}
+              {categories.map((c) => (
+                <button key={c.key} type="button" onClick={() => pickParent(c.key)} aria-pressed={parent === c.key} className={pill(parent === c.key)}>
+                  {c.label}
                 </button>
               ))}
-            </m.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      <p className="mb-6 font-inter text-xs uppercase tracking-widest text-cream-secondary/50">
-        {filtered.length} {t("resultsCount")}
-      </p>
-
-      {filtered.length === 0 ? (
-        <p className="py-24 text-center font-inter text-cream-secondary/60">
-          {t("noProducts")}
-        </p>
-      ) : (
-        <>
-          <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
-            {visible.map((product, index) => (
-              <ProductCard
-                key={product.id}
-                priority={index < 4}
-                id={product.id}
-                slug={product.slug}
-                name={product.name}
-                price={product.startingPrice}
-                salePrice={product.salePrice}
-                priceOnRequest={product.priceOnRequest}
-                startingFrom={product.quantities.length > 0}
-                image={product.images[0]}
-                categoryLabel={categoryLabelByKey[product.category]}
-                hasVariants={
-                  product.sizes.length > 0 || product.colors.length > 0 || product.quantities.length > 0
-                }
-              />
-            ))}
-          </div>
-
-          {visibleCount < filtered.length && (
-            <div className="mt-14 flex justify-center">
-              <Button
-                variant="secondary"
-                onClick={() => setVisibleCount((v) => v + PAGE_SIZE)}
-              >
-                {tCommon("loadMore")}
-              </Button>
             </div>
           )}
-        </>
-      )}
+
+          {showChildren && (
+            <div className={cn("scrollbar-none -mx-gutter flex gap-1.5 overflow-x-auto px-gutter", !scope && "mt-2")}>
+              <button type="button" onClick={() => pickChild("all")} aria-pressed={child === "all"} className={subPill(child === "all")}>
+                {t("allSubcategories")}
+              </button>
+              {parentNode.children.map((ch) => (
+                <button key={ch.key} type="button" onClick={() => pickChild(ch.key)} aria-pressed={child === ch.key} className={subPill(child === ch.key)}>
+                  {ch.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="mt-2.5 flex items-center gap-2">
+            <label className="relative min-w-0 flex-1">
+              <span className="sr-only">{tCommon("search")}</span>
+              <Search size={17} className="pointer-events-none absolute start-3.5 top-1/2 -translate-y-1/2 text-muted" />
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setVisible(PAGE_SIZE);
+                }}
+                placeholder={t("searchPlaceholder")}
+                className="h-11 w-full rounded-full bg-surface ps-10 pe-10 font-inter text-[15px] text-cream ring-1 ring-line placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-terracotta [&::-webkit-search-cancel-button]:hidden"
+              />
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  aria-label={t("clearSearch")}
+                  className="absolute end-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-muted hover:text-cream"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </label>
+            <label className="relative shrink-0">
+              <span className="sr-only">{t("sortLabel")}</span>
+              <ArrowUpDown size={15} className="pointer-events-none absolute start-3.5 top-1/2 -translate-y-1/2 text-muted" />
+              <select
+                value={sort}
+                onChange={(e) => {
+                  playClick();
+                  setSort(e.target.value as SortKey);
+                }}
+                className="h-11 max-w-[11.5rem] appearance-none rounded-full bg-surface ps-9 pe-4 font-inter text-sm font-semibold text-cream ring-1 ring-line focus:outline-none focus:ring-2 focus:ring-terracotta"
+              >
+                <option value="newest">{t("sortNewest")}</option>
+                <option value="best">{t("sortBest")}</option>
+                <option value="price-asc">{t("sortPriceAsc")}</option>
+                <option value="price-desc">{t("sortPriceDesc")}</option>
+              </select>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Results ── */}
+      <div className="mx-auto max-w-7xl px-gutter pb-section pt-5">
+        {/* keeps the heading outline h1 → h2 → product h3 */}
+        <h2 className="sr-only">{t("title")}</h2>
+        <p className="mb-4 font-inter text-sm text-muted" aria-live="polite">
+          {t("count", { count: filtered.length })}
+        </p>
+
+        {filtered.length === 0 ? (
+          <div className="mx-auto flex max-w-md flex-col items-center rounded-panel bg-bg-secondary px-6 py-14 text-center ring-1 ring-line">
+            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-surface text-olive ring-1 ring-line">
+              <SearchX size={28} strokeWidth={1.5} />
+            </span>
+            <h2 className="mt-5 font-playfair text-h3 font-bold text-cream">{t("emptyTitle")}</h2>
+            <KufiyaDivider size="sm" className="mt-3" />
+            <p className="mt-3 font-inter text-sm leading-relaxed text-cream-secondary">{t("emptyHint")}</p>
+            <div className="mt-6 flex flex-wrap justify-center gap-2">
+              <Button variant="secondary" onClick={reset}>
+                {t("clearFilters")}
+              </Button>
+              <Button
+                variant="whatsapp"
+                href={buildWhatsAppOrderLink(query.trim() ? `${tHome("whatsappGreeting")} ${query.trim()}` : tHome("whatsappGreeting"))}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <MessageCircle size={18} />
+                {t("askWhatsapp")}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <ul className="grid grid-cols-2 gap-x-3.5 gap-y-8 sm:grid-cols-3 sm:gap-x-5 lg:grid-cols-4">
+              {filtered.slice(0, visible).map((p, i) =>
+                // The first row paints with the HTML (it holds the LCP image); later cards fade in as they scroll in.
+                i < 4 ? (
+                  <li key={p.id}>
+                    <ProductCard product={p} priority />
+                  </li>
+                ) : (
+                  <Reveal as="li" key={p.id} delay={(i % 4) * 60}>
+                    <ProductCard product={p} />
+                  </Reveal>
+                )
+              )}
+            </ul>
+            {visible < filtered.length && (
+              <div className="mt-12 flex justify-center">
+                <Button variant="secondary" onClick={() => setVisible((v) => v + PAGE_SIZE)}>
+                  {tCommon("loadMore")}
+                </Button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

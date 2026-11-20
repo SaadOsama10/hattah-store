@@ -10,7 +10,7 @@ function header(): string {
   return lines(
     `# ${BUSINESS.name} (${BUSINESS.nameAr})`,
     "",
-    `> ${BUSINESS.name} (حَطّة) is an online store based in Istanbul, Türkiye, selling authentic Palestinian and Gazan heritage products: hoodies with heritage designs, tatreez embroidery, artwork, medallions and necklaces, and homemade Palestinian food. Orders are placed in the online store or on WhatsApp. Delivery covers all of Türkiye and is free in Başakşehir, Istanbul.`,
+    `> ${BUSINESS.name} (حَطّة) is an online store based in Istanbul, Türkiye, selling authentic Palestinian and Gazan heritage products: hoodies with heritage designs, tatreez embroidery, artwork, medallions and necklaces, and homemade Palestinian food. Orders are placed in the online store or on WhatsApp.`,
     "",
     "## Business facts",
     `- Name: ${BUSINESS.name} (${BUSINESS.nameAr})`,
@@ -21,7 +21,6 @@ function header(): string {
     `- Facebook: ${BUSINESS.facebook}`,
     `- Currency: Turkish lira (TRY)`,
     `- Languages: Arabic, English, Turkish (URLs start with /ar, /en, /tr)`,
-    `- Delivery: all of Türkiye; free in Başakşehir (Istanbul)`,
     `- How to order: add products to the cart and send the order on WhatsApp, or message ${BUSINESS.phoneDisplay} directly`,
   );
 }

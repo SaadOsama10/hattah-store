@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import { Sora, Inter } from "next/font/google";
-import localFont from "next/font/local";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -9,48 +7,8 @@ import { SITE_URL } from "@/lib/site";
 import { THEME_INIT_SCRIPT, ThemeSync } from "@/components/ui/ThemeToggle";
 import "../globals.css";
 
-// Display / heading font — bold, modern, geometric. Used for both
-// languages via the --font-playfair CSS variable, which resolves to
-// Sora (Latin) or Noto Kufi Arabic (Arabic) — see globals.css.
-const sora = Sora({
-  subsets: ["latin"],
-  weight: ["700", "800"],
-  variable: "--font-sora",
-  display: "swap",
-});
-
-// Arabic fonts are self-hosted subsets (Arabic block + basic Latin/digits/punctuation), ~25 KB per weight
-// instead of the full 124 KB Google file. Only the weights painted above the fold are preloaded.
-const notoKufiArabic = localFont({
-  src: [
-    { path: "../fonts/kufi-ar-700.woff2", weight: "700", style: "normal" },
-    { path: "../fonts/kufi-ar-800.woff2", weight: "800", style: "normal" },
-  ],
-  variable: "--font-noto-kufi-arabic",
-  display: "swap",
-  adjustFontFallback: "Arial",
-});
-
-// Body / UI font — clean and modern. Used via the --font-inter CSS
-// variable, which resolves to Inter (Latin) or IBM Plex Sans Arabic
-// (Arabic).
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "600"],
-  variable: "--font-inter-latin",
-  display: "swap",
-});
-
-const ibmPlexSansArabic = localFont({
-  src: [
-    { path: "../fonts/plex-ar-400.woff2", weight: "400", style: "normal" },
-    { path: "../fonts/plex-ar-600.woff2", weight: "600", style: "normal" },
-  ],
-  variable: "--font-ibm-plex-sans-arabic",
-  display: "swap",
-  adjustFontFallback: "Arial",
-});
-
+// Display / heading fonts — the brand's identity faces (same as the logo and the
+// social-media templates): Playfair Display for Latin, Amiri for Arabic.
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
@@ -101,15 +59,37 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} dir={dir} suppressHydrationWarning>
+      <head>
+        {/* Product photos (incl. the homepage hero, the usual LCP image) come from Supabase Storage:
+            open that connection while the HTML is still parsing. */}
+        {process.env.NEXT_PUBLIC_SUPABASE_URL && <link rel="preconnect" href={process.env.NEXT_PUBLIC_SUPABASE_URL} />}
+        {/* Playfair Display (self-hosted, see globals.css) is the headline font on /en and /tr:
+            preloaded there only, so Arabic pages don't pay for it. */}
+        {/* Each language preloads only its own headline/body faces (self-hosted, see globals.css). */}
+        {isArabic ? (
+          <>
+            <link rel="preload" href="/fonts/amiri-ar-700.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+            <link rel="preload" href="/fonts/plex-ar-400.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+          </>
+        ) : (
+          <>
+            <link rel="preload" href="/fonts/playfair-700-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+            {/* Turkish headlines need ğ ş ı İ from the Latin-extended file */}
+            {locale === "tr" && (
+              <link rel="preload" href="/fonts/playfair-700-latin-ext.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+            )}
+          </>
+        )}
+      </head>
       <body
         // Only the active locale's font families are applied, so /en and /tr never download (or preload)
         // the Arabic fonts and /ar never downloads the Latin ones.
-        className={`${isArabic ? `${notoKufiArabic.variable} ${ibmPlexSansArabic.variable}` : `${sora.variable} ${inter.variable}`} bg-bg-primary text-cream antialiased font-inter`}
+        className={`bg-bg-primary text-cream antialiased font-inter`}
         style={
           {
             "--font-display-current": isArabic
-              ? "var(--font-noto-kufi-arabic)"
-              : "var(--font-sora)",
+              ? "var(--font-amiri)"
+              : "var(--font-playfair-latin)",
             "--font-body-current": isArabic
               ? "var(--font-ibm-plex-sans-arabic)"
               : "var(--font-inter-latin)",

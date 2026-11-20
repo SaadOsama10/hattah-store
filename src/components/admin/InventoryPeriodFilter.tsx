@@ -80,7 +80,7 @@ export function InventoryPeriodFilter({
               onClick={() => apply(range, key)}
               className={cn(
                 "rounded-full px-4 py-1.5 font-inter text-xs transition-colors",
-                view === key ? "bg-terracotta text-cream" : "text-cream-secondary hover:text-cream"
+                view === key ? "bg-terracotta text-on-accent" : "text-cream-secondary hover:text-cream"
               )}
             >
               {label}
@@ -121,7 +121,7 @@ export function InventoryPeriodFilter({
             className={cn(
               "rounded-full border px-4 py-1.5 font-inter text-xs transition-colors",
               (key === "all" ? !filtered : activePreset === key)
-                ? "border-terracotta bg-terracotta text-cream"
+                ? "border-terracotta bg-terracotta text-on-accent"
                 : "border-cream/20 text-cream-secondary hover:text-cream"
             )}
           >

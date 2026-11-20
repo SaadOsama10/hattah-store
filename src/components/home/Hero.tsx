@@ -1,149 +1,77 @@
-"use client";
-
-import { useEffect, useState, useRef } from "react";
-import { m, useScroll, useTransform, AnimatePresence } from "framer-motion";
-import { useTranslations } from "next-intl";
-import { ChevronDown } from "lucide-react";
 import Image from "next/image";
-import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
-import { FloatingBlobs } from "@/components/ui/FloatingBlobs";
-import { Sparkles } from "@/components/ui/Sparkles";
-import { OliveBranch } from "@/components/ui/OliveBranch";
+import { getTranslations } from "next-intl/server";
+import { ArrowDown, MessageCircle } from "lucide-react";
+import { buildWhatsAppOrderLink } from "@/lib/whatsapp";
 
-export function Hero() {
-  const t = useTranslations("hero");
-  const taglines = t.raw("taglines") as string[];
-  const [taglineIndex, setTaglineIndex] = useState(0);
-  const containerRef = useRef<HTMLDivElement>(null);
+/** Arabic diacritics — the headline is always rendered without them. */
+const stripTashkeel = (s: string) => s.replace(/[ً-ٰٟۖ-ۭ]/g, "");
+const bare = (w: string) => w.replace(/[.,،!?؟]/g, "");
 
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end start"],
-  });
-  const patternY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "60%"]);
-  const contentOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTaglineIndex((i) => (i + 1) % taglines.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [taglines.length]);
+/**
+ * Hero — one focus: the headline. A calm warm background with a single
+ * static pool of light, the logo at medium size, the headline appearing
+ * word by word (≤1.2 s), and one word stitched underneath with the red
+ * embroidery thread. The page-long thread (components/ui/Thread.tsx)
+ * starts from the logo (data-thread-start). No canvas, no loops.
+ */
+export async function Hero() {
+  const t = await getTranslations("hero");
+  const tHome = await getTranslations("home");
+  const words = stripTashkeel(t("title")).split(/\s+/);
+  const focus = bare(stripTashkeel(t("focus")));
+  const whatsappHref = buildWhatsAppOrderLink(tHome("whatsappGreeting"));
+  const step = 110;
+  const stitchAt = 150 + words.length * step + 250;
 
   return (
-    <div
-      ref={containerRef}
-      className="relative flex h-[100svh] min-h-[640px] w-full items-center justify-center overflow-hidden bg-bg-primary"
-    >
-      {/* Layered background: soft floating blobs + parallax grain texture + slow-drifting decorative line art */}
-      <FloatingBlobs />
-      <Sparkles />
-      <m.div
-        style={{ y: patternY }}
-        aria-hidden
-        className="absolute inset-[-10%] bg-grain opacity-[0.03]"
-      />
-      <OliveBranch
-        aria-hidden
-        className="animate-drift pointer-events-none absolute bottom-16 start-[-2%] w-56 text-olive opacity-[0.12] sm:w-72"
-      />
-      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-bg-primary to-transparent" />
-
-      <m.div
-        style={{ y: contentY, opacity: contentOpacity }}
-        className="relative z-10 flex flex-col items-center px-6 text-center"
-      >
-        <m.div
-          initial={{ opacity: 0, scale: 0.85, filter: "blur(6px)" }}
-          animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-          transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-          className="relative mb-8"
-        >
-          <span className="absolute inset-[-14px] animate-pulse rounded-full bg-terracotta/15 blur-xl" />
-          <span className="absolute inset-0 rounded-full ring-1 ring-cream/10" />
-          <Image
-            src="/images/hattah-logo-sm.webp"
-            alt="HATTAH — حَطّة"
-            width={132}
-            height={132}
-            priority
-            className="relative h-24 w-24 rounded-full object-contain shadow-soft sm:h-32 sm:w-32"
-          />
-        </m.div>
-
-        <m.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1 }}
-          className="mb-5"
-        >
-          <Badge>{t("badge")}</Badge>
-        </m.div>
-
-        {/* No opacity-0 start: the H1 is the LCP element and must paint with the first HTML, not after hydration. */}
-        <m.h1
-          initial={{ y: 20 }}
-          animate={{ y: 0 }}
-          transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="font-playfair text-6xl font-extrabold leading-none text-cream sm:text-7xl md:text-8xl"
-        >
-          {t("brandName")}
-        </m.h1>
-        <m.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.5 }}
-          className="mt-3 font-inter text-xs font-semibold tracking-[0.5em] text-cream-secondary/60"
-        >
-          {t("brandNameLatin")}
-        </m.p>
-
-        <div className="relative mt-8 flex h-14 items-center justify-center px-4 sm:h-10">
-          <AnimatePresence mode="wait">
-            <m.p
-              key={taglineIndex}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-md font-inter text-lg text-cream-secondary sm:text-xl"
-            >
-              {taglines[taglineIndex]}
-            </m.p>
-          </AnimatePresence>
+    <section className="hero" aria-labelledby="hero-title">
+      <div className="hero-inner">
+        <Image
+          src="/images/hattah-logo-400.webp"
+          alt="HATTAH — حَطّة"
+          width={96}
+          height={96}
+          priority
+          data-thread-start
+          className="hero-logo"
+        />
+        <p className="hero-badge">{t("badge")}</p>
+        <h1 id="hero-title" className="hero-title font-playfair">
+          {words.map((w, i) => {
+            const isFocus = bare(w) === focus;
+            return (
+              <span key={i}>
+                <span className={isFocus ? "hero-word hero-focus" : "hero-word"} style={{ animationDelay: `${150 + i * step}ms` }}>
+                  {w}
+                  {isFocus && (
+                    <svg className="hero-stitch" viewBox="0 0 200 14" preserveAspectRatio="none" aria-hidden>
+                      <path
+                        d="M2 8 L12 4 L22 10 L32 4 L42 10 L52 4 L62 10 L72 4 L82 10 L92 4 L102 10 L112 4 L122 10 L132 4 L142 10 L152 4 L162 10 L172 4 L182 10 L198 6"
+                        pathLength={1}
+                        style={{ animationDelay: `${stitchAt}ms` }}
+                      />
+                    </svg>
+                  )}
+                </span>
+                {i < words.length - 1 && " "}
+              </span>
+            );
+          })}
+        </h1>
+        <p className="hero-sub">
+          {t("subtitle")}
+        </p>
+        <div className="hero-ctas" style={{ animationDelay: `${stitchAt - 50}ms` }}>
+          <a href="#collection" className="hero-btn hero-btn-primary">
+            <span>{t("ctaPrimary")}</span>
+            <ArrowDown size={18} aria-hidden />
+          </a>
+          <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="hero-btn hero-btn-ghost">
+            <MessageCircle size={18} aria-hidden />
+            <span>{t("ctaSecondary")}</span>
+          </a>
         </div>
-
-        <m.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.8 }}
-          className="mt-10"
-        >
-          <Button href="/shop" variant="primary" size="lg">
-            {t("cta")}
-          </Button>
-        </m.div>
-      </m.div>
-
-      <m.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.4, duration: 1 }}
-        className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2"
-      >
-        <m.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="flex flex-col items-center gap-2 text-cream-secondary/50"
-        >
-          <span className="font-inter text-[10px] uppercase tracking-[0.3em]">
-            {t("scroll")}
-          </span>
-          <ChevronDown size={16} />
-        </m.div>
-      </m.div>
-    </div>
+      </div>
+    </section>
   );
 }

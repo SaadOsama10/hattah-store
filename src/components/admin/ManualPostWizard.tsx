@@ -281,7 +281,7 @@ function Form({
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={u} alt="" className="h-full w-full object-cover" />
                   {idx >= 0 && (
-                    <span className="absolute start-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-terracotta font-inter text-xs font-bold text-white">
+                    <span className="absolute start-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-terracotta font-inter text-xs font-bold text-on-accent">
                       {max === 1 ? <Check size={13} /> : idx + 1}
                     </span>
                   )}
@@ -297,11 +297,11 @@ function Form({
         <span className={label}>4 · الموعد (توقيت إسطنبول — بدون jitter)</span>
         <div className="flex flex-wrap items-center gap-3">
           <button type="button" onClick={() => setPublishNow(true)}
-            className={cn("rounded-full border px-4 py-1.5 font-inter text-sm", publishNow ? "border-terracotta bg-terracotta text-white" : "border-cream/20 text-cream")}>
+            className={cn("rounded-full border px-4 py-1.5 font-inter text-sm", publishNow ? "border-terracotta bg-terracotta text-on-accent" : "border-cream/20 text-cream")}>
             انشر الآن
           </button>
           <button type="button" onClick={() => setPublishNow(false)}
-            className={cn("rounded-full border px-4 py-1.5 font-inter text-sm", !publishNow ? "border-terracotta bg-terracotta text-white" : "border-cream/20 text-cream")}>
+            className={cn("rounded-full border px-4 py-1.5 font-inter text-sm", !publishNow ? "border-terracotta bg-terracotta text-on-accent" : "border-cream/20 text-cream")}>
             موعد محدد
           </button>
           {!publishNow && <input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} className={cn(input, "w-auto")} />}
@@ -316,7 +316,7 @@ function Form({
         <div className="mb-4 flex gap-2">
           {([["ai", "توليد بالذكاء الاصطناعي"], ["manual", "أكتبه بنفسي"]] as const).map(([m, l]) => (
             <button key={m} type="button" onClick={() => setTextMode(m)}
-              className={cn("rounded-full border px-4 py-1.5 font-inter text-sm", textMode === m ? "border-terracotta bg-terracotta text-white" : "border-cream/20 text-cream")}>
+              className={cn("rounded-full border px-4 py-1.5 font-inter text-sm", textMode === m ? "border-terracotta bg-terracotta text-on-accent" : "border-cream/20 text-cream")}>
               {l}
             </button>
           ))}

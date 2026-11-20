@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Check, MessageCircle, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -122,8 +122,27 @@ export function ProductPurchaseActions({
   function handleWhatsAppClick(e: React.MouseEvent) {
     if (!validate()) {
       e.preventDefault();
+      // from the sticky bar: bring the options (and the error) into view
+      optionsRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }
+
+  // Phones: a sticky order bar appears once the main buttons have scrolled out of view.
+  const optionsRef = useRef<HTMLDivElement>(null);
+  const actionsRef = useRef<HTMLDivElement>(null);
+  const [showBar, setShowBar] = useState(false);
+  useEffect(() => {
+    const el = actionsRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setShowBar(!e.isIntersecting && e.boundingClientRect.top < 0));
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  useEffect(() => {
+    const mobile = window.matchMedia("(max-width: 1023px)").matches;
+    document.documentElement.style.setProperty("--bottom-bar", showBar && mobile ? "4.75rem" : "0px");
+    return () => document.documentElement.style.setProperty("--bottom-bar", "0px");
+  }, [showBar]);
 
   const productLabel = formatProductWithVariants(
     product.name,
@@ -146,33 +165,33 @@ export function ProductPurchaseActions({
   );
 
   return (
-    <div className="space-y-5">
+    <div ref={optionsRef} className="space-y-5">
       {priceOnRequest ? (
-        <p className="inline-block rounded-full border border-terracotta/40 bg-terracotta/10 px-4 py-1.5 font-inter text-base font-semibold text-terracotta">
+        <p className="inline-flex rounded-full bg-terracotta-wash px-4 py-2 font-inter text-base font-semibold text-terracotta">
           {t("priceOnRequest")}
         </p>
       ) : isOnSale ? (
         <div className="flex flex-wrap items-baseline gap-3">
-          <p className="font-inter text-lg text-cream-secondary/50 line-through">
+          <p className="font-inter text-lg text-muted line-through">
             {currency} {product.price.toLocaleString()}
           </p>
-          <p className="font-inter text-2xl font-semibold text-terracotta">
+          <p className="font-inter text-3xl font-bold text-terracotta" aria-live="polite">
             {currency} {displayPrice.toLocaleString()}
           </p>
-          <span className="rounded-full bg-terracotta/15 px-3 py-1 font-inter text-xs font-bold uppercase tracking-widest text-terracotta">
+          <span className="rounded-full bg-terracotta px-3 py-1 font-inter text-xs font-bold text-on-accent">
             {t("discountBadge", { percent: discountPercent(product.price, displayPrice) })}
           </span>
         </div>
       ) : (
-        <p className="font-inter text-2xl text-cream-secondary">
-          {showStartingFrom && <span className="me-1.5 text-sm text-cream-secondary/70">{t("startingFrom")}</span>}
+        <p className="font-inter text-3xl font-bold text-cream" aria-live="polite">
+          {showStartingFrom && <span className="me-1.5 text-base font-normal text-muted">{t("startingFrom")}</span>}
           {currency} {displayPrice.toLocaleString()}
         </p>
       )}
 
       {hasSizes && (
         <div>
-          <p className="mb-2 font-inter text-xs uppercase tracking-widest text-cream-secondary/60">
+          <p className="mb-2.5 font-inter text-sm font-semibold text-cream">
             {t("selectSize")}
           </p>
           <div className="flex flex-wrap gap-2">
@@ -186,10 +205,10 @@ export function ProductPurchaseActions({
                   setError(null);
                 }}
                 className={cn(
-                  "rounded-full border px-4 py-2 font-inter text-sm transition-all duration-300",
+                  "min-h-11 rounded-xl px-4 py-2 font-inter text-sm transition-[box-shadow,background-color,color] duration-200",
                   selectedSize === size
-                    ? "border-terracotta bg-terracotta text-cream shadow-glow-terracotta"
-                    : "border-cream/20 text-cream-secondary hover:border-cream/50"
+                    ? "bg-surface font-semibold text-cream ring-2 ring-cream"
+                    : "bg-surface text-cream-secondary ring-1 ring-line hover:text-cream hover:ring-line-strong"
                 )}
               >
                 {size}
@@ -201,7 +220,7 @@ export function ProductPurchaseActions({
 
       {hasColors && (
         <div>
-          <p className="mb-2 font-inter text-xs uppercase tracking-widest text-cream-secondary/60">
+          <p className="mb-2.5 font-inter text-sm font-semibold text-cream">
             {t("selectColor")}
           </p>
           <div className="flex flex-wrap gap-2">
@@ -215,10 +234,10 @@ export function ProductPurchaseActions({
                   setError(null);
                 }}
                 className={cn(
-                  "rounded-full border px-4 py-2 font-inter text-sm transition-all duration-300",
+                  "min-h-11 rounded-xl px-4 py-2 font-inter text-sm transition-[box-shadow,background-color,color] duration-200",
                   selectedColor === color
-                    ? "border-terracotta bg-terracotta text-cream shadow-glow-terracotta"
-                    : "border-cream/20 text-cream-secondary hover:border-cream/50"
+                    ? "bg-surface font-semibold text-cream ring-2 ring-cream"
+                    : "bg-surface text-cream-secondary ring-1 ring-line hover:text-cream hover:ring-line-strong"
                 )}
               >
                 {color}
@@ -230,7 +249,7 @@ export function ProductPurchaseActions({
 
       {hasQuantities && (
         <div>
-          <p className="mb-2 font-inter text-xs uppercase tracking-widest text-cream-secondary/60">
+          <p className="mb-2.5 font-inter text-sm font-semibold text-cream">
             {optionLabel ? t("selectOption", { label: optionLabel }) : t("selectQuantity")}
           </p>
           <div className="flex flex-wrap gap-2">
@@ -244,10 +263,10 @@ export function ProductPurchaseActions({
                   setError(null);
                 }}
                 className={cn(
-                  "rounded-full border px-4 py-2 font-inter text-sm transition-all duration-300",
+                  "min-h-11 rounded-xl px-4 py-2 font-inter text-sm transition-[box-shadow,background-color,color] duration-200",
                   selectedQuantity === q.label
-                    ? "border-terracotta bg-terracotta text-cream shadow-glow-terracotta"
-                    : "border-cream/20 text-cream-secondary hover:border-cream/50"
+                    ? "bg-surface font-semibold text-cream ring-2 ring-cream"
+                    : "bg-surface text-cream-secondary ring-1 ring-line hover:text-cream hover:ring-line-strong"
                 )}
               >
                 {priceOnRequest || q.price <= 0 ? q.label : `${q.label} — ${currency} ${q.price.toLocaleString()}`}
@@ -257,16 +276,20 @@ export function ProductPurchaseActions({
         </div>
       )}
 
-      {error && <p className="font-inter text-sm text-terracotta-deep">{error}</p>}
+      {error && (
+        <p role="alert" className="font-inter text-sm font-semibold text-terracotta-deep">
+          {error}
+        </p>
+      )}
 
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <div ref={actionsRef} className="flex flex-col gap-2.5">
         <Button
           href={whatsappHref}
           target="_blank"
           rel="noopener noreferrer"
           variant="whatsapp"
           size="lg"
-          className="w-full sm:w-auto"
+          className="w-full"
           onClick={handleWhatsAppClick}
         >
           <MessageCircle size={20} />
@@ -277,12 +300,47 @@ export function ProductPurchaseActions({
             variant="secondary"
             size="lg"
             onClick={handleAddToCart}
-            className="w-full sm:w-auto"
+            className="w-full"
           >
             {justAdded ? <Check size={20} /> : <ShoppingBag size={20} />}
             {justAdded ? tCart("added") : tCart("addToCart")}
           </Button>
         )}
+      </div>
+
+      {/* Sticky order bar (phones) */}
+      <div
+        inert={!showBar}
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-40 border-t border-line bg-[var(--t-header-bg)] px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl backdrop-saturate-150 transition-[translate,opacity] duration-300 ease-soft lg:hidden",
+          showBar ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-full opacity-0"
+        )}
+      >
+        <div className="mx-auto flex max-w-xl items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-inter text-xs text-muted">{product.name}</p>
+            {priceOnRequest ? (
+              <p className="font-inter text-sm font-semibold text-cream">{t("priceOnRequest")}</p>
+            ) : (
+              <p className="font-inter text-base font-bold text-cream">
+                {showStartingFrom && <span className="me-1 text-xs font-normal text-muted">{t("startingFrom")}</span>}
+                {currency} {displayPrice.toLocaleString()}
+              </p>
+            )}
+          </div>
+          <Button
+            href={whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="whatsapp"
+            size="md"
+            className="shrink-0"
+            onClick={handleWhatsAppClick}
+          >
+            <MessageCircle size={18} />
+            {priceOnRequest ? t("askPrice") : t("orderWhatsapp")}
+          </Button>
+        </div>
       </div>
     </div>
   );
