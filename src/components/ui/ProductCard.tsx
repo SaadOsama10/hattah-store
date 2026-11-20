@@ -11,7 +11,6 @@ import { buildWhatsAppOrderLink } from "@/lib/whatsapp";
 import { isProductOnSale, effectivePrice, discountPercent } from "@/lib/supabase/types";
 import type { CardProduct } from "@/lib/storefront";
 import { cn } from "@/lib/cn";
-import { useTilt } from "@/components/ui/Tilt";
 
 // Whether this device can hover (desktop) — decided once, shared by all cards.
 let hoverCapable: boolean | null = null;
@@ -29,10 +28,13 @@ export function ProductCard({
   product,
   priority = false,
   className,
+  showFeatured = true,
 }: {
   product: CardProduct;
   priority?: boolean;
   className?: string;
+  /** false inside the "featured" section, where the badge would only repeat its title */
+  showFeatured?: boolean;
 }) {
   const t = useTranslations("common");
   const tCart = useTranslations("cart");
@@ -41,7 +43,6 @@ export function ProductCard({
   const [showSecond, setShowSecond] = useState(false);
   const [added, setAdded] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(priority);
-  const { tiltRef, handlers } = useTilt(4);
 
   useEffect(() => {
     if (!product.image2) return;
@@ -76,9 +77,8 @@ export function ProductCard({
   }
 
   return (
-    <article {...handlers} className={cn("group relative flex h-full flex-col", className)}>
-      <div ref={tiltRef} className="tilt relative rounded-card">
-      <div className="relative aspect-[4/5] overflow-hidden rounded-card bg-[color-mix(in_srgb,var(--color-surface)_70%,var(--color-olive-wash))] shadow-card ring-1 ring-line transition-shadow duration-500 ease-soft group-hover:shadow-glow-gold">
+    <article className={cn("group relative flex h-full flex-col", className)}>
+      <div className="relative aspect-[4/5] overflow-hidden rounded-card bg-bg-secondary">
         {!imgLoaded && product.image && <div aria-hidden className="skeleton absolute inset-0" />}
         {product.image ? (
           <>
@@ -91,7 +91,7 @@ export function ProductCard({
               fetchPriority={priority ? "high" : "auto"}
               onLoad={() => setImgLoaded(true)}
               className={cn(
-                "object-cover transition-[transform,opacity] duration-700 ease-soft group-hover:scale-[1.04]",
+                "object-cover transition-[transform,opacity] duration-700 ease-soft group-hover:scale-[1.03]",
                 !priority && (imgLoaded ? "opacity-100" : "opacity-0")
               )}
             />
@@ -120,11 +120,11 @@ export function ProductCard({
             </span>
           )}
           {product.isNew ? (
-            <span className="rounded-full bg-surface/90 px-2.5 py-1 font-inter text-[10px] font-bold uppercase tracking-[0.14em] text-gold ring-1 ring-gold-line/40 backdrop-blur-sm">
+            <span className="rounded-full bg-surface/90 px-2.5 py-1 font-inter text-[10px] font-bold uppercase tracking-[0.14em] text-cream backdrop-blur-sm">
               {tProduct("badgeNew")}
             </span>
-          ) : product.featured ? (
-            <span className="rounded-full bg-surface/90 px-2.5 py-1 font-inter text-[10px] font-bold uppercase tracking-[0.14em] text-gold ring-1 ring-gold-line/40 backdrop-blur-sm">
+          ) : product.featured && showFeatured ? (
+            <span className="rounded-full bg-surface/90 px-2.5 py-1 font-inter text-[10px] font-bold uppercase tracking-[0.14em] text-cream backdrop-blur-sm">
               {tProduct("badgeFeatured")}
             </span>
           ) : null}
@@ -156,17 +156,12 @@ export function ProductCard({
           )}
         </div>
       </div>
-      <span aria-hidden className="tilt-sheen" />
-      </div>
 
       <div className="mt-3 flex flex-1 flex-col gap-1 px-0.5">
-        {product.categoryLabel && (
-          <p className="truncate font-inter text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">{product.categoryLabel}</p>
-        )}
         <h3 className="line-clamp-2 font-inter text-[15px] font-semibold leading-snug text-cream">
           <Link
             href={href}
-            className="transition-colors duration-300 after:absolute after:inset-0 after:rounded-card after:content-[''] hover:text-terracotta"
+            className="bg-[linear-gradient(currentColor,currentColor)] bg-[length:0%_1px] bg-bottom bg-no-repeat pb-0.5 transition-[background-size] duration-500 ease-soft after:absolute after:inset-0 after:rounded-card after:content-[''] group-hover:bg-[length:100%_1px]"
           >
             {product.name}
           </Link>
@@ -181,7 +176,7 @@ export function ProductCard({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => playClick()}
-                className="relative z-10 inline-flex min-h-9 items-center gap-1 font-inter text-xs font-semibold text-gold underline-offset-4 hover:underline"
+                className="relative z-10 inline-flex min-h-9 items-center gap-1 font-inter text-xs font-semibold text-cream underline underline-offset-4 hover:text-terracotta"
               >
                 <MessageCircle size={14} />
                 {tProduct("askPrice")}

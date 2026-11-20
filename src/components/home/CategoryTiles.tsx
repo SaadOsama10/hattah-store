@@ -6,16 +6,16 @@ import { cn } from "@/lib/cn";
 
 /** Large photo tiles for the top-level categories (bento on desktop: the
  * first tile is double size). Photos come from each category's own top
- * products and rotate — see CategoryTileCard. */
+ * product. */
 export async function CategoryTiles({ tiles }: { tiles: TileData[] }) {
   const t = await getTranslations("home");
   if (tiles.length === 0) return null;
 
   return (
-    <section id="collection" aria-labelledby="home-categories" className="scroll-mt-20 pb-section pt-[calc(var(--spacing-section)*0.8)]">
+    <section id="collection" data-stitch="" aria-labelledby="home-categories" className="scroll-mt-20 py-section">
       <div className="mx-auto max-w-7xl px-gutter">
-        <Reveal blur>
-          <SectionHeading id="home-categories" eyebrow={t("categoriesEyebrow")} title={t("categoriesTitle")} />
+        <Reveal>
+          <SectionHeading id="home-categories" title={t("categoriesTitle")} />
         </Reveal>
         {/* phones: horizontal snap slider with a peek of the next card; desktop: asymmetric bento */}
         <ul className="scrollbar-none -mx-gutter flex snap-x snap-mandatory gap-3 overflow-x-auto px-gutter pb-2 [scroll-padding-inline:var(--spacing-gutter)] lg:mx-0 lg:grid lg:auto-rows-[minmax(0,1fr)] lg:grid-cols-4 lg:grid-rows-2 lg:gap-4 lg:overflow-visible lg:px-0 lg:pb-0">
@@ -31,7 +31,7 @@ export async function CategoryTiles({ tiles }: { tiles: TileData[] }) {
                   big ? "aspect-[4/5] lg:col-span-2 lg:row-span-2 lg:aspect-auto" : "aspect-[4/5] lg:aspect-[5/4]"
                 )}
               >
-                <CategoryTileCard tile={tile} big={big} order={i} />
+                <CategoryTileCard tile={tile} big={big} />
               </Reveal>
             );
           })}

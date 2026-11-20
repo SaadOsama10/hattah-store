@@ -9,13 +9,13 @@ type Variant = "primary" | "secondary" | "ghost" | "whatsapp";
 type Size = "md" | "lg";
 
 const variantClasses: Record<Variant, string> = {
-  // 1 · primary: gold with a shine sweep and a soft gold glow
-  primary: "btn-shine bg-gold-btn border border-transparent shadow-card hover:shadow-glow-gold",
+  // 1 · primary: the one gold element of the site
+  primary: "bg-gold-btn border border-transparent shadow-card hover:brightness-[1.06]",
   // 2 · secondary: transparent with a fine border
-  secondary: "bg-transparent text-cream border border-line-strong hover:border-gold-line hover:text-gold",
+  secondary: "bg-transparent text-cream border border-line-strong hover:border-cream",
   ghost: "bg-transparent text-cream border border-transparent hover:bg-cream/8",
-  // WhatsApp keeps its own green, with the same shine
-  whatsapp: "btn-shine bg-forest text-on-accent border border-transparent shadow-card hover:shadow-glow-forest",
+  // WhatsApp keeps its own green
+  whatsapp: "bg-forest text-on-accent border border-transparent shadow-card hover:brightness-[1.06]",
 };
 
 const sizeClasses: Record<Size, string> = {

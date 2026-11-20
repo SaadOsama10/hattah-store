@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "@/i18n/navigation";
 
-/** Thin gold progress bar at the very top while an in-app navigation is
+/** Thin red-thread progress bar at the very top while an in-app navigation is
  * loading: starts on a click on an internal link, finishes when the new
  * path renders. CSS-only animation; nothing shown for reduced motion
  * beyond a static bar. */

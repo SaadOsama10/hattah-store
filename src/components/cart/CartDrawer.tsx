@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { AnimatePresence, m } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
 import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -42,27 +41,27 @@ export function CartDrawer() {
   }
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <m.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
+    <>
+          {/* CSS-only open/close (no animation library): always mounted, inert while closed */}
+          <div
             onClick={closeCart}
-            className="fixed inset-0 z-[60] bg-[var(--tile-overlay)]/45 backdrop-blur-sm"
+            aria-hidden
+            className={`fixed inset-0 z-[60] bg-[var(--tile-overlay)]/45 backdrop-blur-sm transition-opacity duration-300 ${
+              isOpen ? "opacity-100" : "pointer-events-none opacity-0"
+            }`}
           />
-          <m.div
-            initial={{ x: locale === "ar" ? "-100%" : "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: locale === "ar" ? "-100%" : "100%" }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-y-0 end-0 z-[70] flex w-full max-w-md flex-col border-s border-gold-line/30 bg-bg-primary shadow-lift"
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={t("title")}
+            inert={!isOpen}
+            className={`fixed inset-y-0 end-0 z-[70] flex w-full max-w-md flex-col border-s border-line bg-bg-primary shadow-lift transition-[translate,visibility] duration-[350ms] ease-soft ${
+              isOpen ? "visible translate-x-0" : `invisible ${locale === "ar" ? "-translate-x-full" : "translate-x-full"}`
+            }`}
           >
             <div className="relative flex items-center justify-between border-b border-line px-6 py-5">
               <h2 className="flex items-center gap-2 font-playfair text-xl font-bold text-cream">
-                <ShoppingBag size={20} className="text-gold" />
+                <ShoppingBag size={20} className="text-cream" />
                 {t("title")}
               </h2>
               <button
@@ -77,7 +76,7 @@ export function CartDrawer() {
 
             {items.length === 0 ? (
               <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
-                <span className="flex h-20 w-20 items-center justify-center rounded-full bg-bg-secondary ring-1 ring-gold-line/40"><ShoppingBag size={32} strokeWidth={1.25} className="text-gold" /></span>
+                <span className="flex h-20 w-20 items-center justify-center rounded-full bg-bg-secondary ring-1 ring-line-strong"><ShoppingBag size={32} strokeWidth={1.25} className="text-cream" /></span>
                 <p className="font-playfair text-xl font-bold text-cream">{t("empty")}</p>
                 <p className="font-inter text-sm text-muted">{t("emptyHint")}</p>
                 <Button
@@ -117,7 +116,7 @@ export function CartDrawer() {
                               <Link
                                 href={`/product/${item.id}`}
                                 onClick={closeCart}
-                                className="font-inter text-sm font-semibold text-cream transition-colors hover:text-gold"
+                                className="font-inter text-sm font-semibold text-cream transition-colors hover:text-terracotta"
                               >
                                 {item.name}
                               </Link>
@@ -191,7 +190,7 @@ export function CartDrawer() {
 
                 <div className="border-t border-line bg-bg-secondary px-6 py-5">
                   <div className="mb-4 flex items-center justify-between font-inter text-cream">
-                    <span className="text-eyebrow font-semibold uppercase tracking-[0.2em] text-gold">
+                    <span className="text-eyebrow font-semibold uppercase tracking-[0.2em] text-cream">
                       {t("subtotal")}
                     </span>
                     <span className="font-playfair text-2xl font-bold">
@@ -209,9 +208,7 @@ export function CartDrawer() {
                 </div>
               </>
             )}
-          </m.div>
-        </>
-      )}
-    </AnimatePresence>
+          </div>
+    </>
   );
 }

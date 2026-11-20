@@ -12,10 +12,9 @@ export async function FeaturedGrid({ products }: { products: CardProduct[] }) {
   return (
     <Band tone="cream" labelledBy="home-featured" className="cv-auto py-section">
       <div className="mx-auto max-w-7xl px-gutter">
-        <Reveal blur>
+        <Reveal>
           <SectionHeading
             id="home-featured"
-            eyebrow={t("featuredEyebrow")}
             title={t("featuredTitle")}
             subtitle={t("featuredSubtitle")}
             action={{ href: "/shop", label: t("seeAll") }}
@@ -24,7 +23,7 @@ export async function FeaturedGrid({ products }: { products: CardProduct[] }) {
         <ul className="grid grid-cols-2 gap-x-3.5 gap-y-9 sm:gap-x-5 lg:grid-cols-4">
           {products.map((p, i) => (
             <Reveal as="li" key={p.id} delay={(i % 4) * 80}>
-              <ProductCard product={p} />
+              <ProductCard product={p} showFeatured={false} />
             </Reveal>
           ))}
         </ul>

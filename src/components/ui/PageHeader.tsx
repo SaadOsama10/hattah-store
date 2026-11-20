@@ -1,16 +1,14 @@
 import type { ReactNode } from "react";
 import { ChevronLeft } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { KufiyaNet } from "@/components/ui/KufiyaNet";
 
 export interface Crumb {
   label: string;
   href?: string;
 }
 
-/** Banner header for listing pages (shop, category): warm band with the
- * kufiya net and a soft gold glow, breadcrumbs, eyebrow, large title, a
- * gold rule and an optional description. */
+/** Header for listing pages (shop, category): breadcrumbs, a large title
+ * and an optional description on the warm alternate tone. */
 export function PageHeader({
   title,
   eyebrow,
@@ -25,13 +23,8 @@ export function PageHeader({
   children?: ReactNode;
 }) {
   return (
-    <header className="relative isolate overflow-hidden bg-bg-secondary">
-      <KufiyaNet className="band-pattern pointer-events-none absolute inset-0 -z-10 text-olive" />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-40 left-1/2 -z-10 h-[30rem] w-[min(70rem,140vw)] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse,var(--t-gold-glow),transparent_62%)] opacity-70"
-      />
-      <div className="mx-auto max-w-7xl px-gutter pb-10 pt-8 sm:pb-14 sm:pt-12">
+    <header className="relative bg-bg-secondary">
+      <div className="mx-auto max-w-7xl px-gutter pb-12 pt-8 sm:pb-16 sm:pt-12">
         {crumbs.length > 0 && (
           <nav aria-label="Breadcrumb">
             <ol className="flex flex-wrap items-center gap-1 font-inter text-sm text-muted">
@@ -39,7 +32,7 @@ export function PageHeader({
                 <li key={i} className="flex items-center gap-1">
                   {i > 0 && <ChevronLeft size={14} aria-hidden className="ltr:rotate-180" />}
                   {c.href ? (
-                    <Link href={c.href as "/"} className="inline-flex min-h-9 items-center hover:text-gold">
+                    <Link href={c.href as "/"} className="inline-flex min-h-9 items-center hover:text-cream">
                       {c.label}
                     </Link>
                   ) : (
@@ -52,9 +45,8 @@ export function PageHeader({
             </ol>
           </nav>
         )}
-        {eyebrow && <p className="mt-6 font-inter text-eyebrow font-semibold uppercase tracking-[0.24em] text-gold">{eyebrow}</p>}
+        {eyebrow && <p className="mt-8 font-inter text-sm text-muted">{eyebrow}</p>}
         <h1 className="mt-2 font-playfair text-[clamp(2.3rem,1.5rem+3.4vw,4.4rem)] font-bold leading-[1.15] text-cream text-balance">{title}</h1>
-        <span aria-hidden className="gold-rule mt-5" style={{ transform: "none" }} />
         {description && <p className="mt-5 max-w-2xl font-inter text-base leading-relaxed text-cream-secondary sm:text-lg">{description}</p>}
         {children}
       </div>

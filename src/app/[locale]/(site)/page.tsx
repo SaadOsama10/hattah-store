@@ -3,12 +3,9 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { buildMetadata, categoryPath, organizationGraph } from "@/lib/seo";
 import { Hero } from "@/components/home/Hero";
-import { Marquee } from "@/components/home/Marquee";
 import { FeaturedGrid } from "@/components/home/FeaturedGrid";
 import { OurStory } from "@/components/home/OurStory";
-import { WhyHattah } from "@/components/home/WhyHattah";
 import { FinalCta } from "@/components/home/FinalCta";
-import { SectionDivider } from "@/components/ui/Band";
 import { CategoryTiles } from "@/components/home/CategoryTiles";
 import type { TileData } from "@/components/home/CategoryTileCard";
 import { OffersBanner } from "@/components/home/OffersBanner";
@@ -49,10 +46,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       key: cat.key,
       label: localizeCategory(cat, locale),
       href: categoryPath(cat.key),
-      iconKey: cat.icon_key,
-      images: tileImages(products.filter((p) => keys.has(p.category)), ranking),
-      count: products.filter((p) => keys.has(p.category)).length,
-      countLabel: t("productsCount", { count: products.filter((p) => keys.has(p.category)).length }),
+      image: tileImages(products.filter((p) => keys.has(p.category)), ranking, 1)[0],
     };
   });
 
@@ -81,13 +75,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     <>
       <JsonLd data={organizationGraph(locale)} />
       <Hero />
-      <Marquee />
       <CategoryTiles tiles={tiles} />
       <FeaturedGrid products={featured.map(card)} />
       <ProductRail
         id="best"
         products={best.map(card)}
-        eyebrow={t("bestEyebrow")}
         title={t("bestTitle")}
         subtitle={t("bestSubtitle")}
         action={{ href: "/shop?sort=best", label: t("seeAll") }}
@@ -96,28 +88,23 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <ProductRail
         id="food"
         products={food.map(card)}
-        eyebrow={t("foodEyebrow")}
         title={t("foodTitle")}
         subtitle={t("foodSubtitle")}
         action={{ href: sectionLink(foodKeys), label: t("seeAll") }}
-        tone="pattern"
+        tone="plain"
       />
       {offersActive && <OffersBanner />}
       <ProductRail
         id="gifts"
         products={gifts.map(card)}
-        eyebrow={t("giftsEyebrow")}
         title={t("giftsTitle")}
         subtitle={t("giftsSubtitle")}
         action={{ href: sectionLink(giftKeys), label: t("seeAll") }}
         tone="cream"
       />
-      <WhyHattah />
-      <SectionDivider />
       <ProductRail
         id="new"
         products={newest.map(card)}
-        eyebrow={t("newEyebrow")}
         title={t("newTitle")}
         subtitle={t("newSubtitle")}
         action={{ href: "/shop", label: t("seeAll") }}

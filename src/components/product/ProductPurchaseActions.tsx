@@ -207,8 +207,8 @@ export function ProductPurchaseActions({
                 className={cn(
                   "min-h-11 rounded-xl px-4 py-2 font-inter text-sm transition-[box-shadow,background-color,color] duration-200",
                   selectedSize === size
-                    ? "bg-surface font-semibold text-cream shadow-glow-gold ring-2 ring-gold-line"
-                    : "bg-surface text-cream-secondary ring-1 ring-line hover:text-cream hover:ring-gold-line/60"
+                    ? "bg-surface font-semibold text-cream ring-2 ring-cream"
+                    : "bg-surface text-cream-secondary ring-1 ring-line hover:text-cream hover:ring-line-strong"
                 )}
               >
                 {size}
@@ -236,8 +236,8 @@ export function ProductPurchaseActions({
                 className={cn(
                   "min-h-11 rounded-xl px-4 py-2 font-inter text-sm transition-[box-shadow,background-color,color] duration-200",
                   selectedColor === color
-                    ? "bg-surface font-semibold text-cream shadow-glow-gold ring-2 ring-gold-line"
-                    : "bg-surface text-cream-secondary ring-1 ring-line hover:text-cream hover:ring-gold-line/60"
+                    ? "bg-surface font-semibold text-cream ring-2 ring-cream"
+                    : "bg-surface text-cream-secondary ring-1 ring-line hover:text-cream hover:ring-line-strong"
                 )}
               >
                 {color}
@@ -265,8 +265,8 @@ export function ProductPurchaseActions({
                 className={cn(
                   "min-h-11 rounded-xl px-4 py-2 font-inter text-sm transition-[box-shadow,background-color,color] duration-200",
                   selectedQuantity === q.label
-                    ? "bg-surface font-semibold text-cream shadow-glow-gold ring-2 ring-gold-line"
-                    : "bg-surface text-cream-secondary ring-1 ring-line hover:text-cream hover:ring-gold-line/60"
+                    ? "bg-surface font-semibold text-cream ring-2 ring-cream"
+                    : "bg-surface text-cream-secondary ring-1 ring-line hover:text-cream hover:ring-line-strong"
                 )}
               >
                 {priceOnRequest || q.price <= 0 ? q.label : `${q.label} — ${currency} ${q.price.toLocaleString()}`}
@@ -320,7 +320,7 @@ export function ProductPurchaseActions({
           <div className="min-w-0 flex-1">
             <p className="truncate font-inter text-xs text-muted">{product.name}</p>
             {priceOnRequest ? (
-              <p className="font-inter text-sm font-semibold text-gold">{t("priceOnRequest")}</p>
+              <p className="font-inter text-sm font-semibold text-cream">{t("priceOnRequest")}</p>
             ) : (
               <p className="font-inter text-base font-bold text-cream">
                 {showStartingFrom && <span className="me-1 text-xs font-normal text-muted">{t("startingFrom")}</span>}

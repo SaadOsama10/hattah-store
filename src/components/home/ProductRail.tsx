@@ -14,7 +14,6 @@ import { Band, type BandTone } from "@/components/ui/Band";
  * are visible on a phone. */
 export function ProductRail({
   products,
-  eyebrow,
   title,
   subtitle,
   action,
@@ -22,7 +21,6 @@ export function ProductRail({
   id,
 }: {
   products: CardProduct[];
-  eyebrow?: string;
   title: string;
   subtitle?: string;
   action?: { href: string; label: string };
@@ -45,8 +43,8 @@ export function ProductRail({
   return (
     <Band tone={tone} labelledBy={headingId} className="cv-auto py-section">
       <div className="mx-auto max-w-7xl px-gutter">
-        <Reveal blur>
-          <SectionHeading id={headingId} eyebrow={eyebrow} title={title} subtitle={subtitle} action={action} />
+        <Reveal>
+          <SectionHeading id={headingId} title={title} subtitle={subtitle} action={action} />
         </Reveal>
       </div>
       <div className="relative mx-auto max-w-7xl">

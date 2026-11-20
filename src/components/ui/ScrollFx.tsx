@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
-import { cn } from "@/lib/cn";
+import { useEffect, useRef } from "react";
 
 const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -62,17 +61,5 @@ export function ScrollWords({ text, className }: { text: string; className?: str
         </span>
       ))}
     </p>
-  );
-}
-
-/** Moves its child vertically by `speed` × the scroll offset (light parallax). */
-export function ParallaxY({ children, speed = 0.08, className }: { children: ReactNode; speed?: number; className?: string }) {
-  const ref = useScrollProgress<HTMLDivElement>((p, el) => {
-    el.style.translate = `0 ${((0.5 - p) * speed * 600).toFixed(1)}px`;
-  });
-  return (
-    <div ref={ref} className={cn("will-change-transform", className)}>
-      {children}
-    </div>
   );
 }

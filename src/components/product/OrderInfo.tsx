@@ -21,7 +21,7 @@ export async function OrderInfo() {
           </li>
         ))}
       </ul>
-      <Link href="/about#order" className="group mt-3 inline-flex min-h-10 items-center gap-1 font-inter text-sm font-semibold text-gold hover:text-cream">
+      <Link href="/about#order" className="group mt-3 inline-flex min-h-10 items-center gap-1 font-inter text-sm font-semibold text-cream hover:text-cream">
         {t("orderMore")}
         <ArrowRight size={15} className="rtl:-scale-x-100" />
       </Link>

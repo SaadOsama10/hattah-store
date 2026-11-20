@@ -33,7 +33,7 @@ export function BackToTop({ label }: { label: string }) {
       tabIndex={show ? 0 : -1}
       aria-hidden={!show}
       className={cn(
-        "fixed end-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-surface/90 text-cream shadow-lift ring-1 ring-gold-line/40 backdrop-blur-md transition-[opacity,translate,box-shadow] duration-300 ease-soft hover:shadow-glow-gold",
+        "fixed end-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-surface/90 text-cream shadow-lift ring-1 ring-line-strong backdrop-blur-md transition-[opacity,translate,box-shadow] duration-300 ease-soft ",
         "bottom-[calc(1rem+var(--bottom-bar,0px))]",
         show ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0"
       )}

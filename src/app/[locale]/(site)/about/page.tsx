@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/Button";
 import { Band } from "@/components/ui/Band";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { KufiyaNetDraw, LogoRing } from "@/components/ui/BrandArt";
 import { InstagramIcon, FacebookIcon } from "@/components/ui/SocialIcons";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { BUSINESS } from "@/lib/site";
@@ -87,7 +86,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
   const whatsappHref = buildWhatsAppOrderLink(tHome("whatsappGreeting"));
 
   const contactBtn =
-    "group flex min-h-16 items-center gap-4 rounded-card bg-surface/70 p-4 shadow-card ring-1 ring-line backdrop-blur-md transition-[box-shadow,transform] duration-500 ease-soft hover:-translate-y-0.5 hover:shadow-glow-gold";
+    "group flex min-h-16 items-center gap-4 rounded-card bg-surface p-4 ring-1 ring-line transition-[box-shadow,transform] duration-500 ease-soft hover:-translate-y-0.5";
 
   return (
     <>
@@ -101,42 +100,22 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
         ]}
       />
 
-      {/* ── Mini cinematic header ── */}
-      <section className="bh bh-mini" aria-labelledby="about-title">
-        <div className="bh-layer bh-glow-wrap" aria-hidden>
-          <div className="bh-glow" />
-        </div>
-        <div className="bh-layer bh-rays-wrap" aria-hidden>
-          <div className="bh-rays" />
-        </div>
-        <KufiyaNetDraw />
-        <div className="bh-layer bh-grain" aria-hidden />
-        <div className="bh-layer bh-vignette" aria-hidden />
-        <div className="bh-content">
-          <p className="bh-badge" style={{ animation: "none" }}>
-            <span aria-hidden className="bh-badge-line" />
-            {t("eyebrow")}
-            <span aria-hidden className="bh-badge-line" />
-          </p>
-          <div className="bh-logo-wrap" style={{ animation: "none" }}>
-            <div className="bh-halo" aria-hidden />
-            <LogoRing />
-            <Image src="/images/hattah-logo-400.webp" alt="HATTAH — حَطّة" width={164} height={164} priority className="bh-logo" />
-          </div>
-          <h1 id="about-title" className="bh-title font-playfair" style={{ fontSize: "clamp(2.4rem, 5.5vw, 4.6rem)" }}>
+      {/* ── Header: same calm language as the homepage hero ── */}
+      <section className="hero hero-mini" aria-labelledby="about-title">
+        <div className="hero-inner">
+          <Image src="/images/hattah-logo-400.webp" alt="HATTAH — حَطّة" width={88} height={88} priority className="hero-logo" />
+          <h1 id="about-title" className="hero-title hero-title-mini font-playfair">
             {t("title")}
           </h1>
-          <p className="mt-4 max-w-xl text-lg leading-relaxed" style={{ color: "var(--bh-text-2)" }}>
-            {t("lead")}
-          </p>
+          <p className="hero-sub fade-soft">{t("lead")}</p>
         </div>
       </section>
 
       {/* ── Who we are: one centred reading column ── */}
       <Band tone="plain" labelledBy="about-who" className="py-section">
         <div className="mx-auto max-w-[45rem] px-gutter text-center">
-          <Reveal blur>
-            <SectionHeading id="about-who" eyebrow="HATTAH · حَطّة" title={t("whoTitle")} align="center" className="!mb-7" />
+          <Reveal>
+            <SectionHeading id="about-who" title={t("whoTitle")} align="center" className="!mb-7" />
           </Reveal>
           {/* often the LCP element on phones → CSS fade, not a scroll reveal */}
           <p className="fade-soft font-inter text-lg leading-loose text-cream-secondary">{t("who")}</p>
@@ -147,22 +126,22 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
       {offers.length > 0 && (
         <Band tone="cream" labelledBy="about-offer" className="py-section">
           <div className="mx-auto max-w-7xl px-gutter">
-            <Reveal blur>
-              <SectionHeading id="about-offer" eyebrow={t("eyebrow")} title={t("offerTitle")} align="center" />
+            <Reveal>
+              <SectionHeading id="about-offer" title={t("offerTitle")} align="center" />
             </Reveal>
             <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 lg:gap-4">
               {offers.map((o, i) => (
                 <Reveal as="li" key={o.category} delay={i * 80}>
                   <Link
                     href={categoryPath(o.category) as "/category/[key]"}
-                    className="group flex h-full flex-col rounded-tile bg-surface p-6 shadow-card ring-1 ring-line transition-[box-shadow,transform] duration-500 ease-soft hover:-translate-y-1 hover:shadow-glow-gold"
+                    className="group flex h-full flex-col rounded-tile bg-surface p-6 shadow-card ring-1 ring-line transition-[box-shadow,transform] duration-500 ease-soft hover:-translate-y-1"
                   >
                     <svg
                       viewBox="0 0 48 48"
                       width="44"
                       height="44"
                       fill="none"
-                      stroke="var(--color-gold-line)"
+                      stroke="var(--color-terracotta)"
                       strokeWidth="1.25"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -175,7 +154,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
                       <ArrowRight
                         size={16}
                         aria-hidden
-                        className="text-gold transition-transform duration-300 group-hover:translate-x-1 rtl:-scale-x-100 rtl:group-hover:-translate-x-1"
+                        className="text-cream transition-transform duration-300 group-hover:translate-x-1 rtl:-scale-x-100 rtl:group-hover:-translate-x-1"
                       />
                     </span>
                   </Link>
@@ -187,17 +166,17 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
       )}
 
       {/* ── How to order ── */}
-      <Band tone="pattern" id="order" labelledBy="about-order" className="scroll-mt-24 py-section">
+      <Band tone="cream" id="order" labelledBy="about-order" className="scroll-mt-24 py-section">
         <div className="mx-auto max-w-5xl px-gutter">
-          <Reveal blur>
-            <SectionHeading id="about-order" eyebrow={t("eyebrow")} title={t("orderTitle")} align="center" />
+          <Reveal>
+            <SectionHeading id="about-order" title={t("orderTitle")} align="center" />
           </Reveal>
           <ol className="grid gap-4 md:grid-cols-3">
             {steps.map((s, i) => (
-              <Reveal as="li" key={i} delay={i * 110} className="relative rounded-tile bg-surface/70 p-6 text-center shadow-card ring-1 ring-line backdrop-blur-md">
+              <Reveal as="li" key={i} delay={i * 110} className="relative rounded-tile bg-surface p-6 text-center ring-1 ring-line">
                 <span
                   aria-hidden
-                  className="mx-auto flex h-14 w-14 items-center justify-center rounded-full font-bold text-gold ring-1 ring-gold-line/60"
+                  className="mx-auto flex h-14 w-14 items-center justify-center rounded-full font-bold text-cream ring-1 ring-line-strong"
                   style={{ fontFamily: "var(--font-brand), Georgia, serif", fontSize: "1.5rem" }}
                 >
                   {i + 1}
@@ -220,8 +199,8 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
       {/* ── Contact ── */}
       <Band tone="deep" labelledBy="about-contact" className="py-section">
         <div className="mx-auto max-w-5xl px-gutter">
-          <Reveal blur>
-            <SectionHeading id="about-contact" eyebrow={t("eyebrow")} title={t("contactTitle")} align="center" />
+          <Reveal>
+            <SectionHeading id="about-contact" title={t("contactTitle")} align="center" />
           </Reveal>
           <Reveal className="grid gap-3 sm:grid-cols-2">
             <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className={contactBtn}>
@@ -230,38 +209,38 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
               </span>
               <span className="flex min-w-0 flex-col">
                 <span className="font-inter text-xs text-muted">{t("contactWhatsapp")}</span>
-                <span dir="ltr" className="font-inter font-semibold text-cream group-hover:text-gold">
+                <span dir="ltr" className="font-inter font-semibold text-cream group-hover:text-terracotta">
                   {formatWhatsAppNumberForDisplay()}
                 </span>
               </span>
             </a>
             <a href={`mailto:${BUSINESS.email}`} className={contactBtn}>
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-gold ring-1 ring-gold-line/60">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-cream ring-1 ring-line-strong">
                 <Mail size={20} />
               </span>
               <span className="flex min-w-0 flex-col">
                 <span className="font-inter text-xs text-muted">{t("contactEmail")}</span>
-                <span className="truncate font-inter font-semibold text-cream group-hover:text-gold">{BUSINESS.email}</span>
+                <span className="truncate font-inter font-semibold text-cream group-hover:text-terracotta">{BUSINESS.email}</span>
               </span>
             </a>
             <a href={BUSINESS.instagram} target="_blank" rel="me noopener noreferrer" className={contactBtn}>
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-gold ring-1 ring-gold-line/60">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-cream ring-1 ring-line-strong">
                 <InstagramIcon width={20} height={20} />
               </span>
               <span className="flex min-w-0 flex-col">
                 <span className="font-inter text-xs text-muted">Instagram</span>
-                <span dir="ltr" className="truncate font-inter font-semibold text-cream group-hover:text-gold">
+                <span dir="ltr" className="truncate font-inter font-semibold text-cream group-hover:text-terracotta">
                   @hattah.store.co
                 </span>
               </span>
             </a>
             <a href={BUSINESS.facebook} target="_blank" rel="me noopener noreferrer" className={contactBtn}>
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-gold ring-1 ring-gold-line/60">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-cream ring-1 ring-line-strong">
                 <FacebookIcon width={20} height={20} />
               </span>
               <span className="flex min-w-0 flex-col">
                 <span className="font-inter text-xs text-muted">Facebook</span>
-                <span className="truncate font-inter font-semibold text-cream group-hover:text-gold">HATTAH</span>
+                <span className="truncate font-inter font-semibold text-cream group-hover:text-terracotta">HATTAH</span>
               </span>
             </a>
           </Reveal>
