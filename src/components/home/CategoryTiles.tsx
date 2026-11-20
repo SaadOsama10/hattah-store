@@ -2,11 +2,12 @@ import { getTranslations } from "next-intl/server";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/ui/Reveal";
 import { CategoryTileCard, type TileData } from "@/components/home/CategoryTileCard";
+import { TilePicker } from "@/components/home/TilePicker";
 import { cn } from "@/lib/cn";
 
 /** Large photo tiles for the top-level categories (bento on desktop: the
- * first tile is double size). Photos come from each category's own top
- * product. */
+ * first tile is double size). Each card shows one of its category's own
+ * product photos, picked at random per visit (TilePicker). */
 export async function CategoryTiles({ tiles }: { tiles: TileData[] }) {
   const t = await getTranslations("home");
   if (tiles.length === 0) return null;
@@ -31,11 +32,13 @@ export async function CategoryTiles({ tiles }: { tiles: TileData[] }) {
                   big ? "aspect-[4/5] lg:col-span-2 lg:row-span-2 lg:aspect-auto" : "aspect-[4/5] lg:aspect-[5/4]"
                 )}
               >
-                <CategoryTileCard tile={tile} big={big} order={i} />
+                <CategoryTileCard tile={tile} big={big} />
               </Reveal>
             );
           })}
         </ul>
+        {/* one random photo per card per visit, chosen before first paint */}
+        <TilePicker />
       </div>
     </section>
   );
