@@ -1,6 +1,80 @@
 # HATTAH — Redesign v2 report
 
-## Current status (2026-11-20): paused at a safe point, **not merged**
+## Simplicity and creativity (2026-11-20, latest) — **not merged**
+
+**Principle**: less, but smarter. Each screen has one focus, generous empty space, and one meaningful motion.
+
+### Removed (files and code, not just hidden)
+- **Hero layers**: the particles canvas and floating gold dots (`HeroFx.tsx`), the rotating light rays, film grain, vignette, pulsing gold glows, the rotating ornament ring around the logo, the drawn kufiya net, the HATTAH letter reveal, the four rotating lines with their dots, the pause button, parallax, and the once-per-session intro.
+- **Other homepage pieces**: the marquee (`Marquee.tsx`), the "Why HATTAH" glass cards (`WhyHattah.tsx`, deleted because they repeated the meaning of "Our story"), and the decorative dividers between sections.
+- **Card effects**: glass, gold glow, 3D tilt and the mouse spotlight (`Tilt.tsx`); the gold corner frames on the category cards; button shine.
+- **Old component files**: the slowly turning seal (`BrandArt.tsx`), the kufiya texture (`KufiyaNet.tsx`), and the scroll-reactive ambient background (`AmbientBackground.tsx`).
+- **Shown data**: product counts, arrows and rotating photos on the category cards; eyebrow labels and gold rules under headings; the category label on product cards; the "Featured" badge inside the featured section, where it repeated the section title.
+- **Gold** now appears only on **the main call-to-action button**.
+- **framer-motion** is completely gone from the storefront: the cart drawer slides with CSS. The admin still uses the library on its own, unchanged.
+
+### The new idea: "the thread" (`src/components/ui/Thread.tsx`)
+- One embroidery thread, 1.8 px wide (1.25 px on phones), in **earthy red**. It leaves the hero logo sideways and runs down the page edge in a gentle wave: **right in Arabic, left in English and Turkish**.
+- It is **sewn as you scroll**: `stroke-dashoffset` follows a "needle" at 72% of the screen, which slides to the end as you reach the bottom. This uses requestAnimationFrame and a passive scroll listener, with no libraries.
+- At the start of each main section, a small **cross-stitch** of three × marks appears when the thread reaches it. **One green stitch** sits at the final call to action. The thread ends in **a knot under the footer's HATTAH**.
+- **Performance**: the geometry is built once after the page is idle, and only on resize. Scrolling writes a single style. The curve lengths are computed arithmetically (`pathLength`): the first version used the browser's path-measuring calls, and they cost up to 800 ms of blocking time, so they were dropped.
+- Reduced motion: shown complete and still. Pages without a hero logo (product, shop…) have no thread.
+
+### The new hero
+- A calm background: in the dark theme, warm black with a gentle gradient; in the light theme, a clean warm cream. **A single static pool of light behind the text**, with no pulse.
+- A medium-size logo (96 px desktop / 84 px phone) with no halo or ring.
+- Then: the small badge, the large headline, **one fixed line** («هوديات، تطريز، لوحات، ميداليات وأكلات بطابع غزاوي» / EN / TR as given), and two buttons.
+- The headline appears word by word within **1.2 s**. Then **one word is sewn underneath in red thread** («الفلسطيني», "Palestinian", "Filistin") and becomes the focus, and right after that the page thread starts from the logo.
+
+### The rest of the page
+- **Section headings**: a large title and one line, with no eyebrow or gold rule.
+- **Category cards**: a large photo and the name, in different proportions. Hover: the photo grows to 1.03 and the name gets a thin underline.
+- **Product cards**: photo, name, price. Badges only for "New" (added in the last 21 days) or "Featured", and only where they're real.
+- **"Our story"**: a plain dark band with one large line that lights up word by word on scroll, plus a short paragraph and a link.
+- **Final call**: a short line and the WhatsApp button, where the thread's green stitch sits.
+- **Footer**: simple, with a very faint HATTAH watermark (3.5% opacity) and the thread's knot.
+- **Spacing between sections**: about 120 px on desktop and 80 px on phones.
+- **Remaining motions**: a soft reveal on scroll (once), the thread, and simple hovers. Nothing else.
+
+### Performance (Lighthouse mobile, median of 3, local production build)
+| Page | Before (last round) | After | Target |
+|---|---|---|---|
+| Home `/ar` | 86 | **92** | ≥ 92 |
+| Home `/en` | 85 | **93** | ≥ 92 |
+| Home `/tr` | 83 | **92** | ≥ 92 |
+| Category `/ar/category/palestinian-food` | 88 | **91** | ≥ 88 |
+| Product `/ar/product/dome-of-the-rock-model-a3b9cbda` | 89 | **93** | ≥ 88 |
+| About `/ar/about` | 88 | **92** | ≥ 88 |
+
+Accessibility **100**, SEO **100** and best practices **100** on every page. **CLS 0** everywhere. Homepage blocking time (TBT) is ~12 ms.
+
+**Additional improvements this round**:
+- Inter is now self-hosted: the Latin file plus a **3 KB** extension carrying only the Turkish letters and the lira sign. Before, the ₺ sign pulled in Google's 84 KB Latin-extended file.
+- `next/font` is no longer used at all; each language preloads only its own fonts.
+- The hero's subtitle line paints immediately: it was the LCP element on English pages.
+
+### Checks
+- build / lint / typecheck: pass (0 errors; the 4 warnings are old ones in admin files).
+- The SEO check (every product page): 0 problems.
+- **54/54** automated checks pass: cart, WhatsApp messages, price on request, priced options, 3 languages, both themes, admin (local test password, view only), and zero delivery words.
+- No console errors.
+
+### Screenshots (outside the repo, in the session's temporary folder)
+- Before vs after for the homepage (hero + first 3 sections), dark/light × Arabic/English × desktop/mobile: 8 files in `/private/tmp/claude-501/-Users-saadrady-Desktop-Hattah/e13c5be5-a043-4e92-bcb1-7dd86a6c95e2/scratchpad/compare/` (`before-after-home-<lang>-<theme>-<d|m>.jpg`).
+- No screenshot contains internal data (sales, inventory or admin).
+
+### Decisions I made for you
+1. **The stitched word**: «الفلسطيني» / "Palestinian" / "Filistin", the word that carries the identity.
+2. **"Why HATTAH" deleted** rather than turned into text, since its meaning already lives in "Our story" and the final call.
+3. **Kufiya pattern removed from the hero entirely**, since the thread itself is now the embroidery element. The light is one static pool with no pulse.
+4. **Hero layout centred**: it works the same in both directions.
+5. **No gold rules under headings**: you allowed them "if needed", and the thread does that job.
+6. **The thread stays on the page edge** (in the gutter) so it never crosses text. On phones it's 7 px from the edge and thinner; in horizontal product rails, cards may pass beneath it as they scroll.
+7. **"Featured" badge hidden inside "The HATTAH selection" only**, because every product there is featured. It still shows elsewhere.
+
+---
+
+## Previous status (2026-11-20, before simplification): paused, not merged
 
 - **Branch**: `redesign-v2`, fully committed and pushed to GitHub.
 - **Nothing was merged into `main`**, no tag was created, and nothing was published to production. The live site (https://hattah-store.vercel.app) is still on the old version.
