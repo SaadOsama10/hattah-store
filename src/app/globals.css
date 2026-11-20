@@ -340,7 +340,9 @@ html.theme-xfade::view-transition-new(root) {
   font-family: "Plex Arabic HATTAH";
   font-style: normal;
   font-weight: 600;
-  font-display: swap;
+  /* only small labels use 600: if it isn't there at first paint, keep the
+     fallback for this view rather than swapping (no shift) */
+  font-display: optional;
   src: url("/fonts/plex-ar-600.woff2") format("woff2");
 }
 @font-face {
@@ -528,9 +530,11 @@ html.js .reveal.is-visible {
   --hero-light: rgba(255, 236, 200, 0.9);
   position: relative;
   display: grid;
-  place-items: center;
+  /* content anchored to the top (not centred): a late font swap can't move
+     what's above it, so no layout shift */
+  place-items: start center;
   min-height: max(560px, calc(100svh - 6.25rem));
-  padding: 4rem var(--spacing-gutter) 5rem;
+  padding: clamp(3.5rem, 2rem + 6vh, 7rem) var(--spacing-gutter) 5rem;
   background:
     radial-gradient(ellipse 55% 45% at 50% 48%, var(--hero-light) 0%, transparent 70%),
     linear-gradient(180deg, var(--hero-bg) 0%, var(--hero-bg-edge) 100%);
@@ -681,6 +685,130 @@ html.js .reveal.is-visible {
 .hero.hero-mini {
   min-height: 0;
   padding: 4.5rem var(--spacing-gutter) 5rem;
+}
+
+/* ═════════════ Word strip under the hero (components/home/Marquee.tsx) ═════════════
+   Quiet: no fill colour, faint hairlines, muted text, red cross-stitch
+   separators, one slow linear loop. It sits above the page thread (which
+   passes behind it like a thread under fabric) and fades out at both edges,
+   where the thread runs, so the two never touch. */
+.marquee {
+  position: relative;
+  z-index: 21; /* above the thread layer (20) */
+  height: 48px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: var(--color-bg-primary);
+  border-block: 1px solid var(--t-line);
+  contain: layout paint;
+}
+/* edge fades as two static covers in the page colour (a mask on the moving
+   strip would force a repaint every frame) */
+.marquee::before,
+.marquee::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  z-index: 1;
+  width: 9%;
+  pointer-events: none;
+}
+.marquee::before {
+  left: 0;
+  background: linear-gradient(90deg, var(--color-bg-primary), transparent);
+}
+.marquee::after {
+  right: 0;
+  background: linear-gradient(-90deg, var(--color-bg-primary), transparent);
+}
+@media (max-width: 767px) {
+  .marquee {
+    height: 40px;
+  }
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  /* starts once the page has settled (the first screen stays still while loading) */
+  animation:
+    marquee-in 0.8s ease both,
+    marquee-ltr 72s linear infinite;
+  will-change: transform;
+}
+@keyframes marquee-in {
+  from {
+    opacity: 0;
+  }
+}
+[dir="rtl"] .marquee-track {
+  animation-name: marquee-in, marquee-rtl;
+}
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track,
+.marquee[data-offscreen] .marquee-track {
+  animation-play-state: paused;
+}
+.marquee-row,
+.marquee-still {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.marquee-still {
+  display: none;
+  width: 100%;
+  justify-content: center;
+}
+.marquee-item {
+  display: inline-flex;
+  align-items: center;
+}
+.marquee-word {
+  padding-inline: 1.6rem;
+  /* the page's body font: no extra font file just for this strip */
+  font-family: var(--font-body-current), sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--color-cream-secondary); /* the muted tone (AA) rather than a literal 60% opacity */
+  white-space: nowrap;
+}
+.marquee-word-ar {
+  font-family: var(--font-display-current), serif;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+.marquee-stitch {
+  width: 9px;
+  height: 9px;
+  flex-shrink: 0;
+}
+.marquee-stitch path {
+  fill: none;
+  stroke: var(--t-thread);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+@keyframes marquee-ltr {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes marquee-rtl {
+  to {
+    transform: translateX(50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    display: none;
+  }
+  .marquee-still {
+    display: flex;
+  }
 }
 
 /* ═════════════ The thread (components/ui/Thread.tsx) ═════════════ */

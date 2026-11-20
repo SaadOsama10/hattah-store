@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { buildMetadata, categoryPath, organizationGraph } from "@/lib/seo";
 import { Hero } from "@/components/home/Hero";
+import { Marquee } from "@/components/home/Marquee";
 import { FeaturedGrid } from "@/components/home/FeaturedGrid";
 import { OurStory } from "@/components/home/OurStory";
 import { FinalCta } from "@/components/home/FinalCta";
@@ -75,6 +76,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     <>
       <JsonLd data={organizationGraph(locale)} />
       <Hero />
+      <Marquee />
       <CategoryTiles tiles={tiles} />
       <FeaturedGrid products={featured.map(card)} />
       <ProductRail

@@ -59,7 +59,14 @@
     "ctaSecondary": "Order on WhatsApp",
     "scroll": "Go to the collection",
     "subtitle": "Hoodies, embroidery, art, medals and food with a Gazan touch.",
-    "focus": "Palestinian"
+    "focus": "Palestinian",
+    "marquee": [
+      "HATTAH",
+      "حطّة",
+      "Gaza",
+      "Heritage",
+      "Identity"
+    ]
   },
   "categories": {
     "eyebrow": "Store Categories",

@@ -59,7 +59,14 @@
     "ctaSecondary": "WhatsApp ile sipariş ver",
     "scroll": "Koleksiyona git",
     "subtitle": "Gazze esintili sweatshirt, işleme, tablo, madalya ve lezzetler.",
-    "focus": "Filistin"
+    "focus": "Filistin",
+    "marquee": [
+      "HATTAH",
+      "حطّة",
+      "Gazze",
+      "Miras",
+      "Kimlik"
+    ]
   },
   "categories": {
     "eyebrow": "Mağaza Kategorileri",

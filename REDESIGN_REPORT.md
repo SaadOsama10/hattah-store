@@ -4,9 +4,22 @@
 
 **Principle**: less, but smarter. Each screen has one focus, generous empty space, and one meaningful motion.
 
+### Addition: the word strip, back in a quiet form
+- **What it is**: under the hero only (homepage, once): HATTAH · حطّة · غزة · تراث · هوية (EN/TR: Gaza, Heritage, Identity / Gazze, Miras, Kimlik).
+- **Look**:
+  - 48 px tall on desktop, 40 px on phones. No fill colour, just a faint 1 px line above and below.
+  - The words use the page's body font (no extra font file) in the **muted text tone**, which looks like ~60% but keeps AA contrast.
+  - Separators are small **cross-stitches (×) in the thread's red**. No gold.
+- **Motion**: a 72-second linear loop, moving against the reading direction. It pauses on hover, focus, and while off screen; under reduced motion it's a still, centred line.
+- **Relation to the thread**: the thread **passes behind the strip**, like a thread under fabric, and the strip fades out at both edges where the thread runs, so they never touch (checked in 8 screenshots).
+- **Performance**: transform only. Its box is in the HTML with a fixed height (CLS 0), and its words mount only once the page is idle, so it costs nothing during the first load. The edges fade with static covers rather than a mask, which avoids repainting every frame.
+  - In the Arabic hero, a late font swap was shifting the centred content (CLS 0.071). **Fixed**: the content is now anchored to the top, and the 600 weight (small labels only) uses `font-display: optional`.
+- **Homepage Lighthouse after adding the strip** (mobile, **median of 5**): `/ar` **92** (runs 90–93), `/en` **92** (91–94), `/tr` **92** (88–93). CLS 0, accessibility 100, SEO 100. Before the strip (median of 3): 92 / 93 / 92. The difference on `/en` is within the run-to-run spread.
+- **Screenshots** (outside the repo): `/private/tmp/claude-501/-Users-saadrady-Desktop-Hattah/e13c5be5-a043-4e92-bcb1-7dd86a6c95e2/scratchpad/marquee/` (`sheet-desktop.jpg`, `sheet-mobile.jpg`, 8 individual shots, and `marquee-ar-reduced-motion.png`).
+
 ### Removed (files and code, not just hidden)
 - **Hero layers**: the particles canvas and floating gold dots (`HeroFx.tsx`), the rotating light rays, film grain, vignette, pulsing gold glows, the rotating ornament ring around the logo, the drawn kufiya net, the HATTAH letter reveal, the four rotating lines with their dots, the pause button, parallax, and the once-per-session intro.
-- **Other homepage pieces**: the marquee (`Marquee.tsx`), the "Why HATTAH" glass cards (`WhyHattah.tsx`, deleted because they repeated the meaning of "Our story"), and the decorative dividers between sections.
+- **Other homepage pieces**: the old marquee (`Marquee.tsx`, since brought back in a quiet form, see above), the "Why HATTAH" glass cards (`WhyHattah.tsx`, deleted because they repeated the meaning of "Our story"), and the decorative dividers between sections.
 - **Card effects**: glass, gold glow, 3D tilt and the mouse spotlight (`Tilt.tsx`); the gold corner frames on the category cards; button shine.
 - **Old component files**: the slowly turning seal (`BrandArt.tsx`), the kufiya texture (`KufiyaNet.tsx`), and the scroll-reactive ambient background (`AmbientBackground.tsx`).
 - **Shown data**: product counts, arrows and rotating photos on the category cards; eyebrow labels and gold rules under headings; the category label on product cards; the "Featured" badge inside the featured section, where it repeated the section title.
