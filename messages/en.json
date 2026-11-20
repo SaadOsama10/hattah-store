@@ -55,25 +55,11 @@
   "hero": {
     "badge": "PALESTINIAN HERITAGE FROM GAZA",
     "title": "Your store for authentic Palestinian heritage.",
-    "phrases": [
-      "Hoodies with heritage designs",
-      "Palestinian embroidery and art",
-      "Medals and necklaces with a Gazan touch",
-      "Homemade Palestinian food"
-    ],
     "ctaPrimary": "Explore the collection",
     "ctaSecondary": "Order on WhatsApp",
-    "pause": "Pause animation",
-    "play": "Play animation",
     "scroll": "Go to the collection",
-    "phrase": "Line {n} of {total}",
-    "marquee": [
-      "HATTAH",
-      "حَطّة",
-      "Gaza",
-      "Heritage",
-      "Identity"
-    ]
+    "subtitle": "Hoodies, embroidery, art, medals and food with a Gazan touch.",
+    "focus": "Palestinian"
   },
   "categories": {
     "eyebrow": "Store Categories",
@@ -538,26 +524,6 @@
     "storyBody": "Hattah is what Palestinians call the keffiyeh. We chose it because it holds what we carry from Gaza: Palestinian heritage in pieces to wear, to give and to hang on the wall, and food that tastes of home.",
     "storyLine": "We carry Palestine in the details",
     "storyCta": "Shop the collection",
-    "whyEyebrow": "Why HATTAH",
-    "whyTitle": "What sets our pieces apart",
-    "why": [
-      {
-        "t": "Authentic heritage",
-        "d": "Symbols and patterns from Palestinian and Gazan memory"
-      },
-      {
-        "t": "Craftsmanship in the details",
-        "d": "We care about the small details of embroidery, engraving and finish"
-      },
-      {
-        "t": "Carefully chosen products",
-        "d": "Every piece in the store was chosen with care"
-      },
-      {
-        "t": "Easy ordering on WhatsApp",
-        "d": "Pick your piece and order it with a ready message"
-      }
-    ],
     "finalTitle": "Keep Palestine close",
     "finalBody": "Pick your piece and order it with a single WhatsApp message.",
     "finalButton": "Order on WhatsApp"

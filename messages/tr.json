@@ -55,25 +55,11 @@
   "hero": {
     "badge": "GAZZE'DEN FİLİSTİN MİRASI",
     "title": "Özgün Filistin mirasının adresi.",
-    "phrases": [
-      "Miras desenli sweatshirtler",
-      "Filistin işlemesi ve sanat tabloları",
-      "Gazze esintili madalyalar ve kolyeler",
-      "Ev yapımı Filistin lezzetleri"
-    ],
     "ctaPrimary": "Koleksiyonu keşfet",
     "ctaSecondary": "WhatsApp ile sipariş ver",
-    "pause": "Animasyonu durdur",
-    "play": "Animasyonu başlat",
     "scroll": "Koleksiyona git",
-    "phrase": "Satır {n} / {total}",
-    "marquee": [
-      "HATTAH",
-      "حَطّة",
-      "Gazze",
-      "Miras",
-      "Kimlik"
-    ]
+    "subtitle": "Gazze esintili sweatshirt, işleme, tablo, madalya ve lezzetler.",
+    "focus": "Filistin"
   },
   "categories": {
     "eyebrow": "Mağaza Kategorileri",
@@ -538,26 +524,6 @@
     "storyBody": "Hattah, Filistinlilerin kefiyeye verdiği isimdir. Bu adı, Gazze'den taşıdıklarımızı bir araya getirdiği için seçtik: giyilecek, hediye edilecek ve duvara asılacak parçalarda Filistin mirası ve ev tadında yemekler.",
     "storyLine": "Filistin'i ayrıntılarda taşıyoruz",
     "storyCta": "Koleksiyonu keşfet",
-    "whyEyebrow": "Neden HATTAH",
-    "whyTitle": "Parçalarımızı farklı kılan",
-    "why": [
-      {
-        "t": "Özgün miras",
-        "d": "Filistin ve Gazze hafızasından semboller ve desenler"
-      },
-      {
-        "t": "Zanaat ayrıntılarda",
-        "d": "Nakış, oyma ve bitişteki küçük ayrıntılara özen gösteriyoruz"
-      },
-      {
-        "t": "Özenle seçilmiş ürünler",
-        "d": "Mağazadaki her parçayı özenle seçtik"
-      },
-      {
-        "t": "WhatsApp ile kolay sipariş",
-        "d": "Parçanı seç, hazır bir mesajla sipariş ver"
-      }
-    ],
     "finalTitle": "Filistin'i yakınında tut",
     "finalBody": "Parçanı seç, tek bir WhatsApp mesajıyla sipariş ver.",
     "finalButton": "WhatsApp ile sipariş ver"
