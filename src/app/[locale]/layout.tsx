@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -10,16 +9,6 @@ import "../globals.css";
 
 // Display / heading fonts — the brand's identity faces (same as the logo and the
 // social-media templates): Playfair Display for Latin, Amiri for Arabic.
-// Body / UI font — clean and modern: Inter (Latin) or IBM Plex Sans Arabic (Arabic).
-const inter = Inter({
-  // Latin only (as before the redesign): latin-ext would add ~85 KB of fonts on every page.
-  subsets: ["latin"],
-  weight: ["400", "600"],
-  variable: "--font-inter-latin",
-  display: "swap",
-  preload: false,
-});
-
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
@@ -95,7 +84,7 @@ export default async function LocaleLayout({
       <body
         // Only the active locale's font families are applied, so /en and /tr never download (or preload)
         // the Arabic fonts and /ar never downloads the Latin ones.
-        className={`${isArabic ? "" : inter.variable} bg-bg-primary text-cream antialiased font-inter`}
+        className={`bg-bg-primary text-cream antialiased font-inter`}
         style={
           {
             "--font-display-current": isArabic
