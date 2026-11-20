@@ -47,7 +47,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       key: cat.key,
       label: localizeCategory(cat, locale),
       href: categoryPath(cat.key),
-      image: tileImages(products.filter((p) => keys.has(p.category)), ranking, 1)[0],
+      images: tileImages(products.filter((p) => keys.has(p.category))),
     };
   });
 

@@ -31,7 +31,7 @@ export async function CategoryTiles({ tiles }: { tiles: TileData[] }) {
                   big ? "aspect-[4/5] lg:col-span-2 lg:row-span-2 lg:aspect-auto" : "aspect-[4/5] lg:aspect-[5/4]"
                 )}
               >
-                <CategoryTileCard tile={tile} big={big} />
+                <CategoryTileCard tile={tile} big={big} order={i} />
               </Reveal>
             );
           })}

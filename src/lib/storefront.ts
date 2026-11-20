@@ -23,16 +23,24 @@ export const HOME_SECTION_ICONS = {
 } as const;
 
 export const RAIL_LIMIT = 10;
-export const TILE_IMAGES = 3;
+export const TILE_IMAGES = 4;
 
 const firstImage = (row: ProductRow) =>
   [...(row.product_images ?? [])].sort((a, b) => a.sort_order - b.sort_order)[0]?.image_url;
 
-/** Up to `n` photos for a category tile: the main photo of the category's
- * best products (featured, then best sellers, then newest). */
-export function tileImages(inCategory: ProductRow[], ranking: string[], n = TILE_IMAGES): string[] {
-  const ranked = byRank(inCategory.filter(firstImage), ranking);
-  const ordered = [...ranked.filter((p) => p.is_featured), ...ranked.filter((p) => !p.is_featured)];
+/** Photos for a category tile (up to 4): the main photo of the category's
+ * products — featured first, then newest, then the ones with more photos.
+ * Products without a photo are skipped. */
+export function tileImages(inCategory: ProductRow[], n = TILE_IMAGES): string[] {
+  const photos = (p: ProductRow) => p.product_images?.length ?? 0;
+  const ordered = inCategory
+    .filter(firstImage)
+    .sort(
+      (a, b) =>
+        Number(b.is_featured) - Number(a.is_featured) ||
+        b.created_at.localeCompare(a.created_at) ||
+        photos(b) - photos(a)
+    );
   return [...new Set(ordered.map((p) => firstImage(p)!))].slice(0, n);
 }
 
