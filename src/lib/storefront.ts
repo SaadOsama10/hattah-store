@@ -23,12 +23,12 @@ export const HOME_SECTION_ICONS = {
 } as const;
 
 export const RAIL_LIMIT = 10;
-export const TILE_IMAGES = 4;
+export const TILE_IMAGES = 6;
 
 const firstImage = (row: ProductRow) =>
   [...(row.product_images ?? [])].sort((a, b) => a.sort_order - b.sort_order)[0]?.image_url;
 
-/** Photos for a category tile (up to 4): the main photo of the category's
+/** Photo candidates for a category tile (up to 6): the main photo of the category's
  * products — featured first, then newest, then the ones with more photos.
  * Products without a photo are skipped. */
 export function tileImages(inCategory: ProductRow[], n = TILE_IMAGES): string[] {
